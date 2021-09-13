@@ -63,7 +63,7 @@ project "MakeFarm"
         libdirs
         {
             "%{wks.name}/vendor/lib/glad/windows",
-            "%{wks.name}/vendor/lib/glew/windows/Release/x64",
+            "%{wks.name}/vendor/lib/glew/windows/x64",
             "%{wks.name}/vendor/lib/glm/windows",
             "%{wks.name}/vendor/lib/imgui/windows",
             "%{wks.name}/vendor/lib/imgui-sfml/windows",
