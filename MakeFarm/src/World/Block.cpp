@@ -3,6 +3,11 @@
 
 #include "Renderer3D/BufferLayout.h"
 
+Block::Block(const TexturePack& texturePack)
+	: texturePack(texturePack)
+{
+}
+
 bool Block::isActive()
 {
 	return true;
@@ -14,71 +19,98 @@ void Block::setActive(bool active)
 
 void Block::generateCube(unsigned x, unsigned y, unsigned z)
 {
-    float vertices[] =
-    {
-        // bottom
-        -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 0.f, 1.f, // further left bottom
-         1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 1.f, 1.f, // further right bottom
-        -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 0.f, 0.f, // closer left bottom
-         1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 1.f, 0.f, // closer right bottom
-        //                       + (Block::BLOCK_SIZE * x)                            + (Block::BLOCK_SIZE * y)                            + (Block::BLOCK_SIZE * z)
-        // upper                 + (Block::BLOCK_SIZE * x)                            + (Block::BLOCK_SIZE * y)                            + (Block::BLOCK_SIZE * z)
-        -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 0.f, 1.f, // further left upper
-         1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 1.f, 1.f, // further right upper
-        -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 0.f, 0.f, // closer left upper
-         1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 1.f, 0.f,  // closer right upper
-        //                       + (Block::BLOCK_SIZE * x)                            + (Block::BLOCK_SIZE * y)                            + (Block::BLOCK_SIZE * z)
-        // sides                 + (Block::BLOCK_SIZE * x)                            + (Block::BLOCK_SIZE * y)                            + (Block::BLOCK_SIZE * z)
-         1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 0.f, 1.f, //left up (8)
-         1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 1.f, 1.f, //right up (9)
-        -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 0.f, 0.f, //left down (10)
-        -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 1.f, 0.f, //right down (11)
-        //                       + (Block::BLOCK_SIZE * x)                            + (Block::BLOCK_SIZE * y)                            + (Block::BLOCK_SIZE * z)
-         1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 0.f, 1.f, //left up (12)
-         1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 1.f, 1.f, //right up (13)
-        -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 0.f, 0.f, //left down (14)
-        -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 1.f, 0.f,  //right down (15)
-        //                       + (Block::BLOCK_SIZE * x)                            + (Block::BLOCK_SIZE * y)                            + (Block::BLOCK_SIZE * z)
-        -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 1.f, 1.f,
-        //                       + (Block::BLOCK_SIZE * x)                            + (Block::BLOCK_SIZE * y)                            + (Block::BLOCK_SIZE * z)
-         1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * x),  -1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * y),   1.f * Block::BLOCK_SIZE + (Block::BLOCK_SIZE * z), 0.f, 0.f
-    };
+	mesh.vertices =
+	{
+	//  x  y  z
 
-    unsigned int indices[] = {
-        0, 1, 2, //bottom
-        2, 3, 1,
+		// Top
+		0, 1, 1, // top close left
+		1, 1, 1, // top close right
+		1, 1, 0, // top far right
+		0, 1, 0, // top far left
 
-        4, 5, 6, //upper
-        6, 7, 5,
+		// Back
+		1, 0, 0, // back right bottom
+		0, 0, 0, // back left bottom
+		0, 1, 0, // back left top
+		1, 1, 0, // back right top
 
-        14, 15, 13, // front
-        13, 12, 14,
+		// Front
+		0, 0, 1, // front left bottom
+		1, 0, 1, // front right bottom
+		1, 1, 1, // front right top
+		0, 1, 1, // front left top
 
-        10, 11, 9, //back
-        9, 8, 10,
+		// Left
+		0, 0, 0,
+		0, 0, 1,
+		0, 1, 1,
+		0, 1, 0,
 
-        14, 0, 16, // left
-        16, 15, 14,
+		// Right
+		1, 0, 1,
+		1, 0, 0,
+		1, 1, 0,
+		1, 1, 1,
 
-        17, 8, 9, // right
-        9, 7, 17
+		// Bottom
+		0, 0, 0,
+		1, 0, 0,
+		1, 0, 1,
+		0, 0, 1
+	};
 
-    };
+	for (auto& vertic : mesh.vertices)
+	{
+		vertic = (vertic ? (BLOCK_SIZE / 2) : -(BLOCK_SIZE / 2));
+	}
 
-    vb = std::make_unique<VertexBuffer>(vertices, sizeof(vertices));
-    BufferLayout layout;
-    layout.push<float>(3);
-    layout.push<float>(2);
-    va.setBuffer(*vb, layout);
+	for (auto i = 0; i < mesh.vertices.size(); i += 3)
+	{
+		mesh.vertices[i] += x * BLOCK_SIZE;
+		mesh.vertices[i + 1] += y * BLOCK_SIZE;
+		mesh.vertices[i + 2] += z * BLOCK_SIZE;
+	}
 
-    ib = std::make_unique<IndexBuffer>(indices, 36);
+	auto top = texturePack.getNormalizedCoordinates(BlockList::GrassTop);
+	auto side = texturePack.getNormalizedCoordinates(BlockList::GrassSide);
+	auto bottom = texturePack.getNormalizedCoordinates(BlockList::Dirt);
 
-    va.unbind();
-    vb->unbind();
-    ib->unbind();
+	auto& texCoords = mesh.textureCoordinates;
+
+	texCoords.insert(texCoords.end(), top.begin(), top.end());
+	texCoords.insert(texCoords.end(), side.begin(), side.end());
+	texCoords.insert(texCoords.end(), side.begin(), side.end());
+	texCoords.insert(texCoords.end(), side.begin(), side.end());
+	texCoords.insert(texCoords.end(), side.begin(), side.end());
+	texCoords.insert(texCoords.end(), bottom.begin(), bottom.end());
+
+	mesh.indices = 
+	{
+		0, 1, 2,
+		2, 3, 0,
+
+		4, 5, 6,
+		6, 7, 4,
+
+		8, 9, 10,
+		10, 11, 8,
+
+		12, 13, 14,
+		14, 15, 12,
+
+		16, 17, 18,
+		18, 19, 16,
+
+		20, 21, 22,
+		22, 23, 20
+	};
+
+	model.setMesh(mesh);
 }
 
 void Block::draw(const Renderer3D& renderer3d, const sf::Shader& shader) const
 {
-    renderer3d.draw(va, *ib, shader);
+	texturePack.bind();
+	model.draw(renderer3d, shader);
 }

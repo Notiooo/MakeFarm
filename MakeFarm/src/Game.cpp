@@ -15,16 +15,17 @@ const int Game::SCREEN_HEIGHT = 720;
 Game::Game()
 {
 	sf::ContextSettings settings;
+	settings.antialiasingLevel = 0;
 	settings.majorVersion = 3;
 	settings.minorVersion = 3;
 	settings.depthBits = 24;
+	settings.stencilBits = 8;
 
 	gameWindow = std::make_unique<sf::RenderWindow>(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), 
 		"Minecraft Clone", sf::Style::Titlebar | sf::Style::Close, settings);
 
 	// Limit the framerate to 60 frames per second
 	gameWindow->setFramerateLimit(60);
-
 	gameWindow->setActive(true);
 
 	// ImGui setup

@@ -6,6 +6,7 @@
 
 #include "Renderer3D/Renderer3D.h"
 #include "States/State.h"
+#include "Utils/Settings.h"
 #include "World/Camera.h"
 #include "World/Chunk.h"
 
@@ -50,6 +51,7 @@ private:
 	Renderer3D gameRenderer;
 
 	Chunk testChunk;
+	Settings gameSettings;
 };
 
 

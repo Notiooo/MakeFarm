@@ -2,19 +2,17 @@
 #include <memory>
 
 #include "Renderer3D/IndexBuffer.h"
+#include "Renderer3D/Model3D.h"
 #include "Renderer3D/Renderer3D.h"
 #include "Renderer3D/VertexArray.h"
+#include "Resources/BlockList.h"
+#include "Resources/TexturePack.h"
 
-enum class BlockType
-{
-	Air = 0,
-	Grass,
-	Counter
-};
 
 class Block
 {
 public:
+	Block(const TexturePack& texturePack);
 	bool isActive();
 	void setActive(bool active);
 
@@ -24,14 +22,14 @@ public:
 	
 	void draw(const Renderer3D& renderer3d, const sf::Shader& shader) const;
 
-	static const char BLOCK_SIZE = 100;
+	static constexpr float BLOCK_SIZE = 100.f;
 
 private:
 	bool active;
-	BlockType blockType;
-
-	// for test purpoeses
-	VertexArray va;
-	std::unique_ptr<VertexBuffer> vb;
-	std::unique_ptr<IndexBuffer> ib;
+	BlockList blockType;
+	
+	Model3D model;
+	Mesh3D mesh;
+	
+	const TexturePack& texturePack;
 };

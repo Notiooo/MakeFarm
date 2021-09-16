@@ -50,11 +50,11 @@ void Camera::fixedUpdate(const float& deltaTime)
     // Moving a camera
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
     {
-        cameraPos -= cameraSpeed * cameraFront * deltaTime;
+        cameraPos += cameraSpeed * cameraFront * deltaTime;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
     {
-        cameraPos += cameraSpeed * cameraFront * deltaTime;
+        cameraPos -= cameraSpeed * cameraFront * deltaTime;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
     {
@@ -90,8 +90,7 @@ void Camera::fixedUpdate(const float& deltaTime)
 
     float width = renderTarget.getSize().x;
     float height = renderTarget.getSize().y;
-    proj = glm::perspective(glm::radians(fovCamera), width / height, 0.1f, 100.f)
-		* glm::ortho(-width / 2, width / 2, -height / 2, height / 2, 0.1f, 100.f);
+    proj = glm::perspective(glm::radians(fovCamera), width / height, 0.1f, 10000.f);
 }
 
 void Camera::draw(sf::RenderTarget& target, sf::RenderStates states) const

@@ -9,15 +9,17 @@
 
 #include "States/StateStack.h"
 #include "Utils/Mouse.h"
+#include "Utils/Settings.h"
 
 GameState::GameState(StateStack& stack, sf::RenderWindow& window):
 	State(stack),
 	gameWindow(window),
-	gameCamera(gameWindow, shader)
+	gameCamera(gameWindow, shader),
+	gameSettings("settings.cfg")
 {
 	Mouse::lockMouseAtCenter(gameWindow);
 	shader.loadFromFile("resources/Shaders/VertexShader.shader", "resources/Shaders/FragmentShader.shader");
-	
+
 	GLCall(glEnable(GL_DEPTH_TEST));
 	GLCall(glEnable(GL_BLEND));
 	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
@@ -27,6 +29,7 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window):
 	sf::Shader::bind(nullptr);
 
 	testChunk.createChunk();
+	std::cout << "Texture pack loaded: " << gameSettings.get<std::string>("TexturePack") << std::endl;
 }
 
 
@@ -121,6 +124,5 @@ bool GameState::update()
 
 void GameState::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	//gameRenderer.clear();
 	testChunk.draw(gameRenderer, shader);
 }

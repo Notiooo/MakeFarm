@@ -42,7 +42,7 @@ void Mouse::update(const float& deltaTime, const sf::Window& window)
 	if (isMouseLocked())
 	{
 		const auto windowCenter = sf::Vector2i(window.getSize().x / 2.f, window.getSize().y / 2.f);
-		mouseOffset = windowCenter - sf::Mouse::getPosition(window);
+		mouseOffset = sf::Mouse::getPosition(window) - windowCenter;
 		centerMouse(window);
 	}
 }

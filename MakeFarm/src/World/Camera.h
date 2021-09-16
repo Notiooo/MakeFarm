@@ -28,7 +28,7 @@ private:
     glm::vec3 direction;
     float cameraSpeed = 400.f;
     float cameraSensitivity = 4.f;
-    float fovCamera = 15.0f;
+    float fovCamera = 90.0f;
 
     glm::mat4 view;
     mutable glm::mat4 proj;
