@@ -5,7 +5,7 @@
 
 Block::Block(const TexturePack& texturePack)
 	: texturePack(texturePack)
-	, blockType(BlockTexture::Dirt)
+	, blockType(TextureSheet::Dirt)
 {
 }
 
@@ -73,9 +73,9 @@ void Block::generateCube(unsigned x, unsigned y, unsigned z)
 		mesh.vertices[i + 2] += z * BLOCK_SIZE;
 	}
 
-	auto top = texturePack.getNormalizedCoordinates(BlockTexture::GrassTop);
-	auto side = texturePack.getNormalizedCoordinates(BlockTexture::GrassSide);
-	auto bottom = texturePack.getNormalizedCoordinates(BlockTexture::Dirt);
+	auto top = texturePack.getNormalizedCoordinates(TextureSheet::GrassTop);
+	auto side = texturePack.getNormalizedCoordinates(TextureSheet::GrassSide);
+	auto bottom = texturePack.getNormalizedCoordinates(TextureSheet::Dirt);
 
 	auto& texCoords = mesh.textureCoordinates;
 
@@ -116,7 +116,7 @@ void Block::draw(const Renderer3D& renderer3d, const sf::Shader& shader) const
 	model.draw(renderer3d, shader);
 }
 
-BlockTexture Block::getBlockTexture() const
+TextureSheet Block::getBlockTexture() const
 {
 	return blockType;
 }

@@ -11,11 +11,13 @@
 #include "Utils/Mouse.h"
 #include "Utils/Settings.h"
 
-GameState::GameState(StateStack& stack, sf::RenderWindow& window):
+GameState::GameState(StateStack& stack, sf::RenderWindow& window) :
 	State(stack),
 	gameWindow(window),
 	gameCamera(gameWindow, shader),
-	gameSettings("settings.cfg")
+	gameSettings("settings.cfg"),
+	texturePack("defaultTextures"),
+	testChunk(texturePack)
 {
 	Mouse::lockMouseAtCenter(gameWindow);
 	shader.loadFromFile("resources/Shaders/VertexShader.shader", "resources/Shaders/FragmentShader.shader");
@@ -25,7 +27,7 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window):
 	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
 	sf::Shader::bind(&shader);
-	shader.setUniform("u_MVP", sf::Glsl::Mat4(sf::Transform::Identity));
+	shader.setUniform("u_ViewProjection", sf::Glsl::Mat4(sf::Transform::Identity));
 	sf::Shader::bind(nullptr);
 
 	testChunk.createChunk();

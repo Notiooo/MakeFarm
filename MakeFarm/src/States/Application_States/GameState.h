@@ -8,7 +8,7 @@
 #include "States/State.h"
 #include "Utils/Settings.h"
 #include "World/Camera.h"
-#include "World/Chunk.h"
+#include "World/Chunks/Chunk.h"
 
 class StateStack;
 
@@ -50,6 +50,7 @@ private:
 	Camera gameCamera;
 	Renderer3D gameRenderer;
 
+	TexturePack texturePack;
 	Chunk testChunk;
 	Settings gameSettings;
 };

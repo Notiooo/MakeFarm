@@ -1,12 +1,6 @@
 #pragma once
-#include "BlockList.h"
+#include "Resources/TextureSheet.h"
 #include "Utils/Settings.h"
-
-enum class Coordinates
-{
-	Pixels,
-	Normalized
-};
 
 class TexturePack : public sf::NonCopyable
 {
@@ -17,8 +11,8 @@ public:
 	void loadTexturePack(const std::string& texturePackFolder);
 	void bind() const;
 	
-	std::vector<GLfloat> getNormalizedCoordinates(const BlockList& block) const;
-	sf::IntRect getTextureIntRect(const BlockList& block) const;
+	std::vector<GLfloat> getNormalizedCoordinates(const TextureSheet& block) const;
+	sf::IntRect getTextureIntRect(const TextureSheet& block) const;
 
 private:
 	sf::Texture textures;

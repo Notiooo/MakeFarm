@@ -39,8 +39,7 @@ void VertexArray::setBuffer(const std::vector<VertexBuffer>& vb, const BufferLay
 		const auto& element = elements[i];
 		const auto& elementStride = element.count * BufferElement::getSizeOfType(element.type);
 		GLCall(glEnableVertexAttribArray(i));
-		GLCall(glVertexAttribPointer(i, element.count, element.type, element.normalized, elementStride, reinterpret_cast<const void*>(0)));
-		offset += elementStride;
+		GLCall(glVertexAttribPointer(i, element.count, element.type, element.normalized, elementStride, reinterpret_cast<const void*>(0)));;
 	}
 }
 

@@ -21,6 +21,12 @@ void Model3D::setMesh(const Mesh3D& mesh)
 	#endif
 }
 
+void Model3D::setMesh(Mesh3D&& mesh)
+{
+	this->mesh = std::make_unique<Mesh3D>(std::move(mesh));
+	setMesh(*this->mesh);
+}
+
 void Model3D::draw(const Renderer3D& renderer3d, const sf::Shader& shader) const
 {
 	renderer3d.draw(vertexArray, indices, shader);

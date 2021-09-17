@@ -22,7 +22,7 @@ void TexturePack::bind() const
 	sf::Texture::bind(&textures);
 }
 
-std::vector<GLfloat> TexturePack::getNormalizedCoordinates(const BlockList& block) const
+std::vector<GLfloat> TexturePack::getNormalizedCoordinates(const TextureSheet& block) const
 {
 	const auto blocksPerRow = textures.getSize().x / blockSize;
 	const auto sizeOfPixel = 1.0f / static_cast<float>(textures.getSize().x);
@@ -41,7 +41,7 @@ std::vector<GLfloat> TexturePack::getNormalizedCoordinates(const BlockList& bloc
 	};
 }
 
-sf::IntRect TexturePack::getTextureIntRect(const BlockList& block) const
+sf::IntRect TexturePack::getTextureIntRect(const TextureSheet& block) const
 {
 	sf::IntRect textureRect;
 	textureRect.width = blockSize;

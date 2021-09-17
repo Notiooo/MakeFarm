@@ -39,7 +39,7 @@ void Camera::updateViewProjection()
 {
 	sf::Shader::bind(&shader);
 	glm::mat4 vp = getProjection() * getView();
-	shader.setUniform("u_MVP", sf::Glsl::Mat4(&vp[0][0]));
+	shader.setUniform("u_ViewProjection", sf::Glsl::Mat4(&vp[0][0]));
 	sf::Shader::bind(nullptr);
 }
 
