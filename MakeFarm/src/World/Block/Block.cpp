@@ -31,6 +31,12 @@ Block::Coordinate::Coordinate(const Coordinate& rhs) noexcept
 {
 }
 
+Block::Coordinate& Block::Coordinate::operator=(const Coordinate& rhs)
+{
+	mBlockCoordinates = rhs.mBlockCoordinates;
+	return *this;
+}
+
 Block::Coordinate Block::Coordinate::operator-(const Coordinate& rhs) const
 {
 	return mBlockCoordinates - rhs.mBlockCoordinates;
@@ -57,15 +63,6 @@ sf::Vector3<Block::SizeType> Block::Coordinate::getNonBlockMetric() const
 		static_cast<SizeType>(x) * BLOCK_SIZE,
 		static_cast<SizeType>(y) * BLOCK_SIZE,
 		static_cast<SizeType>(z) * BLOCK_SIZE
-	);
-}
-
-Block::Coordinate Block::Coordinate::nonBlockToBlockMetric(const sf::Vector3i& nonBlockVector)
-{
-	return Block::Coordinate(
-		nonBlockVector.x / static_cast<IntegerUnit>(BLOCK_SIZE),
-		nonBlockVector.y / static_cast<IntegerUnit>(BLOCK_SIZE),
-		nonBlockVector.z / static_cast<IntegerUnit>(BLOCK_SIZE)
 	);
 }
 

@@ -1,15 +1,20 @@
 #include "pch.h"
-#include "ChunkMeshBuilder.h"
+#include "MeshBuilder.h"
 
 #include "World/Chunks/Chunk.h"
 
-ChunkMeshBuilder::ChunkMeshBuilder(const Chunk& chunk)
-	: chunk(chunk)
+MeshBuilder::MeshBuilder(const Block::Coordinate& origin)
+	: mOrigin(origin)
 {
 }
 
-void ChunkMeshBuilder::addQuad(const Block::Face& blockFace, const std::vector<GLfloat>& textureQuad,
-	const Block::Coordinate& blockPosition)
+void MeshBuilder::setFaceSize(const float& faceSize)
+{
+	mBlockFaceSize = faceSize;
+}
+
+void MeshBuilder::addQuad(const Block::Face& blockFace, const std::vector<GLfloat>& textureQuad,
+                          const Block::Coordinate& blockPosition)
 {
 	auto& vertices = chunkMesh.vertices;
 	auto& texCoords = chunkMesh.textureCoordinates;
@@ -18,15 +23,22 @@ void ChunkMeshBuilder::addQuad(const Block::Face& blockFace, const std::vector<G
 	texCoords.insert(texCoords.end(), textureQuad.begin(), textureQuad.end());
 	
 	auto face = getFaceVertices(blockFace);
-	const auto& chunkPos = chunk.mChunkPosition.getNonBlockMetric();
+	const auto& originPos = mOrigin.getNonBlockMetric();
 	const auto& blockPos = blockPosition.getNonBlockMetric();
-	
+
+	/*
+	 * Some blocks are larger than others.
+	 * It would be good if they were not just longer in one plane,
+	 * but it was spread out among all of them -- increased relative to the center.
+	 */
+	const auto blockSizeDifference = (mBlockFaceSize - Block::BLOCK_SIZE) / 2.f;
+
 	for(int i = 0; i < 3 * 4; i += 3)
 	{
 		// a row in given face (x,y,z)
-		vertices.emplace_back(face[i]   * Block::BLOCK_SIZE + chunkPos.x + blockPos.x);
-		vertices.emplace_back(face[i+1] * Block::BLOCK_SIZE + chunkPos.y + blockPos.y);
-		vertices.emplace_back(face[i+2] * Block::BLOCK_SIZE + chunkPos.z + blockPos.z);
+		vertices.emplace_back(face[i]   * mBlockFaceSize + originPos.x + blockPos.x - blockSizeDifference);
+		vertices.emplace_back(face[i+1] * mBlockFaceSize + originPos.y + blockPos.y - blockSizeDifference);
+		vertices.emplace_back(face[i+2] * mBlockFaceSize + originPos.z + blockPos.z - blockSizeDifference);
 	}
 
 	indices.insert(indices.end(),
@@ -42,13 +54,21 @@ void ChunkMeshBuilder::addQuad(const Block::Face& blockFace, const std::vector<G
 	index += 4;
 }
 
-Mesh3D ChunkMeshBuilder::getMesh3D() const
+void MeshBuilder::resetMesh()
+{
+	chunkMesh.indices.clear();
+	chunkMesh.textureCoordinates.clear();
+	chunkMesh.vertices.clear();
+	index = 0;
+}
+
+Mesh3D MeshBuilder::getMesh3D() const
 {
 	return chunkMesh;
 }
 
 
-std::vector<GLfloat> ChunkMeshBuilder::getFaceVertices(const Block::Face& blockFace) const
+std::vector<GLfloat> MeshBuilder::getFaceVertices(const Block::Face& blockFace) const
 {
 	switch(blockFace)
 	{

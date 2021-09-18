@@ -61,6 +61,7 @@ public:
 
 		operator sf::Vector3<IntegerUnit>() const { return mBlockCoordinates; }
 
+		Coordinate& operator=(const Coordinate& rhs);
 		Coordinate operator-(const Coordinate& rhs) const;
 		Coordinate operator+(const Coordinate& rhs) const;
 		bool operator==(const Coordinate& rhs) const;
@@ -77,7 +78,16 @@ public:
 		 * \return Positions in non-block-grid space
 		 */
 		[[nodiscard]] sf::Vector3<Block::SizeType> getNonBlockMetric() const;
-		static Coordinate nonBlockToBlockMetric(const sf::Vector3i& nonBlockVector);
+
+		template <typename T>
+		static Coordinate nonBlockToBlockMetric(const sf::Vector3<T>& nonBlockVector)
+		{
+			return Block::Coordinate(
+				static_cast<SizeType>(nonBlockVector.x) / BLOCK_SIZE,
+				static_cast<SizeType>(nonBlockVector.y) / BLOCK_SIZE,
+				static_cast<SizeType>(nonBlockVector.z) / BLOCK_SIZE
+			);
+		};
 
 
 	private:

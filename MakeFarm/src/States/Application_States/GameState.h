@@ -7,6 +7,7 @@
 #include "States/State.h"
 #include "Utils/Settings.h"
 #include "World/Camera.h"
+#include "World/Block/FacedBlock.h"
 #include "World/Chunks/Chunk.h"
 #include "World/Chunks/ChunkContainer.h"
 
@@ -53,6 +54,8 @@ private:
 	TexturePack texturePack;
 	ChunkContainer testChunk;
 	Settings gameSettings;
+
+	FacedBlock mSelectedBlock;
 };
 
 

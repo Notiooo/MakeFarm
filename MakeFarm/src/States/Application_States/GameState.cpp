@@ -18,7 +18,8 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window) :
 	gameCamera(gameWindow, shader),
 	gameSettings("settings.cfg"),
 	texturePack("defaultTextures"),
-	testChunk(texturePack)
+	testChunk(texturePack),
+	mSelectedBlock(texturePack)
 {
 	Mouse::lockMouseAtCenter(gameWindow);
 	shader.loadFromFile("resources/Shaders/VertexShader.shader", "resources/Shaders/FragmentShader.shader");
@@ -42,6 +43,18 @@ bool GameState::handleEvent(const sf::Event& event)
 	Mouse::handleFirstPersonBehaviour(event, gameWindow);
 	gameCamera.handleEvent(event);
 
+	switch (event.type)
+	{
+		case sf::Event::MouseButtonPressed:
+		{
+			if (event.key.code == sf::Mouse::Button::Left)
+			{
+				if (mSelectedBlock.isAnyBlockSelected())
+					testChunk.removeWorldBlock(mSelectedBlock.getBlockPosition());
+			}
+		}
+	}
+
 	/*
 	 * Set this state to transparent -- in other words
 	 * allow States below in stack to be rendered.
@@ -60,6 +73,7 @@ bool GameState::fixedUpdate(const float& deltaTime)
 	 */
 
 	gameCamera.fixedUpdate(deltaTime);
+	mSelectedBlock.markFacedBlock(gameCamera, testChunk);
 	
 	/*
 	 * Set this state to transparent -- in other words
@@ -133,4 +147,6 @@ bool GameState::update()
 void GameState::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	testChunk.draw(gameRenderer, shader);
+	mSelectedBlock.draw(gameRenderer, shader);
 }
+

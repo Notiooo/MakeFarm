@@ -9,6 +9,8 @@ Model3D::Model3D()
 
 void Model3D::setMesh(const Mesh3D& mesh)
 {
+	vertexBuffers.clear();
+	
 	vertexBuffers.emplace_back(mesh.vertices.data(), mesh.vertices.size() * sizeof(mesh.vertices[0]));
 	vertexBuffers.emplace_back(mesh.textureCoordinates.data(), mesh.textureCoordinates.size() * sizeof(mesh.textureCoordinates[0]));
 	vertexArray.setBuffer(vertexBuffers, bufferLayout);

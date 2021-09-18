@@ -2,7 +2,7 @@
 #include "Chunk.h"
 
 #include "ChunkContainer.h"
-#include "ChunkMeshBuilder.h"
+#include "MeshBuilder.h"
 #include "World/Block/BlockType.h"
 
 Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, const ChunkContainer& parent)
@@ -25,7 +25,7 @@ Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack, co
 Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack)
 	: mChunkPosition(std::move(blockPosition))
 	, mTexturePack(texturePack)
-	, mMeshBuilder(*this)
+	, mMeshBuilder(mChunkPosition)
 	, mChunkOfBlocks(std::make_unique<MultiDimensionalArray<Block, 
 		BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION>>())
 {
@@ -48,9 +48,9 @@ Chunk::Chunk(Chunk&& rhs) noexcept
 	: mChunkPosition(std::move(rhs.mChunkPosition))
 	, mTexturePack(rhs.mTexturePack)
 	, mParentContainer(std::move(rhs.mParentContainer))
-	, mMeshBuilder(*this) // new one
-	, mChunkOfBlocks(std::move(rhs.mChunkOfBlocks))
+	, mMeshBuilder(mChunkPosition)
 	, mModel(std::move(rhs.mModel))
+	, mChunkOfBlocks(std::move(rhs.mChunkOfBlocks))
 {
 	rhs.mParentContainer = nullptr;
 }
@@ -89,7 +89,7 @@ void Chunk::update(const float& deltaTime)
 {
 }
 
-bool Chunk::areLocalCoordinatesInsideChunk(const Block::Coordinate& localCoordinates) const
+bool Chunk::areLocalCoordinatesInsideChunk(const Block::Coordinate& localCoordinates)
 {
 	if( localCoordinates.x < BLOCKS_PER_DIMENSION && localCoordinates.x >= 0 &&
 		localCoordinates.y < BLOCKS_PER_DIMENSION && localCoordinates.y >= 0 &&
@@ -99,6 +99,30 @@ bool Chunk::areLocalCoordinatesInsideChunk(const Block::Coordinate& localCoordin
 	}
 
 	return false;
+}
+
+bool Chunk::isLocalCoordinateOnEdge(const Block::Coordinate& localCoordinates)
+{
+	if (localCoordinates.x == BLOCKS_PER_DIMENSION-1 || localCoordinates.x == 0 ||
+		localCoordinates.y == BLOCKS_PER_DIMENSION-1 || localCoordinates.y == 0 ||
+		localCoordinates.z == BLOCKS_PER_DIMENSION-1 || localCoordinates.z == 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void Chunk::rebuildChunk()
+{
+	mMeshBuilder.resetMesh();
+	createMesh();
+}
+
+void Chunk::removeLocalBlock(const Block::Coordinate& localCoordinates)
+{
+	(*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z].setBlockType("Air");
+	rebuildChunk();
 }
 
 Block::Coordinate Chunk::globalToLocalCoordinates(const Block::Coordinate& globalPosition) const
@@ -123,10 +147,10 @@ const Block& Chunk::getLocalBlock(const Block::Coordinate& localCoordinates) con
 
 const Block& Chunk::getLocalBlock(const Block::Coordinate& localCoordinates, const Direction& direction) const
 {
-	return getLocalBlock(getBlockPosition(localCoordinates, direction));
+	return getLocalBlock(getLocalBlockPosition(localCoordinates, direction));
 }
 
-Block::Coordinate Chunk::getBlockPosition(const Block::Coordinate& position, const Direction& direction) const
+Block::Coordinate Chunk::getLocalBlockPosition(const Block::Coordinate& position, const Direction& direction) const
 {
 	switch (direction)
 	{
@@ -150,11 +174,31 @@ Block::Coordinate Chunk::localToGlobalCoordinates(const Block::Coordinate& posit
 	return mChunkPosition + position;
 }
 
+std::vector<Direction> Chunk::getCollidingChunkDirections(const Block::Coordinate& localCoordinates)
+{
+	std::vector<Direction> directions;
+
+	if (localCoordinates.x == BLOCKS_PER_DIMENSION - 1)
+		directions.emplace_back(Direction::ToTheRight);
+	if (localCoordinates.x == 0)
+		directions.emplace_back(Direction::ToTheLeft);
+	if (localCoordinates.y == BLOCKS_PER_DIMENSION - 1)
+		directions.emplace_back(Direction::Above);
+	if (localCoordinates.y == 0)
+		directions.emplace_back(Direction::Below);
+	if (localCoordinates.z == BLOCKS_PER_DIMENSION - 1)
+		directions.emplace_back(Direction::InFront);
+	if (localCoordinates.z == 0)
+		directions.emplace_back(Direction::Behind);
+
+	return directions;
+}
+
 bool Chunk::faceHasTransparentNeighbor(const Block::Face& face, const Block::Coordinate& blockPos)
 {
 	auto isBlockTransparent = [&blockPos, this](const Direction& face)
 	{
-		const auto blockNeighborPosition = getBlockPosition(blockPos, face);
+		const auto blockNeighborPosition = getLocalBlockPosition(blockPos, face);
 		if (areLocalCoordinatesInsideChunk(blockNeighborPosition))
 			return (getLocalBlock(blockNeighborPosition).isTransparent());
 
