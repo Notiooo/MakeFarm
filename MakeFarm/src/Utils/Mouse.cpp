@@ -12,7 +12,7 @@ void Mouse::lockMouseAtCenter(sf::Window& window)
 {
 	if (!isMouseLocked())
 	{
-		lockMouse = true;
+		lockedMouse = true;
 		window.setMouseCursorVisible(false);
 		centerMouse(window);
 	}
@@ -23,13 +23,13 @@ void Mouse::unlockMouse(sf::Window& window)
 	if (isMouseLocked())
 	{
 		window.setMouseCursorVisible(true);
-		lockMouse = false;
+		lockedMouse = false;
 	}
 }
 
 bool Mouse::isMouseLocked()
 {
-	return lockMouse;
+	return lockedMouse;
 }
 
 sf::Vector2i Mouse::getMouseOffset()
@@ -44,5 +44,30 @@ void Mouse::update(const float& deltaTime, const sf::Window& window)
 		const auto windowCenter = sf::Vector2i(window.getSize().x / 2.f, window.getSize().y / 2.f);
 		mouseOffset = sf::Mouse::getPosition(window) - windowCenter;
 		centerMouse(window);
+	}
+}
+
+void Mouse::handleFirstPersonBehaviour(const sf::Event& event, sf::RenderWindow& gameWindow)
+{
+	if (event.type == sf::Event::KeyPressed)
+	{
+		if (event.key.code == sf::Keyboard::Escape)
+			Mouse::unlockMouse(gameWindow);
+	}
+	else if (event.type == sf::Event::MouseButtonPressed)
+	{
+		if (event.key.code == sf::Mouse::Left)
+		{
+			#ifdef _DEBUG
+			if (!ImGui::IsWindowHovered(ImGuiFocusedFlags_AnyWindow) && !ImGui::IsAnyItemActive())
+			{
+				Mouse::lockMouseAtCenter(gameWindow);
+			}
+			#endif
+		}
+	}
+	else if (event.type == sf::Event::GainedFocus)
+	{
+		Mouse::lockMouseAtCenter(gameWindow);
 	}
 }

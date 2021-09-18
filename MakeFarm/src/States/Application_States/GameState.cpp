@@ -2,7 +2,7 @@
 #include "GameState.h"
 
 
-
+#include <filesystem>
 #include <iomanip>
 #include <sstream>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -10,6 +10,7 @@
 #include "States/StateStack.h"
 #include "Utils/Mouse.h"
 #include "Utils/Settings.h"
+#include "World/Block/BlockMap.h"
 
 GameState::GameState(StateStack& stack, sf::RenderWindow& window) :
 	State(stack),
@@ -22,6 +23,7 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window) :
 	Mouse::lockMouseAtCenter(gameWindow);
 	shader.loadFromFile("resources/Shaders/VertexShader.shader", "resources/Shaders/FragmentShader.shader");
 
+	GLCall(glEnable(GL_CULL_FACE));
 	GLCall(glEnable(GL_DEPTH_TEST));
 	GLCall(glEnable(GL_BLEND));
 	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
@@ -29,33 +31,16 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window) :
 	sf::Shader::bind(&shader);
 	shader.setUniform("u_ViewProjection", sf::Glsl::Mat4(sf::Transform::Identity));
 	sf::Shader::bind(nullptr);
-
-	testChunk.createChunk();
 	std::cout << "Texture pack loaded: " << gameSettings.get<std::string>("TexturePack") << std::endl;
+
+	auto test = BlockMap::getBlockMap();
 }
 
 
 bool GameState::handleEvent(const sf::Event& event)
 {
-	if (event.type == sf::Event::KeyPressed)
-	{
-		if (event.key.code == sf::Keyboard::Escape)
-			Mouse::unlockMouse(gameWindow);
-	}
-	else if (event.type == sf::Event::MouseButtonPressed)
-	{
-		if (event.key.code == sf::Mouse::Left)
-		{
-			if (!ImGui::IsWindowHovered(ImGuiFocusedFlags_AnyWindow) && !ImGui::IsAnyItemActive())
-			{
-				Mouse::lockMouseAtCenter(gameWindow);
-			}
-		}
-	}
-	else if (event.type == sf::Event::GainedFocus)
-	{
-		Mouse::lockMouseAtCenter(gameWindow);
-	}
+	Mouse::handleFirstPersonBehaviour(event, gameWindow);
+	gameCamera.handleEvent(event);
 
 	/*
 	 * Set this state to transparent -- in other words
@@ -87,6 +72,7 @@ void GameState::updateDebugMenu()
 {
 	if (ImGui::BeginMainMenuBar())
 	{
+
 		if (ImGui::BeginMenu("OpenGL"))
 		{
 			if (ImGui::MenuItem("Switch Wireframe (on/off)"))
@@ -98,6 +84,26 @@ void GameState::updateDebugMenu()
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				else
 					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("MakeFarm"))
+		{
+			if(ImGui::BeginMenu("Texture Packs"))
+			{
+				for (auto const& texturePackDir : std::filesystem::directory_iterator{ "resources/Textures" })
+				{
+					if (texturePackDir.is_directory())
+					{
+						auto texturePackFolder = texturePackDir.path().filename().string();
+						if (ImGui::MenuItem(texturePackFolder.c_str()))
+						{
+							texturePack.loadTexturePack(texturePackFolder);
+						}
+					}
+				}
+				ImGui::EndMenu();
 			}
 			ImGui::EndMenu();
 		}

@@ -9,7 +9,7 @@ ChunkMeshBuilder::ChunkMeshBuilder(const Chunk& chunk)
 }
 
 void ChunkMeshBuilder::addQuad(const Block::Face& blockFace, const std::vector<GLfloat>& textureQuad,
-	const sf::Vector3i& blockPosition)
+	const Block::Coordinate& blockPosition)
 {
 	auto& vertices = chunkMesh.vertices;
 	auto& texCoords = chunkMesh.textureCoordinates;
@@ -18,14 +18,15 @@ void ChunkMeshBuilder::addQuad(const Block::Face& blockFace, const std::vector<G
 	texCoords.insert(texCoords.end(), textureQuad.begin(), textureQuad.end());
 	
 	auto face = getFaceVertices(blockFace);
-	const auto& chunkPos = chunk.position;
+	const auto& chunkPos = chunk.mChunkPosition.getNonBlockMetric();
+	const auto& blockPos = blockPosition.getNonBlockMetric();
 	
 	for(int i = 0; i < 3 * 4; i += 3)
 	{
 		// a row in given face (x,y,z)
-		vertices.emplace_back(face[i]   * Block::BLOCK_SIZE + chunkPos.x + blockPosition.x * Block::BLOCK_SIZE);
-		vertices.emplace_back(face[i+1] * Block::BLOCK_SIZE + chunkPos.y + blockPosition.y * Block::BLOCK_SIZE);
-		vertices.emplace_back(face[i+2] * Block::BLOCK_SIZE + chunkPos.z + blockPosition.z * Block::BLOCK_SIZE);
+		vertices.emplace_back(face[i]   * Block::BLOCK_SIZE + chunkPos.x + blockPos.x);
+		vertices.emplace_back(face[i+1] * Block::BLOCK_SIZE + chunkPos.y + blockPos.y);
+		vertices.emplace_back(face[i+2] * Block::BLOCK_SIZE + chunkPos.z + blockPos.z);
 	}
 
 	indices.insert(indices.end(),
@@ -88,7 +89,7 @@ std::vector<GLfloat> ChunkMeshBuilder::getFaceVertices(const Block::Face& blockF
 			0, 0, 1
 		};
 
-	case Block::Face::Forward:
+	case Block::Face::Front:
 		return
 		{
 			0, 0, 1, // front left bottom

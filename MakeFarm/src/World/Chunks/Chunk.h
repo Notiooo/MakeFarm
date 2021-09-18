@@ -7,6 +7,8 @@
 #include "Renderer3D/Renderer3D.h"
 #include "Utils/MultiDimensionalArray.h"
 
+class ChunkContainer;
+
 enum class Direction
 {
 	Above,
@@ -21,35 +23,51 @@ class Chunk
 {
 	friend class ChunkMeshBuilder;
 public:
-	Chunk(const TexturePack& texturePack);
-	static const int BLOCKS_PER_DIMENSION = 16;
-	static const int BLOCKS_PER_WALL = BLOCKS_PER_DIMENSION * BLOCKS_PER_DIMENSION;
-	static const int BLOCKS_IN_CHUNK = BLOCKS_PER_WALL * BLOCKS_PER_DIMENSION;
-	
-	static const int CHUNK_WALL_SIZE = BLOCKS_PER_WALL * Block::BLOCK_SIZE;
-	static const int CHUNK_AREA_SIZE = 6 * CHUNK_WALL_SIZE;
-	static const int CHUNK_VOLUME_SIZE = CHUNK_WALL_SIZE * CHUNK_WALL_SIZE * CHUNK_WALL_SIZE;
+	Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, const ChunkContainer& parent);
+	Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack);
 
-	void createCube(const sf::Vector3i& position);
-	void createChunk();
+	Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack, const ChunkContainer& parent);
+	Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack);
+
+	Chunk(Chunk&& rhs) noexcept;
+
+	static constexpr unsigned BLOCKS_PER_DIMENSION = 16;
+	static constexpr unsigned BLOCKS_PER_WALL	   = BLOCKS_PER_DIMENSION * BLOCKS_PER_DIMENSION;
+	static constexpr unsigned BLOCKS_IN_CHUNK	   = BLOCKS_PER_WALL * BLOCKS_PER_DIMENSION;
+
+	static constexpr unsigned CHUNK_WALL_SIZE	   = BLOCKS_PER_DIMENSION * Block::BLOCK_SIZE;
+	static constexpr unsigned CHUNK_AREA_SIZE	   = 6 * CHUNK_WALL_SIZE;
+
+	void createMesh();
 	void update(const float& deltaTime);
 	void draw(const Renderer3D& renderer3d, const sf::Shader& shader) const;
 
-	Block& getBlock(const sf::Vector3i& position) const;
-	bool isPositionInsideChunk(const sf::Vector3i& position) const;
-	Block& getBlock(const sf::Vector3i& position, const Direction& direction) const;
-	sf::Vector3i getBlockPosition(const sf::Vector3i& position, const Direction& direction) const;
+	Block& getLocalBlock(const Block::Coordinate& position);
 
+	[[nodiscard]] const Block& getLocalBlock(const Block::Coordinate& localCoordinates) const;
+
+	[[nodiscard]] Block::Coordinate globalToLocalCoordinates(const Block::Coordinate& globalPosition) const;
+	[[nodiscard]] Block::Coordinate localToGlobalCoordinates(const Block::Coordinate& position) const;
+
+	[[nodiscard]] bool areLocalCoordinatesInsideChunk(const Block::Coordinate& localCoordinates) const;
+
+protected:
+	[[nodiscard]] bool belongsToContainer() const;
+	[[nodiscard]] Block& getLocalBlock(const Block::Coordinate& position, const Direction& direction);
+	[[nodiscard]] const Block& getLocalBlock(const Block::Coordinate& localCoordinates, const Direction& direction) const;
+	[[nodiscard]] Block::Coordinate getBlockPosition(const Block::Coordinate& position, const Direction& direction) const;
 
 private:
-	bool faceHasNeighbor(Block::Face face, const sf::Vector3i& blockPos);
+	[[nodiscard]] bool faceHasTransparentNeighbor(const Block::Face& face, const Block::Coordinate& blockPos);
+	void createBlockMesh(const Block::Coordinate& pos);
 	
 private:
-	sf::Vector3i position = {0, 0, 0};
-	const TexturePack& texturePack;
-	ChunkMeshBuilder meshBuilder;
-	MultiDimensionalArray<std::unique_ptr<Block>,
-		BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION> chunkOfBlocks;
-	
-	Model3D model;
+	Block::Coordinate mChunkPosition;
+	const TexturePack& mTexturePack;
+	const ChunkContainer* mParentContainer = nullptr;
+	ChunkMeshBuilder mMeshBuilder;
+	Model3D mModel;
+
+	std::unique_ptr<MultiDimensionalArray<Block, BLOCKS_PER_DIMENSION,
+		BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION>> mChunkOfBlocks;
 };

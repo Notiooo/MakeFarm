@@ -5,9 +5,6 @@
 
 /**
  * \brief A class to read game settings
- *
- * At this point it has been implemented as a singleton,
- * which should change at a later stage of production.
  */
 class Settings : sf::NonCopyable
 {
@@ -15,36 +12,36 @@ public:
 	Settings() = default;
 	Settings(const std::string& fileName);
 	
-	void setFile(const std::string& fileName);
+	void openFile(const std::string& fileName);
+	void closeFile();
 
 	template <typename T>
-	T get(const std::string& settingName);
+	T get(const std::string& settingName) const;
+
+	bool isPresent(const std::string& settingName) const;
 
 	template <typename T>
 	void set(const std::string& settingName, const T& value);
 
 private:
 	std::string settingsFilename;
+	mutable std::ifstream settingsFile;
 
 	template <typename T>
-	T parseResult(const std::string& settingResult);
+	T parseResult(const std::string& settingResult) const;
 };
 
 
-/*
- * Not very efficient piece of code
- * Code that must be changed at a later stage of production.
- * It separates the relevant parts of the configuration
- *
- * The biggest drawback so far is opening the file over and over again
- */
 template <typename T>
-T Settings::get(const std::string& settingName)
+T Settings::get(const std::string& settingName) const
 {
 	if (settingsFilename.empty())
-		throw std::logic_error("Trying to get content of file of unknown name");
-	
-	std::ifstream settingsFile(settingsFilename);
+		throw std::logic_error("Trying to get content of file of unknown/closed file");
+
+	// It set up fstream to be possible to read it again
+	settingsFile.clear();
+	settingsFile.seekg(0);
+
 	std::string fileLine;
 	while(std::getline(settingsFile, fileLine))
 	{
@@ -77,13 +74,16 @@ T Settings::get(const std::string& settingName)
 template <typename T>
 void Settings::set(const std::string& settingName, const T& value)
 {
+	if (settingsFilename.empty())
+		throw std::logic_error("Trying to get content of file of unknown/closed file");
+
 	// Check if the setting is present there
 	std::ofstream settingsFileWrite("temp-" + settingsFilename);
-	std::ifstream settingsFileRead(settingsFilename);
+
 	bool found = false;
 
 	std::string fileLine;
-	while (std::getline(settingsFileRead, fileLine))
+	while (std::getline(settingsFile, fileLine))
 	{
 		if(fileLine.rfind(settingName, 0) == 0)
 		{
@@ -102,38 +102,68 @@ void Settings::set(const std::string& settingName, const T& value)
 	}
 	
 	settingsFileWrite.close();
-	settingsFileRead.close();
+	closeFile();
 
 	std::remove(settingsFilename.c_str());
 	std::rename(("temp-" + settingsFilename).c_str(), settingsFilename.c_str());
+
+	openFile(settingsFilename);
 }
 
 template <typename T>
-T Settings::parseResult(const std::string& settingResult)
+T Settings::parseResult(const std::string& settingResult) const
 {
 	throw std::logic_error("Unknown setting type for: " + settingResult + "!");
 }
 
 template <>
-inline int Settings::parseResult(const std::string & settingResult)
+inline int Settings::parseResult(const std::string & settingResult) const
 {
 	return std::stoi(settingResult);
 }
 
 template <>
-inline float Settings::parseResult(const std::string& settingResult)
+inline unsigned Settings::parseResult(const std::string& settingResult) const
+{
+	return std::stoul(settingResult);
+}
+
+template <>
+inline float Settings::parseResult(const std::string& settingResult) const
 {
 	return std::stof(settingResult);
 }
 
 template <>
-inline double Settings::parseResult(const std::string& settingResult)
+inline double Settings::parseResult(const std::string& settingResult) const
 {
 	return std::stod(settingResult);
 }
 
 template <>
-inline std::string Settings::parseResult(const std::string& settingResult)
+inline bool Settings::parseResult(const std::string& settingResult) const
+{
+	if (std::isdigit(settingResult[0]))
+	{
+		return (settingResult == "0" ? false : true);
+	}
+	else
+	{
+		auto basicString = std::string();
+		std::transform(settingResult.cbegin(), settingResult.cend(), 
+			std::back_insert_iterator<std::string>(basicString), 
+			[](const auto& character) { return std::tolower(character); });
+		if (basicString == "true")
+			return true;
+		if (basicString == "false")
+			return false;
+
+		throw std::logic_error("Wrong boolean provided: " + settingResult);
+	}
+}
+
+template <>
+inline std::string Settings::parseResult(const std::string& settingResult) const
 {
 	return settingResult;
 }

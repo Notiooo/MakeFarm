@@ -20,16 +20,18 @@ private:
     const sf::RenderTarget& renderTarget;
     sf::Shader& shader;
 
-    glm::vec3 cameraPos = glm::vec3(0, 0, -200);
+    glm::vec3 cameraPosition = glm::vec3(0, 0, 0);
     glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 direction;
+
     float yaw = -90.f;
     float pitch = 0.f;
-    glm::vec3 direction;
-    float cameraSpeed = 400.f;
+
+    float cameraSpeed = 5.f;
     float cameraSensitivity = 4.f;
     float fovCamera = 90.0f;
 
-    glm::mat4 view;
-    mutable glm::mat4 proj;
+    glm::mat4 viewMatrix;
+    mutable glm::mat4 projectionMatrix;
 };

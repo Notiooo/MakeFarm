@@ -1,66 +1,99 @@
 #include "pch.h"
 #include "Chunk.h"
 
+#include "ChunkContainer.h"
 #include "ChunkMeshBuilder.h"
+#include "World/Block/BlockType.h"
 
-Chunk::Chunk(const TexturePack& texturePack)
-	: texturePack(texturePack)
-	, meshBuilder(*this)
+Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, const ChunkContainer& parent)
+	: Chunk(Block::Coordinate::nonBlockToBlockMetric(pixelPosition), texturePack, parent)
+{
+
+}
+
+Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack)
+	: Chunk(Block::Coordinate::nonBlockToBlockMetric(pixelPosition), texturePack)
+{
+}
+
+Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack, const ChunkContainer& parent)
+	: Chunk(blockPosition, texturePack)
+{
+	mParentContainer = &parent;
+}
+
+Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack)
+	: mChunkPosition(std::move(blockPosition))
+	, mTexturePack(texturePack)
+	, mMeshBuilder(*this)
+	, mChunkOfBlocks(std::make_unique<MultiDimensionalArray<Block, 
+		BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION>>())
 {
 	for (auto x = 0; x < BLOCKS_PER_DIMENSION; ++x)
 	for (auto y = 0; y < BLOCKS_PER_DIMENSION; ++y)
 	for (auto z = 0; z < BLOCKS_PER_DIMENSION; ++z)
 	{
-		chunkOfBlocks[x][y][z] = std::make_unique<Block>(texturePack);
+		// for test purposes
+		if (y == BLOCKS_PER_DIMENSION - 1)
+			(*mChunkOfBlocks)[x][y][z].setBlockType("Grass");
+		else if (y > BLOCKS_PER_DIMENSION - 5)
+			(*mChunkOfBlocks)[x][y][z].setBlockType("Dirt");
+		else
+			(*mChunkOfBlocks)[x][y][z].setBlockType("Stone");
+
 	}
 }
 
-void Chunk::createCube(const sf::Vector3i& pos)
+Chunk::Chunk(Chunk&& rhs) noexcept
+	: mChunkPosition(std::move(rhs.mChunkPosition))
+	, mTexturePack(rhs.mTexturePack)
+	, mParentContainer(std::move(rhs.mParentContainer))
+	, mMeshBuilder(*this) // new one
+	, mChunkOfBlocks(std::move(rhs.mChunkOfBlocks))
+	, mModel(std::move(rhs.mModel))
 {
-    //chunkOfBlocks[pos.x][pos.y][pos.z]->generateCube(pos.x, pos.y, pos.z);
+	rhs.mParentContainer = nullptr;
+}
 
-	auto& block = getBlock(pos);
+void Chunk::createBlockMesh(const Block::Coordinate& pos)
+{
+	auto& block = getLocalBlock(pos);
 
-	for(int i = 0; i < static_cast<int>(Block::Face::Counter); ++i)
+	for(auto i = 0; i < static_cast<int>(Block::Face::Counter); ++i)
 	{
-		if(!faceHasNeighbor(static_cast<Block::Face>(i), pos))
+		if(faceHasTransparentNeighbor(static_cast<Block::Face>(i), pos))
 		{
-			meshBuilder.addQuad(static_cast<Block::Face>(i), 
-				texturePack.getNormalizedCoordinates(block.getBlockTexture()), pos);
+			mMeshBuilder.addQuad(static_cast<Block::Face>(i), 
+				mTexturePack.getNormalizedCoordinates(block.getBlockTextureId(static_cast<Block::Face>(i))), pos);
 		}
 	}
 	
 }
 
-void Chunk::createChunk()
-{	
+void Chunk::createMesh()
+{
 	for (auto x = 0; x < BLOCKS_PER_DIMENSION; ++x)
 	for (auto y = 0; y < BLOCKS_PER_DIMENSION; ++y)
 	for (auto z = 0; z < BLOCKS_PER_DIMENSION; ++z)
 	{
-		if (getBlock({x, y, z}).getBlockTexture() == TextureSheet::Air)
+		if (getLocalBlock({x, y, z}).getBlockId() == "Air")
 			continue;
 
-		createCube({ x, y, z });
+		createBlockMesh({ x, y, z });
 	}
 	
-	model.setMesh(meshBuilder.getMesh3D());
+	mModel.setMesh(mMeshBuilder.getMesh3D());
 }
 
 void Chunk::update(const float& deltaTime)
 {
 }
 
-Block& Chunk::getBlock(const sf::Vector3i& position) const
+bool Chunk::areLocalCoordinatesInsideChunk(const Block::Coordinate& localCoordinates) const
 {
-	return *chunkOfBlocks[position.x][position.y][position.z];
-}
-
-bool Chunk::isPositionInsideChunk(const sf::Vector3i& position) const
-{
-	if( position.x < BLOCKS_PER_DIMENSION && position.x >= 0 &&
-		position.y < BLOCKS_PER_DIMENSION && position.y >= 0 &&
-		position.z < BLOCKS_PER_DIMENSION && position.z >= 0)
+	if( localCoordinates.x < BLOCKS_PER_DIMENSION && localCoordinates.x >= 0 &&
+		localCoordinates.y < BLOCKS_PER_DIMENSION && localCoordinates.y >= 0 &&
+		localCoordinates.z < BLOCKS_PER_DIMENSION && localCoordinates.z >= 0)
 	{
 		return true;
 	}
@@ -68,12 +101,32 @@ bool Chunk::isPositionInsideChunk(const sf::Vector3i& position) const
 	return false;
 }
 
-Block& Chunk::getBlock(const sf::Vector3i& position, const Direction& direction) const
+Block::Coordinate Chunk::globalToLocalCoordinates(const Block::Coordinate& globalPosition) const
 {
-	return getBlock(getBlockPosition(position, direction));
+	return globalPosition - mChunkPosition;
 }
 
-sf::Vector3i Chunk::getBlockPosition(const sf::Vector3i& position, const Direction& direction) const
+Block& Chunk::getLocalBlock(const Block::Coordinate& position)
+{
+	return const_cast<Block&>(static_cast<const Chunk&>(*this).getLocalBlock(position));
+}
+
+Block& Chunk::getLocalBlock(const Block::Coordinate& position, const Direction& direction)
+{
+	return const_cast<Block&>(static_cast<const Chunk&>(*this).getLocalBlock(position, direction));
+}
+
+const Block& Chunk::getLocalBlock(const Block::Coordinate& localCoordinates) const
+{
+	return (*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z];
+}
+
+const Block& Chunk::getLocalBlock(const Block::Coordinate& localCoordinates, const Direction& direction) const
+{
+	return getLocalBlock(getBlockPosition(localCoordinates, direction));
+}
+
+Block::Coordinate Chunk::getBlockPosition(const Block::Coordinate& position, const Direction& direction) const
 {
 	switch (direction)
 	{
@@ -92,36 +145,55 @@ sf::Vector3i Chunk::getBlockPosition(const sf::Vector3i& position, const Directi
 	}
 }
 
-bool Chunk::faceHasNeighbor(Block::Face face, const sf::Vector3i& blockPos)
+Block::Coordinate Chunk::localToGlobalCoordinates(const Block::Coordinate& position) const
 {
-	auto getBlockType = [&blockPos, this](const Direction& face)
+	return mChunkPosition + position;
+}
+
+bool Chunk::faceHasTransparentNeighbor(const Block::Face& face, const Block::Coordinate& blockPos)
+{
+	auto isBlockTransparent = [&blockPos, this](const Direction& face)
 	{
 		const auto blockNeighborPosition = getBlockPosition(blockPos, face);
-		if (!isPositionInsideChunk(blockNeighborPosition))
-			return TextureSheet::Air;
-		return (getBlock(blockNeighborPosition).getBlockTexture());
+		if (areLocalCoordinatesInsideChunk(blockNeighborPosition))
+			return (getLocalBlock(blockNeighborPosition).isTransparent());
+
+		if (belongsToContainer())
+		{
+			if (const auto& neighborBlock = mParentContainer->getWorldBlock(
+											localToGlobalCoordinates(blockNeighborPosition)))
+			{
+				return neighborBlock->isTransparent();
+			}
+		}
+
+		return true;
 	};
 	
 	switch(face)
 	{
 	case Block::Face::Top:
-		return (getBlockType(Direction::Above) != TextureSheet::Air);
+		return (isBlockTransparent(Direction::Above));
 	case Block::Face::Left:
-		return (getBlockType(Direction::ToTheLeft) != TextureSheet::Air);
+		return (isBlockTransparent(Direction::ToTheLeft));
 	case Block::Face::Right:
-		return (getBlockType(Direction::ToTheRight) != TextureSheet::Air);
+		return (isBlockTransparent(Direction::ToTheRight));
 	case Block::Face::Bottom:
-		return (getBlockType(Direction::Below) != TextureSheet::Air);
-	case Block::Face::Forward:
-		return (getBlockType(Direction::InFront) != TextureSheet::Air);
+		return (isBlockTransparent(Direction::Below));
+	case Block::Face::Front:
+		return (isBlockTransparent(Direction::InFront));
 	case Block::Face::Back:
-		return (getBlockType(Direction::Behind) != TextureSheet::Air);
+		return (isBlockTransparent(Direction::Behind));
 	}
 	
 }
 
+bool Chunk::belongsToContainer() const
+{
+	return (mParentContainer != nullptr);
+}
+
 void Chunk::draw(const Renderer3D& renderer3d, const sf::Shader& shader) const
 {
-	texturePack.bind();
-	model.draw(renderer3d, shader);
+	mModel.draw(renderer3d, shader);
 }

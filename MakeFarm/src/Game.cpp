@@ -62,12 +62,6 @@ void Game::run()
 	while (isGameRunning)
 	{
 		frameTimeElapsed += clock.restart();
-
-		#ifdef _DEBUG
-		ImGui::SFML::Update(*gameWindow, frameTimeElapsed);
-		#endif
-
-		update();
 		
 		while (frameTimeElapsed > TIME_PER_FRAME)
 		{
@@ -76,6 +70,12 @@ void Game::run()
 			processEvents();
 			fixedUpdate(TIME_PER_FRAME);
 		}
+
+		#ifdef _DEBUG
+		ImGui::SFML::Update(*gameWindow, frameTimeElapsed);
+		#endif
+		update();
+
 		render();
 	}
 

@@ -11,9 +11,12 @@ public:
 
 	static bool isMouseLocked();
 	static sf::Vector2i getMouseOffset();
+
 	static void update(const float& deltaTime, const sf::Window& window);
 
+	static void handleFirstPersonBehaviour(const sf::Event& event, sf::RenderWindow& gameWindow);
+
 private:
-	static inline bool lockMouse = false;
+	static inline bool lockedMouse = false;
 	inline static sf::Vector2i mouseOffset;
 };

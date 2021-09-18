@@ -1,5 +1,4 @@
 #pragma once
-#include "Resources/TextureSheet.h"
 #include "Utils/Settings.h"
 
 class TexturePack : public sf::NonCopyable
@@ -10,9 +9,8 @@ public:
 
 	void loadTexturePack(const std::string& texturePackFolder);
 	void bind() const;
-	
-	std::vector<GLfloat> getNormalizedCoordinates(const TextureSheet& block) const;
-	sf::IntRect getTextureIntRect(const TextureSheet& block) const;
+
+	std::vector<GLfloat> getNormalizedCoordinates(int textureId) const;
 
 private:
 	sf::Texture textures;

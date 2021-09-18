@@ -3,12 +3,12 @@
 
 #include <SFML/Graphics/Shader.hpp>
 
-
 #include "Renderer3D/Renderer3D.h"
 #include "States/State.h"
 #include "Utils/Settings.h"
 #include "World/Camera.h"
 #include "World/Chunks/Chunk.h"
+#include "World/Chunks/ChunkContainer.h"
 
 class StateStack;
 
@@ -51,7 +51,7 @@ private:
 	Renderer3D gameRenderer;
 
 	TexturePack texturePack;
-	Chunk testChunk;
+	ChunkContainer testChunk;
 	Settings gameSettings;
 };
 

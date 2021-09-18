@@ -12,6 +12,8 @@ class Model3D
 public:
 
 	Model3D();
+
+	Model3D(Model3D&&) noexcept = default;
 	
 	/**
 	 * \brief This function expects that mesh data
