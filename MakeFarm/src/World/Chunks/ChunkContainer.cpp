@@ -10,29 +10,29 @@ ChunkContainer::ChunkContainer(const TexturePack& texturePack)
 
 	addChunk({ 0, 0, 0 });
 
-	addChunk({ 0, 0, Chunk::BLOCKS_PER_DIMENSION });
-	addChunk({ 0, Chunk::BLOCKS_PER_DIMENSION, 0 });
-	addChunk({ Chunk::BLOCKS_PER_DIMENSION, 0, 0 });
+	addChunk({ 0, 0, 1 });
+	addChunk({ 0, 1, 0 });
+	addChunk({ 1, 0, 0 });
 
-	addChunk({ Chunk::BLOCKS_PER_DIMENSION, Chunk::BLOCKS_PER_DIMENSION, 0 });
-	addChunk({ Chunk::BLOCKS_PER_DIMENSION, 0, Chunk::BLOCKS_PER_DIMENSION });
-	//addChunk({ 0, Chunk::BLOCKS_IN_CHUNK, Chunk::BLOCKS_IN_CHUNK });
+	addChunk({ 1, 1, 0 });
+	addChunk({ 1, 0, 1 });
 
-	addChunk({ Chunk::BLOCKS_PER_DIMENSION, Chunk::BLOCKS_PER_DIMENSION, Chunk::BLOCKS_PER_DIMENSION });
+	addChunk({ 1, 1, 1 });
+	addChunk({ 1, 1, 2 });
+	
 
 	//=========
 
-	addChunk({ 0, 0, -Chunk::BLOCKS_PER_DIMENSION });
-	addChunk({ 0, -Chunk::BLOCKS_PER_DIMENSION, 0 });
-	addChunk({ -Chunk::BLOCKS_PER_DIMENSION, 0, 0 });
+	addChunk({ 0, 0, -1 });
+	addChunk({ 0, -1, 0 });
+	addChunk({ -1, 0, 0 });
 
-	addChunk({ -Chunk::BLOCKS_PER_DIMENSION, -Chunk::BLOCKS_PER_DIMENSION, 0 });
-	addChunk({ -Chunk::BLOCKS_PER_DIMENSION, 0, -Chunk::BLOCKS_PER_DIMENSION });
-	//addChunk({ 0, Chunk::BLOCKS_IN_CHUNK, Chunk::BLOCKS_IN_CHUNK });
+	addChunk({ -1, -1, 0 });
+	addChunk({ -1, 0, -1 });
 
-	addChunk({ -Chunk::BLOCKS_PER_DIMENSION, -Chunk::BLOCKS_PER_DIMENSION, -Chunk::BLOCKS_PER_DIMENSION });
+	addChunk({ -1, -1, -1 });
 
-	for(auto& chunk : chunks)
+	for(auto& [coordinate, chunk] : chunks)
 	{
 		chunk.createMesh();
 	}
@@ -41,8 +41,17 @@ ChunkContainer::ChunkContainer(const TexturePack& texturePack)
 void ChunkContainer::draw(const Renderer3D& renderer3D, const sf::Shader& shader) const
 {
 	texturePack.bind();
-	for (auto& chunk : chunks)
+	for (auto& [coordinate, chunk] : chunks)
 		chunk.draw(renderer3D, shader);
+}
+
+sf::Vector3i ChunkContainer::Coordinate::getNonChunkMetric() const
+{
+	return sf::Vector3i(
+		x * Chunk::CHUNK_WALL_SIZE,
+		y * Chunk::CHUNK_WALL_SIZE,
+		z * Chunk::CHUNK_WALL_SIZE
+		);
 }
 
 const Block* ChunkContainer::getWorldBlock(const Block::Coordinate& worldBlockCoordinates) const
@@ -56,12 +65,10 @@ const Block* ChunkContainer::getWorldBlock(const Block::Coordinate& worldBlockCo
 
 const Chunk* ChunkContainer::blockPositionToChunk(const Block::Coordinate& worldBlockCoordinates) const
 {
-	for (auto& chunk : chunks)
+	const auto foundChunk = chunks.find(ChunkContainer::Coordinate::blockToChunkMetric(worldBlockCoordinates));
+	if(foundChunk != chunks.cend())
 	{
-		if (Chunk::areLocalCoordinatesInsideChunk(chunk.globalToLocalCoordinates(worldBlockCoordinates)))
-		{
-			return &chunk;
-		}
+		return &foundChunk->second;
 	}
 	return nullptr;
 }
@@ -92,7 +99,8 @@ void ChunkContainer::removeWorldBlock(const Block::Coordinate& worldBlockCoordin
 	}
 }
 
-void ChunkContainer::addChunk(Block::Coordinate chunkPosition)
+void ChunkContainer::addChunk(ChunkContainer::Coordinate chunkPosition)
 {
-	chunks.emplace_back(std::move(chunkPosition), texturePack, *this);
+	chunks.emplace(chunkPosition, 
+		Chunk(sf::Vector3i(chunkPosition.getNonChunkMetric()), texturePack, *this));
 }

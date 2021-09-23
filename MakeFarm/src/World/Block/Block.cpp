@@ -4,57 +4,14 @@
 #include "BlockMap.h"
 #include "Renderer3D/BufferLayout.h"
 
-Block::Coordinate::Coordinate(IntegerUnit x, IntegerUnit y, IntegerUnit z)
-	: mBlockCoordinates({x, y, z})
+Block::Coordinate Block::Coordinate::operator-(const CoordinateBase& rhs) const
 {
+	return static_cast<Block::Coordinate>(CoordinateBase::operator-(rhs));
 }
 
-Block::Coordinate::Coordinate(const sf::Vector3i& blockCoordinates)
-	: mBlockCoordinates(blockCoordinates)
+Block::Coordinate Block::Coordinate::operator+(const CoordinateBase& rhs) const
 {
-
-}
-
-Block::Coordinate::Coordinate(Coordinate&& rhs) noexcept
-	: mBlockCoordinates(std::move(rhs.mBlockCoordinates))
-	, x(mBlockCoordinates.x)
-	, y(mBlockCoordinates.y)
-	, z(mBlockCoordinates.z)
-{
-}
-
-Block::Coordinate::Coordinate(const Coordinate& rhs) noexcept
-	: mBlockCoordinates(rhs.mBlockCoordinates)
-	, x(mBlockCoordinates.x)
-	, y(mBlockCoordinates.y)
-	, z(mBlockCoordinates.z)
-{
-}
-
-Block::Coordinate& Block::Coordinate::operator=(const Coordinate& rhs)
-{
-	mBlockCoordinates = rhs.mBlockCoordinates;
-	return *this;
-}
-
-Block::Coordinate Block::Coordinate::operator-(const Coordinate& rhs) const
-{
-	return mBlockCoordinates - rhs.mBlockCoordinates;
-}
-
-Block::Coordinate Block::Coordinate::operator+(const Coordinate& rhs) const
-{
-	return mBlockCoordinates + rhs.mBlockCoordinates;
-}
-
-bool Block::Coordinate::operator==(const Coordinate& rhs) const
-{
-	return mBlockCoordinates == rhs.mBlockCoordinates;
-}
-
-bool Block::Coordinate::operator!=(const Coordinate& rhs) const
-{
-	return !(operator==(rhs));
+	return static_cast<Block::Coordinate>(CoordinateBase::operator+(rhs));
 }
 
 sf::Vector3<Block::SizeType> Block::Coordinate::getNonBlockMetric() const

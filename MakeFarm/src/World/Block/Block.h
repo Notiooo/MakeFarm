@@ -4,6 +4,8 @@
 #include "Resources/TexturePack.h"
 #include <cassert>
 
+#include "Utils/CoordinateBase.h"
+
 class BlockType;
 
 class Block
@@ -49,24 +51,12 @@ public:
 	 * It is useful to distinguish this unit from the usual spatial unit
 	 * where the block is at position {0, 4 * Block::BLOCK_SIZE, 0}.
 	 */
-	struct Coordinate
+	struct Coordinate : public CoordinateBase
 	{
-		using IntegerUnit = int;
 
-		Coordinate(IntegerUnit x, IntegerUnit y, IntegerUnit z);
-		Coordinate(const sf::Vector3i& blockCoordinates);
-
-		Coordinate(Coordinate&&) noexcept;
-		Coordinate(const Coordinate&) noexcept;
-
-		operator sf::Vector3<IntegerUnit>() const { return mBlockCoordinates; }
-
-		Coordinate& operator=(const Coordinate& rhs);
-		Coordinate operator-(const Coordinate& rhs) const;
-		Coordinate operator+(const Coordinate& rhs) const;
-		bool operator==(const Coordinate& rhs) const;
-		bool operator!=(const Coordinate& rhs) const;
-
+		using CoordinateBase::CoordinateBase;
+		Coordinate operator-(const CoordinateBase& rhs) const;
+		Coordinate operator+(const CoordinateBase& rhs) const;
 
 		/**
 		 * \brief Converts the current position of a block to its positional equivalent in space.
@@ -88,15 +78,6 @@ public:
 				static_cast<SizeType>(nonBlockVector.z) / BLOCK_SIZE
 			);
 		};
-
-
-	private:
-		sf::Vector3<IntegerUnit> mBlockCoordinates;
-
-	public:
-		IntegerUnit& x = mBlockCoordinates.x;
-		IntegerUnit& y = mBlockCoordinates.y;
-		IntegerUnit& z = mBlockCoordinates.z;
 	};
 
 	enum class Face

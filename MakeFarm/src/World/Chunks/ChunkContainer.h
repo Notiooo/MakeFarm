@@ -18,12 +18,44 @@
  * In some cases, also need to pay attention to performance.
  * Therefore, this will be done at a later stage.
  */
-
 class ChunkContainer
 {
 public:
 	ChunkContainer(const TexturePack& texturePack);
 	void draw(const Renderer3D& renderer3D, const sf::Shader& shader) const;
+
+	struct Coordinate final : public CoordinateBase
+	{
+
+		using CoordinateBase::CoordinateBase;
+
+		[[nodiscard]] sf::Vector3i getNonChunkMetric() const;
+
+		static ChunkContainer::Coordinate blockToChunkMetric(const Block::Coordinate& worldBlockCoordinate)
+		{
+
+			static auto fastFloor = [](const float& numberToFloor)
+			{
+				const auto truncated = static_cast<int>(numberToFloor);
+				return truncated - (truncated > numberToFloor);
+			};
+
+			auto returnVar = ChunkContainer::Coordinate(
+				fastFloor(worldBlockCoordinate.x / static_cast<float>(Chunk::BLOCKS_PER_DIMENSION)),
+				fastFloor(worldBlockCoordinate.y / static_cast<float>(Chunk::BLOCKS_PER_DIMENSION)),
+				fastFloor(worldBlockCoordinate.z / static_cast<float>(Chunk::BLOCKS_PER_DIMENSION))
+			);
+
+			// Here there is a huge problem with a certain "edge case". Let's consider a couple of cases:
+			// worldBlockCoordinate = {0, -16, 0} -> result: {0, -1, 0}
+			// worldBlockCoordinate = {0, -1,  0} -> result: {0, -1, 0}
+			// worldBlockCoordinate = {0,  0,  0} -> result: {0,  0, 0}
+			// worldBlockCoordinate = {0,  15, 0} -> result: {0,  0, 0}
+			// worldBlockCoordinate = {0,  16, 0} -> result: {0,  1, 0}
+
+			return returnVar;
+		}
+	};
 
 	/**
 	 * \brief Finds a block inside a container based on the global position of the block
@@ -34,11 +66,11 @@ public:
 	void removeWorldBlock(const Block::Coordinate& worldBlockCoordinates);
 
 private:
-	void addChunk(Block::Coordinate chunkPosition);
+	void addChunk(ChunkContainer::Coordinate chunkPosition);
 	[[nodiscard]] const Chunk* blockPositionToChunk(const Block::Coordinate& worldBlockCoordinates) const;
 	Chunk* blockPositionToChunk(const Block::Coordinate& worldBlockCoordinates);
 
 private:
-	std::vector<Chunk> chunks;
+	std::unordered_map<ChunkContainer::Coordinate, Chunk, std::hash<CoordinateBase>> chunks;
 	const TexturePack& texturePack;
 };
