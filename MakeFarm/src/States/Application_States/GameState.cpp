@@ -74,6 +74,10 @@ bool GameState::fixedUpdate(const float& deltaTime)
 
 	gameCamera.fixedUpdate(deltaTime);
 	mSelectedBlock.markFacedBlock(gameCamera, testChunk);
+
+	testChunk.fixedUpdate(deltaTime);
+	testChunk.generateChunksAround(gameCamera);
+	testChunk.clearFarAwayChunks(gameCamera);
 	
 	/*
 	 * Set this state to transparent -- in other words

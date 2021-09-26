@@ -134,3 +134,8 @@ glm::mat4 Camera::getProjection()
     return projectionMatrix;
 }
 
+glm::vec3 Camera::getCameraPosition() const
+{
+    return cameraPosition;
+}
+

@@ -2,6 +2,8 @@
 #include "World/Camera.h"
 
 
+class Renderer3D;
+class Model3D;
 class ChunkContainer;
 
 

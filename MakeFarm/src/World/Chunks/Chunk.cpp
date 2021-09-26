@@ -1,11 +1,14 @@
 #include "pch.h"
 #include "Chunk.h"
 
+#include <utility>
+
 #include "ChunkContainer.h"
 #include "MeshBuilder.h"
+#include "Resources/TexturePack.h"
 #include "World/Block/BlockType.h"
 
-Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, const ChunkContainer& parent)
+Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent)
 	: Chunk(Block::Coordinate::nonBlockToBlockMetric(pixelPosition), texturePack, parent)
 {
 
@@ -16,18 +19,44 @@ Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack)
 {
 }
 
-Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack, const ChunkContainer& parent)
-	: Chunk(blockPosition, texturePack)
+Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack, ChunkContainer& parent)
+	: mChunkPosition(std::move(blockPosition))
+	, mTexturePack(texturePack)
+	, mParentContainer(&parent)
+	, mMeshBuilder(mChunkPosition)
+	, mChunkOfBlocks(std::make_shared<ChunkBlocks>())
 {
-	mParentContainer = &parent;
+	generateChunkTerrain();
+
+	rebuildChunksAround();
+	markToBeRebuildSlow();
 }
 
 Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack)
 	: mChunkPosition(std::move(blockPosition))
 	, mTexturePack(texturePack)
+	, mParentContainer(nullptr)
 	, mMeshBuilder(mChunkPosition)
-	, mChunkOfBlocks(std::make_unique<MultiDimensionalArray<Block, 
-		BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION>>())
+	, mChunkOfBlocks(std::make_shared<ChunkBlocks>())
+{
+	generateChunkTerrain();
+
+	prepareMesh();
+	updateMesh();
+}
+
+Chunk::Chunk(Chunk&& rhs) noexcept
+	: mChunkPosition(std::move(rhs.mChunkPosition))
+	, mTexturePack(rhs.mTexturePack)
+	, mParentContainer(rhs.mParentContainer)
+	, mMeshBuilder(mChunkPosition)
+	, mModel(std::move(rhs.mModel))
+	, mChunkOfBlocks(std::move(rhs.mChunkOfBlocks))
+{
+
+}
+
+void Chunk::generateChunkTerrain()
 {
 	for (auto x = 0; x < BLOCKS_PER_DIMENSION; ++x)
 	for (auto y = 0; y < BLOCKS_PER_DIMENSION; ++y)
@@ -35,29 +64,18 @@ Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack)
 	{
 		// for test purposes
 		if (y == BLOCKS_PER_DIMENSION - 1)
-			(*mChunkOfBlocks)[x][y][z].setBlockType("Grass");
+			(*mChunkOfBlocks)[x][y][z] = std::make_unique<Block>("Grass");
 		else if (y > BLOCKS_PER_DIMENSION - 5)
-			(*mChunkOfBlocks)[x][y][z].setBlockType("Dirt");
+			(*mChunkOfBlocks)[x][y][z] = std::make_unique<Block>("Dirt");
 		else
-			(*mChunkOfBlocks)[x][y][z].setBlockType("Stone");
+			(*mChunkOfBlocks)[x][y][z] = std::make_unique<Block>("Stone");
 
 	}
 }
 
-Chunk::Chunk(Chunk&& rhs) noexcept
-	: mChunkPosition(std::move(rhs.mChunkPosition))
-	, mTexturePack(rhs.mTexturePack)
-	, mParentContainer(std::move(rhs.mParentContainer))
-	, mMeshBuilder(mChunkPosition)
-	, mModel(std::move(rhs.mModel))
-	, mChunkOfBlocks(std::move(rhs.mChunkOfBlocks))
-{
-	rhs.mParentContainer = nullptr;
-}
-
 void Chunk::createBlockMesh(const Block::Coordinate& pos)
 {
-	auto& block = getLocalBlock(pos);
+	const auto& block = getLocalBlock(pos);
 
 	for(auto i = 0; i < static_cast<int>(Block::Face::Counter); ++i)
 	{
@@ -70,18 +88,21 @@ void Chunk::createBlockMesh(const Block::Coordinate& pos)
 	
 }
 
-void Chunk::createMesh()
+void Chunk::prepareMesh()
 {
 	for (auto x = 0; x < BLOCKS_PER_DIMENSION; ++x)
 	for (auto y = 0; y < BLOCKS_PER_DIMENSION; ++y)
 	for (auto z = 0; z < BLOCKS_PER_DIMENSION; ++z)
 	{
-		if (getLocalBlock({x, y, z}).getBlockId() == "Air")
+		if (getLocalBlock({ x, y, z }).getBlockId() == "Air")
 			continue;
 
 		createBlockMesh({ x, y, z });
 	}
-	
+}
+
+void Chunk::updateMesh()
+{
 	mModel.setMesh(mMeshBuilder.getMesh3D());
 }
 
@@ -101,7 +122,7 @@ bool Chunk::areLocalCoordinatesInsideChunk(const Block::Coordinate& localCoordin
 	return false;
 }
 
-bool Chunk::isLocalCoordinateOnEdge(const Block::Coordinate& localCoordinates)
+bool Chunk::isLocalCoordinateOnChunkEdge(const Block::Coordinate& localCoordinates)
 {
 	if (localCoordinates.x == BLOCKS_PER_DIMENSION-1 || localCoordinates.x == 0 ||
 		localCoordinates.y == BLOCKS_PER_DIMENSION-1 || localCoordinates.y == 0 ||
@@ -113,16 +134,54 @@ bool Chunk::isLocalCoordinateOnEdge(const Block::Coordinate& localCoordinates)
 	return false;
 }
 
-void Chunk::rebuildChunk()
+void Chunk::markToBeRebuildSlow() const
 {
+	if(mParentContainer)
+	{
+		if (auto foundChunk = mParentContainer->chunks.find(ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition)); 
+				foundChunk != mParentContainer->chunks.end())
+		{
+			mParentContainer->chunksToRebuildQueue.push_back(foundChunk->second);
+		}
+	}
+}
+
+void Chunk::markToBeRebuildFast() const
+{
+	if (mParentContainer)
+	{
+		if (auto foundChunk = mParentContainer->chunks.find(ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition));
+				foundChunk != mParentContainer->chunks.end())
+		{
+			mParentContainer->chunksToRebuildQueue.push_front(foundChunk->second);
+		}
+	}
+}
+
+void Chunk::rebuildMesh()
+{
+	static std::mutex rebuildMeshMutex;
+	std::lock_guard _(rebuildMeshMutex);
 	mMeshBuilder.resetMesh();
-	createMesh();
+	prepareMesh();
+}
+
+void Chunk::rebuildChunksAround()
+{
+	for (auto direction = static_cast<int>(Direction::None) + 1; direction < static_cast<int>(Direction::Counter); ++direction)
+	{
+		if (const auto chunk = getChunk(static_cast<Direction>(direction)))
+		{
+			chunk->markToBeRebuildSlow();
+		}
+	}
 }
 
 void Chunk::removeLocalBlock(const Block::Coordinate& localCoordinates)
 {
-	(*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z].setBlockType("Air");
-	rebuildChunk();
+	(*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z]->setBlockType("Air");
+
+	markToBeRebuildFast();
 }
 
 Block::Coordinate Chunk::globalToLocalCoordinates(const Block::Coordinate& globalPosition) const
@@ -142,7 +201,7 @@ Block& Chunk::getLocalBlock(const Block::Coordinate& position, const Direction& 
 
 const Block& Chunk::getLocalBlock(const Block::Coordinate& localCoordinates) const
 {
-	return (*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z];
+	return *(*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z];
 }
 
 const Block& Chunk::getLocalBlock(const Block::Coordinate& localCoordinates, const Direction& direction) const
@@ -169,12 +228,41 @@ Block::Coordinate Chunk::getLocalBlockPosition(const Block::Coordinate& position
 	}
 }
 
+std::shared_ptr<Chunk> Chunk::getChunk(const Direction& direction)
+{
+	switch (direction)
+	{
+	case Direction::Above:
+		return mParentContainer->blockPositionToChunk(localToGlobalCoordinates({ 0, BLOCKS_PER_DIMENSION, 0 }));
+	case Direction::Below:
+		return mParentContainer->blockPositionToChunk(localToGlobalCoordinates({ 0, -1, 0 }));
+	case Direction::ToTheLeft:
+		return mParentContainer->blockPositionToChunk(localToGlobalCoordinates({ -1, 0, 0 }));
+	case Direction::ToTheRight:
+		return mParentContainer->blockPositionToChunk(localToGlobalCoordinates({ BLOCKS_PER_DIMENSION, 0, 0 }));
+	case Direction::InFront:
+		return mParentContainer->blockPositionToChunk(localToGlobalCoordinates({ 0, 0, BLOCKS_PER_DIMENSION }));
+	case Direction::Behind:
+		return mParentContainer->blockPositionToChunk(localToGlobalCoordinates({ 0, 0, -1 }));
+	}
+}
+
+Chunk::Chunk(std::shared_ptr<ChunkBlocks> chunkBlocks, Block::Coordinate blockPosition, const TexturePack& texturePack, ChunkContainer& parent)
+	: mChunkPosition(std::move(blockPosition))
+	, mTexturePack(texturePack)
+	, mParentContainer(&parent)
+	, mMeshBuilder(mChunkPosition)
+	, mChunkOfBlocks(std::move(chunkBlocks))
+{
+	prepareMesh();
+}
+
 Block::Coordinate Chunk::localToGlobalCoordinates(const Block::Coordinate& position) const
 {
 	return mChunkPosition + position;
 }
 
-std::vector<Direction> Chunk::getCollidingChunkDirections(const Block::Coordinate& localCoordinates)
+std::vector<Direction> Chunk::getDirectionOfBlockFacesInContactWithOtherChunk(const Block::Coordinate& localCoordinates)
 {
 	std::vector<Direction> directions;
 
@@ -205,7 +293,7 @@ bool Chunk::faceHasTransparentNeighbor(const Block::Face& face, const Block::Coo
 		if (belongsToContainer())
 		{
 			if (const auto& neighborBlock = mParentContainer->getWorldBlock(
-											localToGlobalCoordinates(blockNeighborPosition)))
+							localToGlobalCoordinates(blockNeighborPosition)))
 			{
 				return neighborBlock->isTransparent();
 			}

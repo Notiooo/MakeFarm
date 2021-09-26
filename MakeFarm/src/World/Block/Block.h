@@ -1,12 +1,9 @@
 #pragma once
-#include "Renderer3D/Model3D.h"
-#include "Renderer3D/Renderer3D.h"
-#include "Resources/TexturePack.h"
-#include <cassert>
 
 #include "Utils/CoordinateBase.h"
 
 class BlockType;
+class TexturePack;
 
 class Block
 {

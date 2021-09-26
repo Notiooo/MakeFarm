@@ -4,6 +4,7 @@
 #include <SFML/Graphics/Shader.hpp>
 
 #include "Renderer3D/Renderer3D.h"
+#include "Resources/TexturePack.h"
 #include "States/State.h"
 #include "Utils/Settings.h"
 #include "World/Camera.h"

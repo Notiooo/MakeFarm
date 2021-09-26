@@ -3,6 +3,8 @@
 
 #include <filesystem>
 
+#include "Utils/Settings.h"
+
 const BlockMap& BlockMap::getBlockMap()
 {
 	static const BlockMap instance;

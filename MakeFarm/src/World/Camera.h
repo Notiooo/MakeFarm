@@ -21,6 +21,7 @@ public:
 
     template <typename T>
     sf::Vector3<T> getPointingPosition(const float& raySize) const;
+    glm::vec3 getCameraPosition() const;
 
     static constexpr float MAX_RAY_SIZE = 10 * Block::BLOCK_SIZE;
 

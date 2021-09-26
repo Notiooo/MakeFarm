@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "TexturePack.h"
 
+
 TexturePack::TexturePack(const std::string& texturePackFolder)
 {
 	loadTexturePack(texturePackFolder);
@@ -23,7 +24,7 @@ void TexturePack::bind() const
 	sf::Texture::bind(&textures);
 }
 
-std::vector<GLfloat> TexturePack::getNormalizedCoordinates(int textureId) const
+std::vector<GLfloat> TexturePack::getNormalizedCoordinates(Block::TextureId textureId) const
 {
 	const auto blocksPerRow = textures.getSize().x / blockSize;
 	const auto sizeOfPixel = 1.0f / static_cast<float>(textures.getSize().x);

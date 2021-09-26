@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "FacedBlock.h"
 
+#include "Renderer3D/Model3D.h"
+#include "Resources/TexturePack.h"
 #include "World/Camera.h"
 #include "World/Chunks/ChunkContainer.h"
 #include "World/Chunks/MeshBuilder.h"

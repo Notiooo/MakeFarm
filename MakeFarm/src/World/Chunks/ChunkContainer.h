@@ -1,4 +1,6 @@
 #pragma once
+#include <future>
+
 #include "Chunk.h"
 #include "World/Camera.h"
 
@@ -20,9 +22,16 @@
  */
 class ChunkContainer
 {
+	friend class Chunk;
 public:
 	ChunkContainer(const TexturePack& texturePack);
+
 	void draw(const Renderer3D& renderer3D, const sf::Shader& shader) const;
+	void rebuildChunks();
+	void fixedUpdate(const float& deltaTime);
+
+	static constexpr int WORLD_GENERATION_CHUNK_NUMBER = 4;
+	static constexpr int WORLD_GENERATION_RADIUS = WORLD_GENERATION_CHUNK_NUMBER * Chunk::CHUNK_WALL_SIZE;
 
 	struct Coordinate final : public CoordinateBase
 	{
@@ -63,14 +72,24 @@ public:
 	 * \return Pointer to block found, or nullptr if not found
 	 */
 	[[nodiscard]] const Block* getWorldBlock(const Block::Coordinate& worldBlockCoordinates) const;
+
+
+	[[nodiscard]] bool doesWorldBlockExist(const Block::Coordinate& worldBlockCoordinates) const;
 	void removeWorldBlock(const Block::Coordinate& worldBlockCoordinates);
+	void generateChunksAround(const Camera& camera);
+	void clearFarAwayChunks(const Camera& camera);
 
 private:
 	void addChunk(ChunkContainer::Coordinate chunkPosition);
-	[[nodiscard]] const Chunk* blockPositionToChunk(const Block::Coordinate& worldBlockCoordinates) const;
-	Chunk* blockPositionToChunk(const Block::Coordinate& worldBlockCoordinates);
+	void addChunkIfNotExist(ChunkContainer::Coordinate chunkPosition);
+	[[nodiscard]] std::shared_ptr<const Chunk> blockPositionToChunk(const Block::Coordinate& worldBlockCoordinates) const;
+	std::shared_ptr<Chunk> blockPositionToChunk(const Block::Coordinate& worldBlockCoordinates);
 
 private:
-	std::unordered_map<ChunkContainer::Coordinate, Chunk, std::hash<CoordinateBase>> chunks;
 	const TexturePack& texturePack;
+	std::unordered_map<ChunkContainer::Coordinate, std::shared_ptr<Chunk>, std::hash<CoordinateBase>> chunks;
+
+	mutable std::mutex chunksAccessMutex;
+	std::deque<std::shared_ptr<Chunk>> chunksToRebuildQueue;
+	std::list<std::future<std::shared_ptr<Chunk>>> chunkCreateMeshProcesses;
 };
