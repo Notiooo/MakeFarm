@@ -7,6 +7,8 @@
 #include "MeshBuilder.h"
 #include "Resources/TexturePack.h"
 #include "World/Block/BlockType.h"
+#include "FastNoiseLite/FastNoiseLite.h"
+
 
 Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent)
 	: Chunk(Block::Coordinate::nonBlockToBlockMetric(pixelPosition), texturePack, parent)
@@ -58,18 +60,38 @@ Chunk::Chunk(Chunk&& rhs) noexcept
 
 void Chunk::generateChunkTerrain()
 {
+	static FastNoiseLite noise;
+	noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+	noise.SetFrequency(0.02);
+
 	for (auto x = 0; x < BLOCKS_PER_DIMENSION; ++x)
-	for (auto y = 0; y < BLOCKS_PER_DIMENSION; ++y)
 	for (auto z = 0; z < BLOCKS_PER_DIMENSION; ++z)
 	{
-		// for test purposes
-		if (y == BLOCKS_PER_DIMENSION - 1)
-			(*mChunkOfBlocks)[x][y][z] = std::make_unique<Block>("Grass");
-		else if (y > BLOCKS_PER_DIMENSION - 5)
-			(*mChunkOfBlocks)[x][y][z] = std::make_unique<Block>("Dirt");
-		else
-			(*mChunkOfBlocks)[x][y][z] = std::make_unique<Block>("Stone");
+		auto globalCoordinate = localToGlobalCoordinates({x, 0, z});
 
+		auto heightOfBlocks = noise.GetNoise(
+			static_cast<float>(globalCoordinate.x), 
+			static_cast<float>(globalCoordinate.z)
+		);
+
+		heightOfBlocks = (heightOfBlocks + 1) / 2.f; // range of 0 .. 1
+		auto heightOfColumn = heightOfBlocks * ChunkContainer::MAX_HEIGHT_MAP;
+
+		heightOfColumn -= globalCoordinate.y;
+
+		for (auto y = 0; y < BLOCKS_PER_DIMENSION; ++y)
+		{
+			if(heightOfColumn > 0)
+			{
+				(*mChunkOfBlocks)[x][y][z] = std::make_unique<Block>("Grass");
+			}
+			else
+			{
+				(*mChunkOfBlocks)[x][y][z] = std::make_unique<Block>("Air");
+			}
+
+			heightOfColumn -= Block::BLOCK_SIZE;
+		}
 	}
 }
 
@@ -103,7 +125,10 @@ void Chunk::prepareMesh()
 
 void Chunk::updateMesh()
 {
-	mModel.setMesh(mMeshBuilder.getMesh3D());
+	if (!mModel)
+		mModel = std::make_unique<Model3D>();
+
+	mModel->setMesh(mMeshBuilder.getMesh3D());
 }
 
 void Chunk::update(const float& deltaTime)
@@ -138,10 +163,21 @@ void Chunk::markToBeRebuildSlow() const
 {
 	if(mParentContainer)
 	{
+		std::shared_lock guard(mParentContainer->chunksAccessMutex);
 		if (auto foundChunk = mParentContainer->chunks.find(ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition)); 
 				foundChunk != mParentContainer->chunks.end())
 		{
-			mParentContainer->chunksToRebuildQueue.push_back(foundChunk->second);
+			std::scoped_lock guard(mParentContainer->chunksToRebuildSlowAccessMutex);
+			auto& vec = mParentContainer->chunksToRebuildSlow;
+
+			if(auto foundElement = std::find(vec.begin(), vec.end(), foundChunk->second); foundElement != vec.end())
+			{
+				std::rotate(foundElement, foundElement + 1, vec.end());
+			}
+			else
+			{
+				mParentContainer->chunksToRebuildSlow.push_back(foundChunk->second);
+			}
 		}
 	}
 }
@@ -150,17 +186,18 @@ void Chunk::markToBeRebuildFast() const
 {
 	if (mParentContainer)
 	{
+		std::shared_lock guard(mParentContainer->chunksAccessMutex);
 		if (auto foundChunk = mParentContainer->chunks.find(ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition));
 				foundChunk != mParentContainer->chunks.end())
 		{
-			mParentContainer->chunksToRebuildQueue.push_front(foundChunk->second);
+			std::scoped_lock guard(mParentContainer->chunksToRebuildFastAccessMutex);
+			mParentContainer->chunksToRebuildFast.push_back(foundChunk->second);
 		}
 	}
 }
 
 void Chunk::rebuildMesh()
 {
-	static std::mutex rebuildMeshMutex;
 	std::lock_guard _(rebuildMeshMutex);
 	mMeshBuilder.resetMesh();
 	prepareMesh();
@@ -184,14 +221,14 @@ void Chunk::removeLocalBlock(const Block::Coordinate& localCoordinates)
 	markToBeRebuildFast();
 }
 
-Block::Coordinate Chunk::globalToLocalCoordinates(const Block::Coordinate& globalPosition) const
+Block::Coordinate Chunk::globalToLocalCoordinates(const Block::Coordinate& worldCoordinates) const
 {
-	return globalPosition - mChunkPosition;
+	return static_cast<Block::Coordinate>(worldCoordinates - mChunkPosition);
 }
 
-Block& Chunk::getLocalBlock(const Block::Coordinate& position)
+Block& Chunk::getLocalBlock(const Block::Coordinate& localCoordinates)
 {
-	return const_cast<Block&>(static_cast<const Chunk&>(*this).getLocalBlock(position));
+	return const_cast<Block&>(static_cast<const Chunk&>(*this).getLocalBlock(localCoordinates));
 }
 
 Block& Chunk::getLocalBlock(const Block::Coordinate& position, const Direction& direction)
@@ -257,9 +294,9 @@ Chunk::Chunk(std::shared_ptr<ChunkBlocks> chunkBlocks, Block::Coordinate blockPo
 	prepareMesh();
 }
 
-Block::Coordinate Chunk::localToGlobalCoordinates(const Block::Coordinate& position) const
+Block::Coordinate Chunk::localToGlobalCoordinates(const Block::Coordinate& localCoordinates) const
 {
-	return mChunkPosition + position;
+	return mChunkPosition + localCoordinates;
 }
 
 std::vector<Direction> Chunk::getDirectionOfBlockFacesInContactWithOtherChunk(const Block::Coordinate& localCoordinates)
@@ -290,7 +327,7 @@ bool Chunk::faceHasTransparentNeighbor(const Block::Face& face, const Block::Coo
 		if (areLocalCoordinatesInsideChunk(blockNeighborPosition))
 			return (getLocalBlock(blockNeighborPosition).isTransparent());
 
-		if (belongsToContainer())
+		if (belongsToAnyChunkContainer())
 		{
 			if (const auto& neighborBlock = mParentContainer->getWorldBlock(
 							localToGlobalCoordinates(blockNeighborPosition)))
@@ -320,12 +357,15 @@ bool Chunk::faceHasTransparentNeighbor(const Block::Face& face, const Block::Coo
 	
 }
 
-bool Chunk::belongsToContainer() const
+bool Chunk::belongsToAnyChunkContainer() const
 {
 	return (mParentContainer != nullptr);
 }
 
 void Chunk::draw(const Renderer3D& renderer3d, const sf::Shader& shader) const
 {
-	mModel.draw(renderer3d, shader);
+	if (mModel)
+	{
+		mModel->draw(renderer3d, shader);
+	}
 }

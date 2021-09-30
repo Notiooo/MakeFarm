@@ -52,8 +52,6 @@ public:
 	{
 
 		using CoordinateBase::CoordinateBase;
-		Coordinate operator-(const CoordinateBase& rhs) const;
-		Coordinate operator+(const CoordinateBase& rhs) const;
 
 		/**
 		 * \brief Converts the current position of a block to its positional equivalent in space.

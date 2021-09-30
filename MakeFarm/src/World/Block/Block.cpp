@@ -4,16 +4,6 @@
 #include "BlockMap.h"
 #include "Renderer3D/BufferLayout.h"
 
-Block::Coordinate Block::Coordinate::operator-(const CoordinateBase& rhs) const
-{
-	return static_cast<Block::Coordinate>(CoordinateBase::operator-(rhs));
-}
-
-Block::Coordinate Block::Coordinate::operator+(const CoordinateBase& rhs) const
-{
-	return static_cast<Block::Coordinate>(CoordinateBase::operator+(rhs));
-}
-
 sf::Vector3<Block::SizeType> Block::Coordinate::getNonBlockMetric() const
 {
 	return sf::Vector3<SizeType>(
