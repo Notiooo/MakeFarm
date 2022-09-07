@@ -16,8 +16,6 @@ class StateStack;
 class State
 {
 public:
-	using Ptr = std::unique_ptr<State>;
-	
 	explicit State(StateStack& stack);
 
 	State(const State&) = delete;
@@ -26,8 +24,6 @@ public:
 	State& operator=(const State&) = delete;
 	State&& operator=(State&&) = delete;
 
-
-	
 	virtual ~State() = default;
 
 	/**
@@ -73,7 +69,6 @@ protected:
 	void requestClear() const noexcept;
 
 private:
-
 	StateStack* stack; //!< Pointer to the stack containing this state
 };
 

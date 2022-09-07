@@ -142,7 +142,7 @@ public:
 	 * \brief Checks that there are no states on the stack.
 	 * \return True if the stack is empty, false if there is a state on it.
 	 */
-	bool empty() const noexcept;
+	[[nodiscard]] bool empty() const noexcept;
 
 private:
 	
@@ -187,7 +187,7 @@ private:
 	 * Its implementation is a vector, since the implementation of
 	 * "transparent" states requires the ability to iterate over states.
 	 */
-	std::vector<State::Ptr> stack;
+	std::vector<std::unique_ptr<State>> stack;
 
 	/**
 	 * \brief A FIFO queue that holds pending operations for execution on the stack.
@@ -198,7 +198,7 @@ private:
 	/**
 	 * \brief A factory that creates states objects with the given identifiers.
 	 */
-	std::map<State_ID, std::function<State::Ptr()>> factory;
+	std::map<State_ID, std::function<std::unique_ptr<State>()>> factory;
 };
 
 template <typename State, typename... Args>
@@ -208,7 +208,7 @@ void StateStack::saveState(State_ID stateID, Args&&... args)
 	// might need to use
 	factory[stateID] = [&args..., this]()
 	{
-		return State::Ptr(std::make_unique<State>(*this, std::forward<Args>(args)...));
+		return std::unique_ptr<State>(std::make_unique<State>(*this, std::forward<Args>(args)...));
 	};
 }
 
