@@ -18,8 +18,8 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <imgui-sfml/imgui-SFML.h>
-#include <imgui/imgui.h>
+#include <imgui-SFML.h>
+#include <imgui.h>
 
 // SFML
 #include <SFML/Graphics/Shader.hpp>

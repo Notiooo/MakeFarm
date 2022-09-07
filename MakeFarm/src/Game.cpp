@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "Game.h"
 
-#include <imgui-sfml/imgui-SFML.h>
-
 #include "Utils/Mouse.h"
 #include "States/States.h"
 #include "States/Application_States/GameState.h"
@@ -136,5 +134,5 @@ void Game::render()
 
 void Game::loadResources()
 {
-	fonts.storeResource(Fonts_ID::ArialNarrow, "Resources/Fonts/arial_narrow.ttf");
+	fonts.storeResource(Fonts_ID::ArialNarrow, "resources/fonts/arial_narrow.ttf");
 }

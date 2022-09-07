@@ -5,7 +5,6 @@
 #include <glm/trigonometric.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
-#include <imgui/imgui.h>
 #include <SFML/Graphics/Glsl.hpp>
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Window/Keyboard.hpp>

@@ -9,10 +9,10 @@ TexturePack::TexturePack(const std::string& texturePackFolder)
 
 void TexturePack::loadTexturePack(const std::string& texturePackFolder)
 {
-	texturePackSettings.openFile("resources/Textures/" + texturePackFolder + "/config.cfg");
+	texturePackSettings.openFile("resources/textures/" + texturePackFolder + "/config.cfg");
 	texturePackName = texturePackSettings.get<std::string>("Name");
 	blockSize = texturePackSettings.get<int>("TextureSize");
-	textures.loadFromFile("resources/Textures/" + texturePackFolder + "/textures.png");
+	textures.loadFromFile("resources/textures/" + texturePackFolder + "/textures.png");
 	texturePackSettings.closeFile();
 
 	if ((textures.getSize().x % blockSize) && (textures.getSize().y % blockSize))

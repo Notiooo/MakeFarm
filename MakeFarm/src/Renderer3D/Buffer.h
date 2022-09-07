@@ -31,4 +31,5 @@ inline Buffer& Buffer::operator=(Buffer&& rhs) noexcept
 {
 	bufferId = std::move(rhs.bufferId);
 	rhs.bufferId = 0;
+    return *this;
 }

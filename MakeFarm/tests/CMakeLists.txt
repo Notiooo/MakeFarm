@@ -1,0 +1,52 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(MakeFarmTests LANGUAGES CXX)
+
+include_directories(../src)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+enable_testing()
+
+configure_file("CMakeLists.txt.in" "${CMAKE_BINARY_DIR}/googletest-download/CMakeLists.txt")
+execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download"
+        )
+execute_process(COMMAND "${CMAKE_COMMAND}" --build .
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/googletest-download"
+        )
+
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+add_subdirectory("${CMAKE_BINARY_DIR}/googletest-src"
+        "${CMAKE_BINARY_DIR}/googletest-build"
+        )
+
+if (CMAKE_VERSION VERSION_LESS 2.8.11)
+    include_directories("${gtest_SOURCE_DIR}/include"
+            "${gmock_SOURCE_DIR}/include"
+            )
+endif ()
+
+include(ut/CMakeLists.txt)
+include(mt/CMakeLists.txt)
+include(mocks/CMakeLists.txt)
+
+add_executable(MakeFarmTests
+        main.cpp
+        ut/${UT_Sources}
+        mt/${MT_Sources}
+        mocks/${Mocks_Sources}
+        )
+
+target_link_libraries(MakeFarmTests PRIVATE MakeFarmSrc)
+target_link_libraries(MakeFarmTests PRIVATE gtest gtest_main)
+target_link_libraries(MakeFarmTests PRIVATE gmock gmock_main)
+
+add_custom_command(TARGET MakeFarmTests POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:gtest>
+        $<TARGET_FILE:gmock>
+        $<TARGET_FILE_DIR:MakeFarmTests>
+        )

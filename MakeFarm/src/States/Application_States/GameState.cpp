@@ -22,7 +22,7 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window) :
 	mSelectedBlock(texturePack)
 {
 	Mouse::lockMouseAtCenter(gameWindow);
-	shader.loadFromFile("resources/Shaders/VertexShader.shader", "resources/Shaders/FragmentShader.shader");
+	shader.loadFromFile("resources/shaders/vertexShader.shader", "resources/shaders/FragmentShader.shader");
 
 	GLCall(glEnable(GL_CULL_FACE));
 	GLCall(glEnable(GL_DEPTH_TEST));
@@ -32,7 +32,6 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window) :
 	sf::Shader::bind(&shader);
 	shader.setUniform("u_ViewProjection", sf::Glsl::Mat4(sf::Transform::Identity));
 	sf::Shader::bind(nullptr);
-	std::cout << "Texture pack loaded: " << gameSettings.get<std::string>("TexturePack") << std::endl;
 
 	auto test = BlockMap::getBlockMap();
 }
@@ -77,7 +76,7 @@ bool GameState::fixedUpdate(const float& deltaTime)
 
 	testChunk.fixedUpdate(deltaTime);
 	testChunk.generateChunksAround(gameCamera);
-	testChunk.clearFarAwayChunks(gameCamera);
+    testChunk.clearFarAwayChunks(gameCamera);
 	
 	/*
 	 * Set this state to transparent -- in other words
@@ -110,7 +109,7 @@ void GameState::updateDebugMenu()
 		{
 			if(ImGui::BeginMenu("Texture Packs"))
 			{
-				for (auto const& texturePackDir : std::filesystem::directory_iterator{ "resources/Textures" })
+				for (auto const& texturePackDir : std::filesystem::directory_iterator{ "resources/textures" })
 				{
 					if (texturePackDir.is_directory())
 					{

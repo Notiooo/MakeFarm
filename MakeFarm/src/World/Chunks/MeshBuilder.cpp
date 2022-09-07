@@ -64,6 +64,7 @@ void MeshBuilder::resetMesh()
 
 Mesh3D MeshBuilder::getMesh3D() const
 {
+    std::lock_guard _(rebuildMeshMutex);
 	return chunkMesh;
 }
 
@@ -126,5 +127,17 @@ std::vector<GLfloat> MeshBuilder::getFaceVertices(const Block::Face& blockFace) 
 			0, 1, 0, // back left top
 			1, 1, 0, // back right top
 		};
+    default:
+        throw std::runtime_error("Unsupported Block::Face value was provided");
 	}
+}
+
+void MeshBuilder::blockMesh() const
+{
+    rebuildMeshMutex.lock();
+}
+
+void MeshBuilder::unblockMesh() const
+{
+    rebuildMeshMutex.unlock();
 }

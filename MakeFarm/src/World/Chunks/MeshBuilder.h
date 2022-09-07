@@ -1,4 +1,6 @@
 #pragma once
+
+#include <mutex>
 #include "Renderer3D/Mesh3D.h"
 #include "World/Block/Block.h"
 
@@ -23,6 +25,8 @@ public:
 
 	void resetMesh();
 
+    void blockMesh() const;
+    void unblockMesh() const;
 	[[nodiscard]] Mesh3D getMesh3D() const;
 
 private:
@@ -31,6 +35,7 @@ private:
 private:
 	GLuint index = 0;
 	const Block::Coordinate& mOrigin;
+    mutable std::recursive_mutex rebuildMeshMutex;
 	Mesh3D chunkMesh;
 	float mBlockFaceSize = Block::BLOCK_SIZE;
 };

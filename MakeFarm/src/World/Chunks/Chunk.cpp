@@ -7,7 +7,7 @@
 #include "MeshBuilder.h"
 #include "Resources/TexturePack.h"
 #include "World/Block/BlockType.h"
-#include "FastNoiseLite/FastNoiseLite.h"
+#include <FastNoiseLite.h>
 
 
 Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent)
@@ -126,7 +126,9 @@ void Chunk::prepareMesh()
 void Chunk::updateMesh()
 {
 	if (!mModel)
-		mModel = std::make_unique<Model3D>();
+    {
+        mModel = std::make_unique<Model3D>();
+    }
 
 	mModel->setMesh(mMeshBuilder.getMesh3D());
 }
@@ -199,8 +201,10 @@ void Chunk::markToBeRebuildFast() const
 void Chunk::rebuildMesh()
 {
 	std::lock_guard _(rebuildMeshMutex);
+    mMeshBuilder.blockMesh();
 	mMeshBuilder.resetMesh();
 	prepareMesh();
+    mMeshBuilder.unblockMesh();
 }
 
 void Chunk::rebuildChunksAround()
@@ -262,6 +266,8 @@ Block::Coordinate Chunk::getLocalBlockPosition(const Block::Coordinate& position
 		return { position.x, position.y, position.z + 1};
 	case Direction::Behind: 
 		return { position.x, position.y, position.z - 1};
+    default:
+        throw std::runtime_error("Unsupported Direction value was provided");
 	}
 }
 
@@ -281,6 +287,8 @@ std::shared_ptr<Chunk> Chunk::getChunk(const Direction& direction)
 		return mParentContainer->blockPositionToChunk(localToGlobalCoordinates({ 0, 0, BLOCKS_PER_DIMENSION }));
 	case Direction::Behind:
 		return mParentContainer->blockPositionToChunk(localToGlobalCoordinates({ 0, 0, -1 }));
+    default:
+        throw std::runtime_error("Unsupported Direction value was provided");
 	}
 }
 
@@ -353,6 +361,8 @@ bool Chunk::faceHasTransparentNeighbor(const Block::Face& face, const Block::Coo
 		return (isBlockTransparent(Direction::InFront));
 	case Block::Face::Back:
 		return (isBlockTransparent(Direction::Behind));
+    default:
+        throw std::runtime_error("Unsupported Block::Face value was provided");
 	}
 	
 }

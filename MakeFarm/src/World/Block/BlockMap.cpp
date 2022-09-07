@@ -19,7 +19,7 @@ const BlockType& BlockMap::getBlockType(const std::string& blockName) const
 
 BlockMap::BlockMap()
 {
-	parseDirectory("resources/Blocks");
+	parseDirectory("resources/blocks");
 }
 
 void BlockMap::parseDirectory(const std::string& directoryName)
@@ -36,7 +36,6 @@ void BlockMap::parseDirectory(const std::string& directoryName)
 				BlockType blockType;
 				std::string fileName = file.path().filename().string();
 				fileName.erase(fileName.cend() - 4, fileName.cend());
-				std::cout << fileName << std::endl;
 
 				settingsFile.openFile(filePath);
 				blockType.blockFileName = fileName;
