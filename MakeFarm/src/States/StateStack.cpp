@@ -3,8 +3,8 @@
 
 auto StateStack::createState(const State_ID& stateID)
 {
-    const auto found = factory.find(stateID);
-    assert(found != factory.end());
+    const auto found = mFactory.find(stateID);
+    assert(found != mFactory.end());
 
     // As it find specific recipe in factory that
     // creates a state, then after it is found
@@ -15,21 +15,21 @@ auto StateStack::createState(const State_ID& stateID)
 
 void StateStack::applyChanges()
 {
-    for (const auto& change : changesQueue)
+    for (const auto& change : mChangesQueue)
     {
         switch (change.operation)
         {
         case Perform::Push:
-            stack.push_back(createState(change.stateID)); break;
+            mStack.push_back(createState(change.stateID)); break;
 
         case Perform::Pop:
-            stack.pop_back(); break;
+            mStack.pop_back(); break;
 
         case Perform::Clear:
-            stack.clear(); break;
+            mStack.clear(); break;
         }
     }
-    changesQueue.clear();
+    mChangesQueue.clear();
 }
 
 void StateStack::fixedUpdate(const float& deltaTime)
@@ -37,7 +37,7 @@ void StateStack::fixedUpdate(const float& deltaTime)
     applyChanges();
     // Iterate from the highest state to the lowest state, and stop iterating if
     // any state returns 
-    for (auto beg = stack.rbegin(), end = stack.rend(); beg != end; ++beg)
+    for (auto beg = mStack.rbegin(), end = mStack.rend(); beg != end; ++beg)
     {
         // If a state is of "Transparent" type, then we iterate further
         // But if it returns false, then we stop iterating. 
@@ -54,7 +54,7 @@ void StateStack::update()
     applyChanges();
     // Iterate from the highest state to the lowest state, and stop iterating if
     // any state returns 
-    for (auto beg = stack.rbegin(), end = stack.rend(); beg != end; ++beg)
+    for (auto beg = mStack.rbegin(), end = mStack.rend(); beg != end; ++beg)
     {
         // If a state is of "Transparent" type, then we iterate further
         // But if it returns false, then we stop iterating. 
@@ -69,7 +69,7 @@ void StateStack::update()
 void StateStack::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     // Drawing starts from the lowest state to the highest state
-    for (const auto& state : stack)
+    for (const auto& state : mStack)
 	    state->draw(target, states);
 }
 
@@ -79,7 +79,7 @@ void StateStack::handleEvent(const sf::Event& event)
 
     // Iterate from the highest state to the lowest state, and stop iterating if
     // any state returns 
-    for (auto beg = stack.rbegin(), end = stack.rend(); beg != end; ++beg)
+    for (auto beg = mStack.rbegin(), end = mStack.rend(); beg != end; ++beg)
     {
         // If a state is of "Transparent" type, then we iterate further
         // But if it returns false, then we stop iterating. 
@@ -94,20 +94,20 @@ void StateStack::handleEvent(const sf::Event& event)
 
 void StateStack::push(State_ID stateID)
 {
-    changesQueue.emplace_back(Change{ Perform::Push, stateID });
+    mChangesQueue.emplace_back(Change{Perform::Push, stateID });
 }
 
 void StateStack::pop()
 {
-    changesQueue.emplace_back(Change{ Perform::Pop, State_ID::None });
+    mChangesQueue.emplace_back(Change{Perform::Pop, State_ID::None });
 }
 
 void StateStack::clear()
 {
-    changesQueue.emplace_back(Change{ Perform::Clear, State_ID::None });
+    mChangesQueue.emplace_back(Change{Perform::Clear, State_ID::None });
 }
 
 bool StateStack::empty() const noexcept
 {
-    return changesQueue.empty();
+    return mChangesQueue.empty();
 }

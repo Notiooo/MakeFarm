@@ -1,6 +1,8 @@
 #pragma once
 
-
+/*
+ * The base class for all kinds of buffers found in OpenGL.
+ */
 class Buffer
 {
 public:
@@ -13,23 +15,17 @@ public:
 	Buffer& operator=(Buffer&&) noexcept;
 	
 	virtual ~Buffer() = default;
-	
+
+    /**
+     * Binds a buffer object to the specific (depends on derived class) buffer binding point
+     */
 	virtual void bind() const = 0;
+
+    /**
+     * Unbinds a buffer object
+     */
 	virtual void unbind() const = 0;
 
 protected:
-	unsigned int bufferId;
+	unsigned int mBufferId;
 };
-
-inline Buffer::Buffer(Buffer&& rhs) noexcept
-{
-	bufferId = std::move(rhs.bufferId);
-	rhs.bufferId = 0;
-}
-
-inline Buffer& Buffer::operator=(Buffer&& rhs) noexcept
-{
-	bufferId = std::move(rhs.bufferId);
-	rhs.bufferId = 0;
-    return *this;
-}

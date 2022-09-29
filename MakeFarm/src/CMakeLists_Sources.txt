@@ -1,6 +1,8 @@
 set(PROJECT_SOURCES
         Game.cpp
         pch.cpp
+        Renderer3D/Buffer.cpp
+        Renderer3D/BufferElement.cpp
         Renderer3D/BufferLayout.cpp
         Renderer3D/IndexBuffer.cpp
         Renderer3D/Mesh3D.cpp
@@ -16,6 +18,7 @@ set(PROJECT_SOURCES
         Utils/Mouse.cpp
         Utils/Settings.cpp
         Utils/utils.cpp
+        Utils/Direction.cpp
         World/Block/Block.cpp
         World/Block/BlockMap.cpp
         World/Block/BlockType.cpp

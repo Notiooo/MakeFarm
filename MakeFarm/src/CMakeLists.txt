@@ -8,10 +8,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 include(CMakeLists_Sources.txt)
 
-add_library(MakeFarmSrc STATIC
-        ${PROJECT_SOURCES}
-        )
-
+add_library(MakeFarmSrc STATIC ${PROJECT_SOURCES})
 target_precompile_headers(MakeFarmSrc PUBLIC pch.h)
 
 target_include_directories(MakeFarmSrc PUBLIC

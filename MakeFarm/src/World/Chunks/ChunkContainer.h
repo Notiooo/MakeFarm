@@ -27,7 +27,17 @@ class ChunkContainer
 public:
 	ChunkContainer(const TexturePack& texturePack);
 
+    /**
+     * Draws this chunk container to the game screen
+     * @param renderer3d Renderer drawing the 3D game world onto the 2D screen
+     * @param shader Shader with the help of which the object should be drawn
+     */
 	void draw(const Renderer3D& renderer3D, const sf::Shader& shader) const;
+
+    /**
+     * Updates the status/logic of the state which, as a rule, should not depend on the number of frames generated, but on time.
+     * @param deltaTime the time that has passed since the last frame.
+     */
 	void fixedUpdate(const float& deltaTime);
 
 	/**
@@ -73,8 +83,20 @@ public:
 
 		using CoordinateBase::CoordinateBase;
 
-		[[nodiscard]] sf::Vector3i getNonChunkMetric() const;
+        /**
+         * Transforms chunk coordinates to game world coordinates.
+         * @return Coordinates in the position of the game world
+         */
+		[[nodiscard]] sf::Vector3i nonChunkMetric() const;
 
+        /**
+         * Converts the coordinates of the block to the coordinates of the chunk in
+         * which it is located. These coordinates are chunk-specific and
+         * independent of the game world coordinates.
+         *
+         * @param worldBlockCoordinate World coordinates of the block
+         * @return Chunk coordinates
+         */
 		static ChunkContainer::Coordinate blockToChunkMetric(const Block::Coordinate& worldBlockCoordinate)
 		{
 
@@ -106,7 +128,7 @@ public:
 	 * \param worldBlockCoordinates Global position of the block inside the game world
 	 * \return Pointer to block found, or nullptr if not found
 	 */
-	[[nodiscard]] const Block* getWorldBlock(const Block::Coordinate& worldBlockCoordinates) const;
+	[[nodiscard]] const Block* worldBlock(const Block::Coordinate& worldBlockCoordinates) const;
 
 	/**
 	 * \brief Returns information about whether a block on a given position has been already created
@@ -180,24 +202,26 @@ private:
 	void updateInsignificantChunksMeshes();
 
 	/**
-	 * \brief 
-	 * \param worldBlockCoordinates 
-	 * \return 
+	 * \brief Based on the position of the block in the game world, it returns the chunk that contains it.
+	 * \param worldBlockCoordinates Block coordinates in the game world
+	 * \return Chunk, which contains this block. Nullptr if the block is not present.
 	 */
 	[[nodiscard]] std::shared_ptr<const Chunk> blockPositionToChunk(const Block::Coordinate& worldBlockCoordinates) const;
 
+    /**
+     * \brief Based on the position of the block in the game world, it returns the chunk that contains it.
+     * \param worldBlockCoordinates Block coordinates in the game world
+     * \return Chunk, which contains this block. Nullptr if the block is not present.
+     */
 	[[nodiscard]] std::shared_ptr<Chunk> blockPositionToChunk(const Block::Coordinate& worldBlockCoordinates);
 
 private:
-	const TexturePack& texturePack;
-	std::unordered_map<ChunkContainer::Coordinate, std::shared_ptr<Chunk>, std::hash<CoordinateBase>> chunks;
-
-	mutable std::shared_mutex chunksAccessMutex;
-
-	std::vector<std::shared_ptr<Chunk>> chunksToRebuildFast;
-	std::vector<std::shared_ptr<Chunk>> chunksToRebuildSlow;
-	std::mutex chunksToRebuildFastAccessMutex;
-	std::mutex chunksToRebuildSlowAccessMutex;
-
-	std::list<std::future<std::vector<std::shared_ptr<Chunk>>>> chunkCreateMeshProcessesSlow;
+	const TexturePack& mTexturePack;
+	std::unordered_map<ChunkContainer::Coordinate, std::shared_ptr<Chunk>, std::hash<CoordinateBase>> mChunks;
+	mutable std::shared_mutex mChunksAccessMutex;
+	std::vector<std::shared_ptr<Chunk>> mChunksToRebuildFast;
+	std::vector<std::shared_ptr<Chunk>> mChunksToRebuildSlow;
+	std::mutex mChunksToRebuildFastAccessMutex;
+	std::mutex mChunksToRebuildSlowAccessMutex;
+	std::list<std::future<std::vector<std::shared_ptr<Chunk>>>> mChunkCreateMeshProcessesSlow;
 };

@@ -4,29 +4,29 @@
 #include "Renderer3D.h"
 
 IndexBuffer::IndexBuffer()
-	: count(0)
+	: mCount(0)
 {
-    GLCall(glGenBuffers(1, &bufferId));
+    GLCall(glGenBuffers(1, &mBufferId));
 }
 
 IndexBuffer::IndexBuffer(const unsigned int* data, unsigned count)
-	: count(count)
+	: mCount(count)
 {
     ASSERT(sizeof(unsigned int) == sizeof(GLuint));
 	
-    GLCall(glGenBuffers(1, &bufferId));
-    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferId));
+    GLCall(glGenBuffers(1, &mBufferId));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mBufferId));
     GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), data, GL_STATIC_DRAW));
 }
 
 IndexBuffer::~IndexBuffer()
 {
-    GLCall(glDeleteBuffers(1, &bufferId));
+    GLCall(glDeleteBuffers(1, &mBufferId));
 }
 
 void IndexBuffer::bind() const
 {
-    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferId));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mBufferId));
 }
 
 void IndexBuffer::unbind() const
@@ -36,12 +36,12 @@ void IndexBuffer::unbind() const
 
 void IndexBuffer::setData(const unsigned int* data, unsigned count)
 {
-    this->count = count;
+    this->mCount = count;
     bind();
     GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), data, GL_STATIC_DRAW));
 }
 
-unsigned IndexBuffer::getCount() const
+unsigned IndexBuffer::size() const
 {
-	return count;
+	return mCount;
 }

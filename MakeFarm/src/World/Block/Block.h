@@ -9,6 +9,9 @@ class Block
 {
 public:
 
+    Block();
+    Block(const std::string& blockName);
+
 	/**
 	 * \brief The type of variable that is used to define the side of the block
 	 */
@@ -22,7 +25,7 @@ public:
 	/**
 	 * \brief Texture ID that corresponds to the texture by the position it is in the file.
 	 *
-	 * If you expand the texture file linearly and count from left to
+	 * If you expand the texture file linearly and size from left to
 	 * right starting from zero, the position of the texture will
 	 * correspond to its identifier.
 	 *
@@ -62,7 +65,7 @@ public:
 		 *
 		 * \return Positions in non-block-grid space
 		 */
-		[[nodiscard]] sf::Vector3<Block::SizeType> getNonBlockMetric() const;
+		[[nodiscard]] sf::Vector3<Block::SizeType> nonBlockMetric() const;
 
 		template <typename T>
 		static Coordinate nonBlockToBlockMetric(const sf::Vector3<T>& nonBlockVector)
@@ -75,6 +78,11 @@ public:
 		};
 	};
 
+    /**
+     * Defines the face of the block.
+     * Each block consists of 6 faces. Often there is no need to draw more faces,
+     * so this allows to be more precise about which face referring to
+     */
 	enum class Face
 	{
 		Top = 0,
@@ -87,15 +95,32 @@ public:
 		Counter
 	};
 
-	Block();
-	Block(const std::string& blockName);
-
+    /**
+     * Sets the block's settings to match those in the cfg files of the resources/blocks folder
+     * @param blockName The name of the cfg file
+     */
 	void setBlockType(const std::string& blockName);
-	[[nodiscard]] TextureId getBlockTextureId(const Block::Face& blockFace) const;
-	[[nodiscard]] std::string getBlockId() const;
+
+    /**
+     * Retrieves the ID of the texture that is on the given block face
+     * @param blockFace Selected block face from which texture will be read
+     * @return ID of the corresponding texture face
+     */
+	[[nodiscard]] TextureId blockTextureId(const Block::Face& blockFace) const;
+
+    /**
+     * Returns a block identifier that equals the name of the cfg file
+     * @return Block identifier that equals the name of the cfg file
+     */
+	[[nodiscard]] std::string blockId() const;
+
+    /**
+     * Returns information about whether the block is transparent. For example, it can be glass.
+     * @return True if the block is transparent, false otherwise
+     */
 	[[nodiscard]] bool isTransparent() const;
 
 
 private:
-	const BlockType* blockType;
+	const BlockType* mBlockType;
 };

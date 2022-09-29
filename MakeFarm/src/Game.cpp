@@ -19,16 +19,16 @@ Game::Game()
 	settings.depthBits = 24;
 	settings.stencilBits = 8;
 
-	gameWindow = std::make_unique<sf::RenderWindow>(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), 
-		"Minecraft Clone", sf::Style::Titlebar | sf::Style::Close, settings);
+    mGameWindow = std::make_unique<sf::RenderWindow>(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT),
+                                                     "Minecraft Clone", sf::Style::Titlebar | sf::Style::Close, settings);
 
 	// Limit the framerate to 60 frames per second
-	gameWindow->setFramerateLimit(60);
-	gameWindow->setActive(true);
+	mGameWindow->setFramerateLimit(60);
+	mGameWindow->setActive(true);
 
 	// ImGui setup
 	#ifdef _DEBUG
-	ImGui::SFML::Init(*gameWindow);
+	ImGui::SFML::Init(*mGameWindow);
 	#endif
 
 	// GLEW setup
@@ -39,13 +39,13 @@ Game::Game()
 	}
 
 	// Setup all application-flow states
-	appStack.saveState<GameState>(State_ID::GameState, *gameWindow);
+	mAppStack.saveState<GameState>(State_ID::GameState, *mGameWindow);
 
 	// load resources
 	loadResources();
 
 	// Initial state of the statestack is TitleState
-	appStack.push(State_ID::GameState);
+	mAppStack.push(State_ID::GameState);
 }
 
 void Game::run()
@@ -70,21 +70,21 @@ void Game::run()
 		}
 
 		#ifdef _DEBUG
-		ImGui::SFML::Update(*gameWindow, frameTimeElapsed);
+		ImGui::SFML::Update(*mGameWindow, frameTimeElapsed);
 		#endif
 		update();
 
 		render();
 	}
 
-	gameWindow->close();
+	mGameWindow->close();
 	ImGui::SFML::Shutdown();
 }
 
 void Game::processEvents()
 {
 	sf::Event event;
-	while (gameWindow->pollEvent(event))
+	while (mGameWindow->pollEvent(event))
 	{
 		if (event.type == sf::Event::Closed)
 			isGameRunning = false;
@@ -93,21 +93,21 @@ void Game::processEvents()
 		ImGui::SFML::ProcessEvent(event);
 		#endif
 		
-		appStack.handleEvent(event);
+		mAppStack.handleEvent(event);
 	}
 }
 
 void Game::fixedUpdate(sf::Time deltaTime)
 {
 	auto deltaTimeInSeconds = deltaTime.asSeconds();
-	
-	Mouse::update(deltaTimeInSeconds, *gameWindow);
-	appStack.fixedUpdate(deltaTimeInSeconds);
+
+    Mouse::fixedUpdate(deltaTimeInSeconds, *mGameWindow);
+	mAppStack.fixedUpdate(deltaTimeInSeconds);
 }
 
 void Game::update()
 {
-	appStack.update();
+	mAppStack.update();
 }
 
 void Game::render()
@@ -119,20 +119,20 @@ void Game::render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// draw the application
-	appStack.draw(*gameWindow, sf::Transform::Identity);
+	mAppStack.draw(*mGameWindow, sf::Transform::Identity);
 
 	#ifdef _DEBUG
-		gameWindow->pushGLStates();
-		ImGui::SFML::Render(*gameWindow);
-		gameWindow->popGLStates();
+		mGameWindow->pushGLStates();
+		ImGui::SFML::Render(*mGameWindow);
+		mGameWindow->popGLStates();
 	#endif
 
 	// display to the window
-	gameWindow->display();
+	mGameWindow->display();
 }
 
 
 void Game::loadResources()
 {
-	fonts.storeResource(Fonts_ID::ArialNarrow, "resources/fonts/arial_narrow.ttf");
+	mFonts.storeResource(Fonts_ID::ArialNarrow, "resources/fonts/arial_narrow.ttf");
 }

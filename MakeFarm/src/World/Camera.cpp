@@ -12,33 +12,33 @@
 #include "Utils/Mouse.h"
 
 Camera::Camera(const sf::RenderTarget& target, sf::Shader& shader)
-	: renderTarget(target)
-    , shader(shader)
+	: mRenderTarget(target)
+    , mShader(shader)
 {
 
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+    mDirection.x = cos(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+    mDirection.y = sin(glm::radians(mPitch));
+    mDirection.z = sin(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+    mViewMatrix = glm::lookAt(mCameraPosition, mCameraPosition + mCameraFront, mCameraUp);
 
     auto targetSize = target.getSize();
-    projectionMatrix = glm::perspective(glm::radians(0.0f), static_cast<float>(targetSize.x / targetSize.y), 1.f, 100.f);
+    mProjectionMatrix = glm::perspective(glm::radians(0.0f), static_cast<float>(targetSize.x / targetSize.y), 1.f, 100.f);
 }
 
 void Camera::update()
 {
     ImGui::Begin("Camera");
 
-    ImGui::SliderFloat3("Translation", &cameraPosition.x, 0.0f, 960.0f);
+    ImGui::SliderFloat3("Translation", &mCameraPosition.x, 0.0f, 960.0f);
 
     ImGui::End();
 }
 
 void Camera::updateViewProjection()
 {
-	sf::Shader::bind(&shader);
-	glm::mat4 vp = getProjection() * getView();
-	shader.setUniform("u_ViewProjection", sf::Glsl::Mat4(&vp[0][0]));
+	sf::Shader::bind(&mShader);
+	glm::mat4 vp = projection() * view();
+	mShader.setUniform("u_ViewProjection", sf::Glsl::Mat4(&vp[0][0]));
 	sf::Shader::bind(nullptr);
 }
 
@@ -46,7 +46,7 @@ void Camera::fixedUpdate(const float& deltaTime)
 {
     updateViewProjection();
 
-    float cameraSpeed = this->cameraSpeed;
+    float cameraSpeed = this->mCameraSpeed;
 
     // Allow player to move faster when press lshift
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
@@ -57,55 +57,55 @@ void Camera::fixedUpdate(const float& deltaTime)
     // Moving a camera
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
     {
-        cameraPosition += cameraSpeed * cameraFront * deltaTime;
+        mCameraPosition += cameraSpeed * mCameraFront * deltaTime;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
     {
-        cameraPosition -= cameraSpeed * cameraFront * deltaTime;
+        mCameraPosition -= cameraSpeed * mCameraFront * deltaTime;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
     {
-        cameraPosition += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
+        mCameraPosition += glm::normalize(glm::cross(mCameraFront, mCameraUp)) * cameraSpeed * deltaTime;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
     {
-        cameraPosition -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed * deltaTime;
+        mCameraPosition -= glm::normalize(glm::cross(mCameraFront, mCameraUp)) * cameraSpeed * deltaTime;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
     {
-        cameraPosition -= cameraSpeed * cameraUp * deltaTime;
+        mCameraPosition -= cameraSpeed * mCameraUp * deltaTime;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
     {
-        cameraPosition += cameraSpeed * cameraUp * deltaTime;
+        mCameraPosition += cameraSpeed * mCameraUp * deltaTime;
     }
 
     // Looking with camera
     if (Mouse::isMouseLocked())
     {
-        auto mouseOffset = static_cast<sf::Vector2f>(Mouse::getMouseOffset());
+        auto mouseOffset = static_cast<sf::Vector2f>(Mouse::mouseOffset());
 
-        mouseOffset.x *= cameraSensitivity * deltaTime;
-        mouseOffset.y *= cameraSensitivity * deltaTime * -1;
+        mouseOffset.x *= mCameraSensitivity * deltaTime;
+        mouseOffset.y *= mCameraSensitivity * deltaTime * -1;
 
-        yaw += mouseOffset.x;
-        pitch += mouseOffset.y;
+        mYaw += mouseOffset.x;
+        mPitch += mouseOffset.y;
 
-        if (pitch > 89.0f)
-            pitch = 89.0f;
-        if (pitch < -89.0f)
-            pitch = -89.0f;
+        if (mPitch > 89.0f)
+            mPitch = 89.0f;
+        if (mPitch < -89.0f)
+            mPitch = -89.0f;
 
-        direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-        direction.y = sin(glm::radians(pitch));
-        direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-        cameraFront = glm::normalize(direction);
+        mDirection.x = cos(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+        mDirection.y = sin(glm::radians(mPitch));
+        mDirection.z = sin(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+        mCameraFront = glm::normalize(mDirection);
     }
-    viewMatrix = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+    mViewMatrix = glm::lookAt(mCameraPosition, mCameraPosition + mCameraFront, mCameraUp);
 
-    float width = renderTarget.getSize().x;
-    float height = renderTarget.getSize().y;
-    projectionMatrix = glm::perspective(glm::radians(fovCamera), width / height, 0.1f, 10000.f);
+    float width = mRenderTarget.getSize().x;
+    float height = mRenderTarget.getSize().y;
+    mProjectionMatrix = glm::perspective(glm::radians(mFovCamera), width / height, 0.1f, 10000.f);
 }
 
 void Camera::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -118,23 +118,23 @@ void Camera::handleEvent(const sf::Event& event)
     switch(event.type)
     {
 	    case sf::Event::MouseWheelMoved:
-	        fovCamera -= event.mouseWheel.delta;
+            mFovCamera -= event.mouseWheel.delta;
 	        break;
     }
 }
 
-glm::mat4 Camera::getView()
+glm::mat4 Camera::view()
 {
-    return viewMatrix;
+    return mViewMatrix;
 }
 
-glm::mat4 Camera::getProjection()
+glm::mat4 Camera::projection()
 {
-    return projectionMatrix;
+    return mProjectionMatrix;
 }
 
-glm::vec3 Camera::getCameraPosition() const
+glm::vec3 Camera::cameraPosition() const
 {
-    return cameraPosition;
+    return mCameraPosition;
 }
 

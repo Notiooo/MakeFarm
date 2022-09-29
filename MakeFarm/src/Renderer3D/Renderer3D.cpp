@@ -25,7 +25,7 @@ void Renderer3D::draw(const VertexArray& va, const IndexBuffer& ib, const sf::Sh
 	sf::Shader::bind(&shader);
 	va.bind();
 	ib.bind();
-	GLCall(glDrawElements(GL_TRIANGLES, ib.getCount(), GL_UNSIGNED_INT, nullptr));
+	GLCall(glDrawElements(GL_TRIANGLES, ib.size(), GL_UNSIGNED_INT, nullptr));
 
 	#ifdef _DEBUG
 	sf::Shader::bind(nullptr);

@@ -7,6 +7,7 @@
 #include "MeshBuilder.h"
 #include "Resources/TexturePack.h"
 #include "World/Block/BlockType.h"
+#include "Utils/Direction.h"
 #include <FastNoiseLite.h>
 
 
@@ -97,14 +98,15 @@ void Chunk::generateChunkTerrain()
 
 void Chunk::createBlockMesh(const Block::Coordinate& pos)
 {
-	const auto& block = getLocalBlock(pos);
+	const auto& block = localBlock(pos);
 
 	for(auto i = 0; i < static_cast<int>(Block::Face::Counter); ++i)
 	{
-		if(faceHasTransparentNeighbor(static_cast<Block::Face>(i), pos))
+		if(doesBlockFaceHasTransparentNeighbor(static_cast<Block::Face>(i), pos))
 		{
-			mMeshBuilder.addQuad(static_cast<Block::Face>(i), 
-				mTexturePack.getNormalizedCoordinates(block.getBlockTextureId(static_cast<Block::Face>(i))), pos);
+			mMeshBuilder.addQuad(static_cast<Block::Face>(i),
+								 mTexturePack.normalizedCoordinates(
+										 block.blockTextureId(static_cast<Block::Face>(i))), pos);
 		}
 	}
 	
@@ -116,7 +118,7 @@ void Chunk::prepareMesh()
 	for (auto y = 0; y < BLOCKS_PER_DIMENSION; ++y)
 	for (auto z = 0; z < BLOCKS_PER_DIMENSION; ++z)
 	{
-		if (getLocalBlock({ x, y, z }).getBlockId() == "Air")
+		if (localBlock({x, y, z}).blockId() == "Air")
 			continue;
 
 		createBlockMesh({ x, y, z });
@@ -130,10 +132,10 @@ void Chunk::updateMesh()
         mModel = std::make_unique<Model3D>();
     }
 
-	mModel->setMesh(mMeshBuilder.getMesh3D());
+	mModel->setMesh(mMeshBuilder.mesh3D());
 }
 
-void Chunk::update(const float& deltaTime)
+void Chunk::fixedUpdate(const float& deltaTime)
 {
 }
 
@@ -165,12 +167,12 @@ void Chunk::markToBeRebuildSlow() const
 {
 	if(mParentContainer)
 	{
-		std::shared_lock guard(mParentContainer->chunksAccessMutex);
-		if (auto foundChunk = mParentContainer->chunks.find(ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition)); 
-				foundChunk != mParentContainer->chunks.end())
+		std::shared_lock guard(mParentContainer->mChunksAccessMutex);
+		if (auto foundChunk = mParentContainer->mChunks.find(ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition));
+				foundChunk != mParentContainer->mChunks.end())
 		{
-			std::scoped_lock guard(mParentContainer->chunksToRebuildSlowAccessMutex);
-			auto& vec = mParentContainer->chunksToRebuildSlow;
+			std::scoped_lock guard(mParentContainer->mChunksToRebuildSlowAccessMutex);
+			auto& vec = mParentContainer->mChunksToRebuildSlow;
 
 			if(auto foundElement = std::find(vec.begin(), vec.end(), foundChunk->second); foundElement != vec.end())
 			{
@@ -178,7 +180,7 @@ void Chunk::markToBeRebuildSlow() const
 			}
 			else
 			{
-				mParentContainer->chunksToRebuildSlow.push_back(foundChunk->second);
+				mParentContainer->mChunksToRebuildSlow.push_back(foundChunk->second);
 			}
 		}
 	}
@@ -188,19 +190,19 @@ void Chunk::markToBeRebuildFast() const
 {
 	if (mParentContainer)
 	{
-		std::shared_lock guard(mParentContainer->chunksAccessMutex);
-		if (auto foundChunk = mParentContainer->chunks.find(ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition));
-				foundChunk != mParentContainer->chunks.end())
+		std::shared_lock guard(mParentContainer->mChunksAccessMutex);
+		if (auto foundChunk = mParentContainer->mChunks.find(ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition));
+				foundChunk != mParentContainer->mChunks.end())
 		{
-			std::scoped_lock guard(mParentContainer->chunksToRebuildFastAccessMutex);
-			mParentContainer->chunksToRebuildFast.push_back(foundChunk->second);
+			std::scoped_lock guard(mParentContainer->mChunksToRebuildFastAccessMutex);
+			mParentContainer->mChunksToRebuildFast.push_back(foundChunk->second);
 		}
 	}
 }
 
 void Chunk::rebuildMesh()
 {
-	std::lock_guard _(rebuildMeshMutex);
+	std::lock_guard _(mRebuildMeshMutex);
     mMeshBuilder.blockMesh();
 	mMeshBuilder.resetMesh();
 	prepareMesh();
@@ -211,7 +213,7 @@ void Chunk::rebuildChunksAround()
 {
 	for (auto direction = static_cast<int>(Direction::None) + 1; direction < static_cast<int>(Direction::Counter); ++direction)
 	{
-		if (const auto chunk = getChunk(static_cast<Direction>(direction)))
+		if (const auto chunk = chunkNearby(static_cast<Direction>(direction)))
 		{
 			chunk->markToBeRebuildSlow();
 		}
@@ -230,27 +232,27 @@ Block::Coordinate Chunk::globalToLocalCoordinates(const Block::Coordinate& world
 	return static_cast<Block::Coordinate>(worldCoordinates - mChunkPosition);
 }
 
-Block& Chunk::getLocalBlock(const Block::Coordinate& localCoordinates)
+Block& Chunk::localBlock(const Block::Coordinate& localCoordinates)
 {
-	return const_cast<Block&>(static_cast<const Chunk&>(*this).getLocalBlock(localCoordinates));
+	return const_cast<Block&>(static_cast<const Chunk &>(*this).localBlock(localCoordinates));
 }
 
-Block& Chunk::getLocalBlock(const Block::Coordinate& position, const Direction& direction)
+Block& Chunk::localNearbyBlock(const Block::Coordinate& position, const Direction& direction)
 {
-	return const_cast<Block&>(static_cast<const Chunk&>(*this).getLocalBlock(position, direction));
+	return const_cast<Block&>(static_cast<const Chunk &>(*this).localNearbyBlock(position, direction));
 }
 
-const Block& Chunk::getLocalBlock(const Block::Coordinate& localCoordinates) const
+const Block& Chunk::localBlock(const Block::Coordinate& localCoordinates) const
 {
 	return *(*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z];
 }
 
-const Block& Chunk::getLocalBlock(const Block::Coordinate& localCoordinates, const Direction& direction) const
+const Block& Chunk::localNearbyBlock(const Block::Coordinate& localCoordinates, const Direction& direction) const
 {
-	return getLocalBlock(getLocalBlockPosition(localCoordinates, direction));
+	return localBlock(localNearbyBlockPosition(localCoordinates, direction));
 }
 
-Block::Coordinate Chunk::getLocalBlockPosition(const Block::Coordinate& position, const Direction& direction) const
+Block::Coordinate Chunk::localNearbyBlockPosition(const Block::Coordinate& position, const Direction& direction) const
 {
 	switch (direction)
 	{
@@ -271,7 +273,7 @@ Block::Coordinate Chunk::getLocalBlockPosition(const Block::Coordinate& position
 	}
 }
 
-std::shared_ptr<Chunk> Chunk::getChunk(const Direction& direction)
+std::shared_ptr<Chunk> Chunk::chunkNearby(const Direction& direction)
 {
 	switch (direction)
 	{
@@ -307,7 +309,7 @@ Block::Coordinate Chunk::localToGlobalCoordinates(const Block::Coordinate& local
 	return mChunkPosition + localCoordinates;
 }
 
-std::vector<Direction> Chunk::getDirectionOfBlockFacesInContactWithOtherChunk(const Block::Coordinate& localCoordinates)
+std::vector<Direction> Chunk::directionOfBlockFacesInContactWithOtherChunk(const Block::Coordinate& localCoordinates)
 {
 	std::vector<Direction> directions;
 
@@ -327,18 +329,18 @@ std::vector<Direction> Chunk::getDirectionOfBlockFacesInContactWithOtherChunk(co
 	return directions;
 }
 
-bool Chunk::faceHasTransparentNeighbor(const Block::Face& face, const Block::Coordinate& blockPos)
+bool Chunk::doesBlockFaceHasTransparentNeighbor(const Block::Face& blockFace, const Block::Coordinate& blockPos)
 {
 	auto isBlockTransparent = [&blockPos, this](const Direction& face)
 	{
-		const auto blockNeighborPosition = getLocalBlockPosition(blockPos, face);
+		const auto blockNeighborPosition = localNearbyBlockPosition(blockPos, face);
 		if (areLocalCoordinatesInsideChunk(blockNeighborPosition))
-			return (getLocalBlock(blockNeighborPosition).isTransparent());
+			return (localBlock(blockNeighborPosition).isTransparent());
 
 		if (belongsToAnyChunkContainer())
 		{
-			if (const auto& neighborBlock = mParentContainer->getWorldBlock(
-							localToGlobalCoordinates(blockNeighborPosition)))
+			if (const auto& neighborBlock = mParentContainer->worldBlock(
+                    localToGlobalCoordinates(blockNeighborPosition)))
 			{
 				return neighborBlock->isTransparent();
 			}
@@ -347,7 +349,7 @@ bool Chunk::faceHasTransparentNeighbor(const Block::Face& face, const Block::Coo
 		return true;
 	};
 	
-	switch(face)
+	switch(blockFace)
 	{
 	case Block::Face::Top:
 		return (isBlockTransparent(Direction::Above));

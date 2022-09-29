@@ -6,26 +6,26 @@
 #include "World/Block/BlockMap.h"
 
 ChunkContainer::ChunkContainer(const TexturePack& texturePack)
-	: texturePack(texturePack)
+	: mTexturePack(texturePack)
 {
 	
 }
 
 void ChunkContainer::draw(const Renderer3D& renderer3D, const sf::Shader& shader) const
 {
-	texturePack.bind();
-	for (auto& [coordinate, chunk] : chunks)
+	mTexturePack.bind();
+	for (auto& [coordinate, chunk] : mChunks)
 		chunk->draw(renderer3D, shader);
 }
 
 void ChunkContainer::rebuildImportantChunks()
 {
-	for(const auto& chunkToRebuild : chunksToRebuildFast)
+	for(const auto& chunkToRebuild : mChunksToRebuildFast)
 	{
 		chunkToRebuild->rebuildMesh();
 		chunkToRebuild->updateMesh();
 	}
-	chunksToRebuildFast.clear();
+	mChunksToRebuildFast.clear();
 }
 
 void ChunkContainer::rebuildInsignificantChunks()
@@ -39,13 +39,13 @@ void ChunkContainer::rebuildInsignificantChunks()
 		return chunks;
 	};
 
-	if(!chunksToRebuildSlow.empty())
+	if(!mChunksToRebuildSlow.empty())
 	{
-		std::scoped_lock guard(chunksToRebuildSlowAccessMutex);
-		chunkCreateMeshProcessesSlow.emplace_back(
-			std::async(std::launch::async, std::ref(rebuildMeshes), std::move(chunksToRebuildSlow)));
+		std::scoped_lock guard(mChunksToRebuildSlowAccessMutex);
+		mChunkCreateMeshProcessesSlow.emplace_back(
+			std::async(std::launch::async, std::ref(rebuildMeshes), std::move(mChunksToRebuildSlow)));
 
-		chunksToRebuildSlow.clear();
+		mChunksToRebuildSlow.clear();
 	}
 }
 
@@ -58,8 +58,8 @@ void ChunkContainer::updateInsignificantChunksMeshes()
 	 * of chunks is executed synchronously as it's fast anyway
 	 */
 
-	for (auto chunkVectorIterator = chunkCreateMeshProcessesSlow.begin(),
-	          endChunkIterator = chunkCreateMeshProcessesSlow.end();
+	for (auto chunkVectorIterator = mChunkCreateMeshProcessesSlow.begin(),
+	          endChunkIterator = mChunkCreateMeshProcessesSlow.end();
 	     chunkVectorIterator != endChunkIterator; )
 	{
 		if (chunkVectorIterator->wait_for(std::chrono::seconds(0)) == std::future_status::ready)
@@ -69,7 +69,7 @@ void ChunkContainer::updateInsignificantChunksMeshes()
 			{
 				chunk->updateMesh();
 			}
-			chunkCreateMeshProcessesSlow.erase(chunkVectorIterator++);
+			mChunkCreateMeshProcessesSlow.erase(chunkVectorIterator++);
 		}
 		else
 		{
@@ -90,7 +90,7 @@ void ChunkContainer::fixedUpdate(const float& deltaTime)
 	rebuildChunks();
 }
 
-sf::Vector3i ChunkContainer::Coordinate::getNonChunkMetric() const
+sf::Vector3i ChunkContainer::Coordinate::nonChunkMetric() const
 {
 	return sf::Vector3i(
 		x * Chunk::CHUNK_WALL_SIZE,
@@ -99,27 +99,27 @@ sf::Vector3i ChunkContainer::Coordinate::getNonChunkMetric() const
 		);
 }
 
-const Block* ChunkContainer::getWorldBlock(const Block::Coordinate& worldBlockCoordinates) const
+const Block* ChunkContainer::worldBlock(const Block::Coordinate& worldBlockCoordinates) const
 {
 	if(const auto chunk = blockPositionToChunk(worldBlockCoordinates))
 	{
-		return &chunk->getLocalBlock(chunk->globalToLocalCoordinates(worldBlockCoordinates));
+		return &chunk->localBlock(chunk->globalToLocalCoordinates(worldBlockCoordinates));
 	}
 	return nullptr;
 }
 
 bool ChunkContainer::doesWorldBlockExist(const Block::Coordinate& worldBlockCoordinates) const
 {
-	std::shared_lock guard(chunksAccessMutex);
-	const auto foundChunk = chunks.find(ChunkContainer::Coordinate::blockToChunkMetric(worldBlockCoordinates));
-	return foundChunk != chunks.cend();
+	std::shared_lock guard(mChunksAccessMutex);
+	const auto foundChunk = mChunks.find(ChunkContainer::Coordinate::blockToChunkMetric(worldBlockCoordinates));
+	return foundChunk != mChunks.cend();
 }
 
 std::shared_ptr<const Chunk> ChunkContainer::blockPositionToChunk(const Block::Coordinate& worldBlockCoordinates) const
 {
-	std::shared_lock guard(chunksAccessMutex);
-	const auto foundChunk = chunks.find(ChunkContainer::Coordinate::blockToChunkMetric(worldBlockCoordinates));
-	if(foundChunk != chunks.cend())
+	std::shared_lock guard(mChunksAccessMutex);
+	const auto foundChunk = mChunks.find(ChunkContainer::Coordinate::blockToChunkMetric(worldBlockCoordinates));
+	if(foundChunk != mChunks.cend())
 	{
 		return foundChunk->second;
 	}
@@ -145,11 +145,11 @@ void ChunkContainer::removeWorldBlock(const Block::Coordinate& worldBlockCoordin
 		 * where it assumes the block is there. This leads to a hole in the chunk. For this reason,
 		 * you must rebuild all chunks that are in contact with the block being removed.
 		 */
-		const auto directions = chunk->getDirectionOfBlockFacesInContactWithOtherChunk(localCoordinates);
+		const auto directions = chunk->directionOfBlockFacesInContactWithOtherChunk(localCoordinates);
 		for (auto& blockDirection : directions)
 		{
 			auto neighboringBlockInOtherChunk = chunk->localToGlobalCoordinates(
-				chunk->getLocalBlockPosition(localCoordinates, blockDirection));
+                    chunk->localNearbyBlockPosition(localCoordinates, blockDirection));
 
 			if (const auto neighboringChunk = blockPositionToChunk(neighboringBlockInOtherChunk))
 			{
@@ -161,7 +161,7 @@ void ChunkContainer::removeWorldBlock(const Block::Coordinate& worldBlockCoordin
 
 void ChunkContainer::generateChunksAround(const Camera& camera)
 {
-	const auto cameraPosition = camera.getCameraPosition();
+	const auto cameraPosition = camera.cameraPosition();
 	const auto currentChunkOfCamera = ChunkContainer::Coordinate::blockToChunkMetric(
 		Block::Coordinate::nonBlockToBlockMetric(sf::Vector3i(cameraPosition.x, cameraPosition.y, cameraPosition.z)));
 
@@ -177,9 +177,9 @@ void ChunkContainer::generateChunksAround(const Camera& camera)
 
 void ChunkContainer::clearFarAwayChunks(const Camera& camera)
 {
-	std::vector<decltype(chunks)::key_type> coordinateOfChunksToDelete;
+	std::vector<decltype(mChunks)::key_type> coordinateOfChunksToDelete;
 
-	const auto cameraPosition = camera.getCameraPosition();
+	const auto cameraPosition = camera.cameraPosition();
 	const auto currentChunkOfCamera = ChunkContainer::Coordinate::blockToChunkMetric(
 		Block::Coordinate::nonBlockToBlockMetric(sf::Vector3i(cameraPosition.x, cameraPosition.y, cameraPosition.z)));
 
@@ -189,8 +189,8 @@ void ChunkContainer::clearFarAwayChunks(const Camera& camera)
 	 * It is in its area that the chunks are drawn. Here it should be checked in the same way.
 	 * I don't want a situation where a barely created chunk is immediately deleted.
 	 */
-	std::shared_lock guard_shared(chunksAccessMutex);
-	for(auto& [coordinate, chunk] : chunks)
+	std::shared_lock guard_shared(mChunksAccessMutex);
+	for(auto& [coordinate, chunk] : mChunks)
 	{
 		sf::Vector3i distanceBetweenCameraAndChunk;
 
@@ -207,19 +207,19 @@ void ChunkContainer::clearFarAwayChunks(const Camera& camera)
 	}
 	guard_shared.unlock();
 
-	std::scoped_lock guard(chunksAccessMutex);
+	std::scoped_lock guard(mChunksAccessMutex);
 	for(auto& coordinate : coordinateOfChunksToDelete)
 	{
-		chunks.erase(coordinate);
+		mChunks.erase(coordinate);
 	}
 }
 
 void ChunkContainer::generateChunk(ChunkContainer::Coordinate chunkPosition)
 {
-	auto newChunk = std::make_shared<Chunk>(sf::Vector3i(chunkPosition.getNonChunkMetric()), texturePack, *this);
+	auto newChunk = std::make_shared<Chunk>(sf::Vector3i(chunkPosition.nonChunkMetric()), mTexturePack, *this);
 
-	std::scoped_lock guard(chunksAccessMutex);
-	chunks.emplace(chunkPosition, std::move(newChunk));
+	std::scoped_lock guard(mChunksAccessMutex);
+	mChunks.emplace(chunkPosition, std::move(newChunk));
 }
 
 void ChunkContainer::generatesNewChunksAtAndAroundOrigin(const ChunkContainer::Coordinate& origin)
@@ -237,7 +237,7 @@ void ChunkContainer::generatesNewChunksAtAndAroundOrigin(const ChunkContainer::C
 		// Creates a single plane of chunks in specific point of Y axis
 		for (auto i = 0; i < WORLD_GENERATION_CHUNK_DISTANCE * WORLD_GENERATION_CHUNK_DISTANCE * 2 * 2; ++i)
 		{
-			auto nextChunkPosition = chunkPositionGetter.getNextValue();
+			auto nextChunkPosition = chunkPositionGetter.nextValue();
 			const bool isAdded = generateChunkIfNotExist({ nextChunkPosition.x, currentHeight + origin.y, nextChunkPosition.z });
 			addedChunks += isAdded;
 			globalAddedChunks += isAdded;
@@ -269,8 +269,8 @@ void ChunkContainer::generatesNewChunksAtAndAroundOrigin(const ChunkContainer::C
 
 bool ChunkContainer::generateChunkIfNotExist(ChunkContainer::Coordinate chunkPosition)
 {
-	std::shared_lock guard(chunksAccessMutex);
-	if(chunks.find(chunkPosition) == chunks.end())
+	std::shared_lock guard(mChunksAccessMutex);
+	if(mChunks.find(chunkPosition) == mChunks.end())
 	{
 		guard.unlock();
 		generateChunk(chunkPosition);

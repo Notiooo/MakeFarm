@@ -1,54 +1,55 @@
 #include "pch.h"
 #include "CoordinatesAroundOriginGetter.h"
+#include "Utils/Direction.h"
 
-CoordinatesAroundOriginGetter::CoordinatesAroundOriginGetter(sf::Vector3i origin): currentChunkPosition(origin)
+CoordinatesAroundOriginGetter::CoordinatesAroundOriginGetter(sf::Vector3i origin): mCurrentChunkPosition(origin)
 {}
 
 void CoordinatesAroundOriginGetter::resetToStart()
 {
-	changedPosition = { 0, 0, 0 };
-	currentLineLength = 0;
-	currentDirection = Direction::ToTheRight;
+    mChangedPosition = {0, 0, 0 };
+    mCurrentLineLength = 0;
+    mCurrentDirection = Direction::ToTheRight;
 }
 
-sf::Vector3i CoordinatesAroundOriginGetter::getNextValue()
+sf::Vector3i CoordinatesAroundOriginGetter::nextValue()
 {
-	if (currentLineLength == 0)
+	if (mCurrentLineLength == 0)
 	{
-		currentLineLength = 1;
-		return currentChunkPosition;
+        mCurrentLineLength = 1;
+		return mCurrentChunkPosition;
 	}
 
-	switch (currentDirection)
+	switch (mCurrentDirection)
 	{
 	case Direction::ToTheRight:
-		changedPosition.x += 1;
-		if (changedPosition.x == currentLineLength)
+        mChangedPosition.x += 1;
+		if (mChangedPosition.x == mCurrentLineLength)
 		{
-			currentDirection = Direction::InFront;
+            mCurrentDirection = Direction::InFront;
 		}
 		break;
 
 	case Direction::InFront:
-		changedPosition.z += 1;
-		if (changedPosition.z == currentLineLength)
-			currentDirection = Direction::ToTheLeft;
+        mChangedPosition.z += 1;
+		if (mChangedPosition.z == mCurrentLineLength)
+            mCurrentDirection = Direction::ToTheLeft;
 		break;
 
 	case Direction::ToTheLeft:
-		changedPosition.x -= 1;
-		if (changedPosition.x == -currentLineLength)
-			currentDirection = Direction::Behind;
+        mChangedPosition.x -= 1;
+		if (mChangedPosition.x == -mCurrentLineLength)
+            mCurrentDirection = Direction::Behind;
 		break;
 
 	case Direction::Behind:
-		changedPosition.z -= 1;
-		if (changedPosition.z == -currentLineLength)
+        mChangedPosition.z -= 1;
+		if (mChangedPosition.z == -mCurrentLineLength)
 		{
-			currentDirection = Direction::ToTheRight;
-			++currentLineLength;
+            mCurrentDirection = Direction::ToTheRight;
+			++mCurrentLineLength;
 		}
 		break;
 	}
-	return currentChunkPosition + changedPosition;
+	return mCurrentChunkPosition + mChangedPosition;
 }

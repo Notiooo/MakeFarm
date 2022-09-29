@@ -84,9 +84,11 @@ public:
 	 */
 	void fixedUpdate(const float& deltaTime);
 
+    /**
+     * \brief Updates the logic of the statestack which is not dependent on time and is performed every frame
+     */
 	void update();
 
-	
 	/**
 	 * \brief Draws the states in the stack to the given target with given states.
 	 * \param target where drawable object should be drawn to.
@@ -187,18 +189,18 @@ private:
 	 * Its implementation is a vector, since the implementation of
 	 * "transparent" states requires the ability to iterate over states.
 	 */
-	std::vector<std::unique_ptr<State>> stack;
+	std::vector<std::unique_ptr<State>> mStack;
 
 	/**
 	 * \brief A FIFO queue that holds pending operations for execution on the stack.
 	 */
-	std::vector<Change> changesQueue;
+	std::vector<Change> mChangesQueue;
 
 
 	/**
 	 * \brief A factory that creates states objects with the given identifiers.
 	 */
-	std::map<State_ID, std::function<std::unique_ptr<State>()>> factory;
+	std::map<State_ID, std::function<std::unique_ptr<State>()>> mFactory;
 };
 
 template <typename State, typename... Args>
@@ -206,7 +208,7 @@ void StateStack::saveState(State_ID stateID, Args&&... args)
 {
 	// args holds all the variables and data that state
 	// might need to use
-	factory[stateID] = [&args..., this]()
+	mFactory[stateID] = [&args..., this]()
 	{
 		return std::unique_ptr<State>(std::make_unique<State>(*this, std::forward<Args>(args)...));
 	};

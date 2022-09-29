@@ -4,29 +4,19 @@
 #include <mutex>
 #include <queue>
 
-
 #include "MeshBuilder.h"
 #include "Renderer3D/Model3D.h"
 #include "World/Block/Block.h"
 #include "Renderer3D/Renderer3D.h"
 #include "Utils/MultiDimensionalArray.h"
+#include "Utils/Direction.h"
 
 class ChunkContainer;
 
-enum class Direction
-{
-	None,
 
-	Above,
-	Below,
-	ToTheLeft,
-	ToTheRight,
-	InFront,
-	Behind,
-
-	Counter
-};
-
+/**
+ * It is a large object consisting of a multitude of individual blocks contained within it.
+ */
 class Chunk
 {
 	friend class ChunkContainer;
@@ -56,7 +46,17 @@ public:
 	 */
 	void updateMesh();
 
-	void update(const float& deltaTime);
+    /**
+     * Updates the status/logic of the state which, as a rule, should not depend on the number of frames generated, but on time.
+     * @param deltaTime the time that has passed since the last frame.
+     */
+	void fixedUpdate(const float& deltaTime);
+
+    /**
+     * Draws this chunk to the game screen
+     * @param renderer3d Renderer drawing the 3D game world onto the 2D screen
+     * @param shader Shader with the help of which the object should be drawn
+     */
 	void draw(const Renderer3D& renderer3d, const sf::Shader& shader) const;
 
 	/**
@@ -64,7 +64,7 @@ public:
 	 * \param localCoordinates Position in relation to the chunk
 	 * \return Block reference inside chunk
 	 */
-	Block& getLocalBlock(const Block::Coordinate& localCoordinates);
+	Block& localBlock(const Block::Coordinate& localCoordinates);
 
 	/**
 	 * \brief Removes a block on coordinates given relatively to the position of the chunk
@@ -77,7 +77,7 @@ public:
 	 * \param localCoordinates Position in relation to the chunk
 	 * \return Block reference inside chunk
 	 */
-	[[nodiscard]] const Block& getLocalBlock(const Block::Coordinate& localCoordinates) const;
+	[[nodiscard]] const Block& localBlock(const Block::Coordinate& localCoordinates) const;
 
 	/**
 	 * \brief Changes global world coordinates to local ones relative to chunk
@@ -99,7 +99,6 @@ public:
 	 * \return True if local coordinates are inside the chunk, false otherwise
 	 */
 	[[nodiscard]] static bool areLocalCoordinatesInsideChunk(const Block::Coordinate& localCoordinates);
-
 
 	/**
 	 * \brief Checks that the given local coordinates relative to the chunk are at its extremity.
@@ -125,23 +124,81 @@ public:
 	void markToBeRebuildFast() const;
 
 protected:
+    /**
+     * Generates natural world terrain on a given chunk
+     */
 	void generateChunkTerrain();
+
+    /**
+     * Rebuilds other chunks inside the same container around this chunk.
+     */
 	void rebuildChunksAround();
+
+    /**
+     * It is rebuilding this mesh fresh. Very expensive operation
+     */
 	void rebuildMesh();
 
-	std::vector<Direction> getDirectionOfBlockFacesInContactWithOtherChunk(const Block::Coordinate& localCoordinates);
-	[[nodiscard]] Block& getLocalBlock(const Block::Coordinate& position, const Direction& direction);
-	[[nodiscard]] const Block& getLocalBlock(const Block::Coordinate& localCoordinates, const Direction& direction) const;
-	[[nodiscard]] Block::Coordinate getLocalBlockPosition(const Block::Coordinate& position, const Direction& direction) const;
+    /**
+     * Returns information whether any chunk is in contact with the listed block.
+     * This is important information when a given block has been destroyed and there
+     * is a need to rebuild the chunk next to it so that it does not display an empty hole.
+     * @param localCoordinates Block coordinates Coordinates of the block to be checked
+     * @return Information on whether the block is in contact with another chunk
+     */
+	std::vector<Direction> directionOfBlockFacesInContactWithOtherChunk(const Block::Coordinate& localCoordinates);
 
-	[[nodiscard]] std::shared_ptr<Chunk> getChunk(const Direction& direction);
+    /**
+     * Returns the block that is close to it, in the direction determined relative to the block on the local coordinates.
+     * @param position Local block coordinates inside the chunk
+     * @param direction Direction next to which the block you are looking for is located
+     * @return Block reference inside chunk
+     */
+	[[nodiscard]] Block& localNearbyBlock(const Block::Coordinate& position, const Direction& direction);
+
+    /**
+     * Returns the block that is close to it, in the direction determined relative to the block on the local coordinates.
+     * @param position Local block coordinates inside the chunk
+     * @param direction Direction next to which the block you are looking for is located
+     * @return Block reference inside chunk
+     */
+	[[nodiscard]] const Block& localNearbyBlock(const Block::Coordinate& localCoordinates, const Direction& direction) const;
+
+    /**
+     * Returns the position of the local block, located right next to the local block in the indicated direction.
+     * @param position Local block position
+     * @param direction Direction next to which the block you are looking for is located
+     * @return Block coordinate inside chunk
+     */
+	[[nodiscard]] Block::Coordinate localNearbyBlockPosition(const Block::Coordinate& position, const Direction& direction) const;
+
+    /**
+     * Returns the chunk located in the listed direction from this chunk
+     * @param direction Direction next to which the chunk you are looking for is located
+     * @return Pointer to chunk found
+     */
+	[[nodiscard]] std::shared_ptr<Chunk> chunkNearby(const Direction& direction);
 
 private:
 	using ChunkBlocks = MultiDimensionalArray<std::unique_ptr<Block>,
 		BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION>;
-
 	Chunk(std::shared_ptr<ChunkBlocks> chunkBlocks, Block::Coordinate blockPosition, const TexturePack& texturePack, ChunkContainer& parent);
-	[[nodiscard]] bool faceHasTransparentNeighbor(const Block::Face& face, const Block::Coordinate& blockPos);
+
+    /**
+     * It checks whether a given block face has an "air" or other transparent face
+     * next to it through which it can be seen at all.
+     *
+     * @param blockFace The face of the block to check
+     * @param blockPos Local position of the block to be checked
+     * @return Yes if the face next to the face of the indicated block is
+     * transparent by which it is visible, false in the real case
+     */
+    [[nodiscard]] bool doesBlockFaceHasTransparentNeighbor(const Block::Face& blockFace, const Block::Coordinate& blockPos);
+
+    /**
+     * Creates a block mesh on the indicated local coordinates
+     * @param pos The indicated position of the block on which the mesh should be created
+     */
 	void createBlockMesh(const Block::Coordinate& pos);
 	
 private:
@@ -152,6 +209,6 @@ private:
 	std::unique_ptr<Model3D> mModel;
 
 	std::shared_ptr<ChunkBlocks> mChunkOfBlocks;
-	std::recursive_mutex rebuildMeshMutex;
+	std::recursive_mutex mRebuildMeshMutex;
 	std::future<void> mChunkTerrainGenerationProcess;
 };

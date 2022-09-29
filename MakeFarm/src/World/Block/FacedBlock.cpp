@@ -12,7 +12,7 @@ void FacedBlock::markFacedBlock(const Camera& camera, const ChunkContainer& chun
 	static auto rayStep = Block::BLOCK_SIZE * 0.01f;
 	for (float raySize = rayStep; raySize < Camera::MAX_RAY_SIZE; raySize += rayStep)
 	{
-		auto facedPosition = camera.getPointingPosition<float>(raySize);
+		auto facedPosition = camera.positionAtTheEndOfRayInfrontOfCamera<float>(raySize);
 
 		/*
 		 * Block origin is in left bottom corner of cube. Now think about it what happens
@@ -32,9 +32,9 @@ void FacedBlock::markFacedBlock(const Camera& camera, const ChunkContainer& chun
 
 		auto facedBlock = Block::Coordinate::nonBlockToBlockMetric(facedPosition);
 
-		if (const auto blockPtr = chunkContainer.getWorldBlock(facedBlock))
+		if (const auto blockPtr = chunkContainer.worldBlock(facedBlock))
 		{
-			if (blockPtr->getBlockId() != "Air")
+			if (blockPtr->blockId() != "Air")
 			{
 				const Block::Coordinate& blockPosition = std::move(facedBlock);
 				MeshBuilder cubeBuilder(Block::Coordinate(0, 0, 0));
@@ -42,10 +42,10 @@ void FacedBlock::markFacedBlock(const Camera& camera, const ChunkContainer& chun
 				for (int face = 0; face < static_cast<int>(Block::Face::Counter); ++face)
 				{
 					cubeBuilder.addQuad(static_cast<Block::Face>(face),
-						mTexturePack.getNormalizedCoordinates(5), blockPosition);
+                                        mTexturePack.normalizedCoordinates(5), blockPosition);
 				}
 				mSelectedBlock = std::make_unique<Model3D>();
-				mSelectedBlock->setMesh(cubeBuilder.getMesh3D());
+				mSelectedBlock->setMesh(cubeBuilder.mesh3D());
 				mSelectedBlockPosition = facedBlock;
 				return;
 			}
@@ -60,7 +60,7 @@ void FacedBlock::markFacedBlock(const Camera& camera, const ChunkContainer& chun
 	}
 }
 
-Block::Coordinate& FacedBlock::getBlockPosition()
+Block::Coordinate& FacedBlock::blockPosition()
 {
 	/* 
 	 * TODO: Consider if this error is a good practice

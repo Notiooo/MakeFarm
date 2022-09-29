@@ -17,7 +17,6 @@ class State
 {
 public:
 	explicit State(StateStack& stack);
-
 	State(const State&) = delete;
 	State(State&&) = delete;
 
@@ -39,6 +38,9 @@ public:
 	 */
 	virtual bool fixedUpdate(const float& deltaTime);
 
+    /**
+     * \brief Updates the logic of this state which is dependent of the framerate and is performed every frame
+     */
 	virtual bool update();
 
 	/**
@@ -69,7 +71,7 @@ protected:
 	void requestClear() const noexcept;
 
 private:
-	StateStack* stack; //!< Pointer to the stack containing this state
+	StateStack& mStack; //!< Pointer to the stack containing this state
 };
 
 #endif

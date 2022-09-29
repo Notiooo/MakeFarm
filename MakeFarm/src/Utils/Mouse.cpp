@@ -12,7 +12,7 @@ void Mouse::lockMouseAtCenter(sf::Window& window)
 {
 	if (!isMouseLocked())
 	{
-		lockedMouse = true;
+        mLockedMouse = true;
 		window.setMouseCursorVisible(false);
 		centerMouse(window);
 	}
@@ -23,26 +23,26 @@ void Mouse::unlockMouse(sf::Window& window)
 	if (isMouseLocked())
 	{
 		window.setMouseCursorVisible(true);
-		lockedMouse = false;
+        mLockedMouse = false;
 	}
 }
 
 bool Mouse::isMouseLocked()
 {
-	return lockedMouse;
+	return mLockedMouse;
 }
 
-sf::Vector2i Mouse::getMouseOffset()
+sf::Vector2i Mouse::mouseOffset()
 {
-	return mouseOffset;
+	return mMouseOffset;
 }
 
-void Mouse::update(const float& deltaTime, const sf::Window& window)
+void Mouse::fixedUpdate(const float& deltaTime, const sf::Window& window)
 {
 	if (isMouseLocked())
 	{
 		const auto windowCenter = sf::Vector2i(window.getSize().x / 2.f, window.getSize().y / 2.f);
-		mouseOffset = sf::Mouse::getPosition(window) - windowCenter;
+        mMouseOffset = sf::Mouse::getPosition(window) - windowCenter;
 		centerMouse(window);
 	}
 }
@@ -52,7 +52,9 @@ void Mouse::handleFirstPersonBehaviour(const sf::Event& event, sf::RenderWindow&
 	if (event.type == sf::Event::KeyPressed)
 	{
 		if (event.key.code == sf::Keyboard::Escape)
-			Mouse::unlockMouse(gameWindow);
+        {
+            Mouse::unlockMouse(gameWindow);
+        }
 	}
 	else if (event.type == sf::Event::MouseButtonPressed)
 	{

@@ -2,6 +2,9 @@
 #include "Block.h"
 
 
+/**
+ * It carries with it information about the type of block.
+ */
 struct BlockType
 {
 	std::string blockFileName;

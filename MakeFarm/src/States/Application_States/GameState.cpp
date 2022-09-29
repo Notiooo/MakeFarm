@@ -13,34 +13,34 @@
 #include "World/Block/BlockMap.h"
 
 GameState::GameState(StateStack& stack, sf::RenderWindow& window) :
-	State(stack),
-	gameWindow(window),
-	gameCamera(gameWindow, shader),
-	gameSettings("settings.cfg"),
-	texturePack("defaultTextures"),
-	testChunk(texturePack),
-	mSelectedBlock(texturePack)
+        State(stack),
+        mGameWindow(window),
+        mGameCamera(mGameWindow, mShader),
+        mGameSettings("settings.cfg"),
+        mTexturePack("defaultTextures"),
+        mTestChunk(mTexturePack),
+        mSelectedBlock(mTexturePack)
 {
-	Mouse::lockMouseAtCenter(gameWindow);
-	shader.loadFromFile("resources/shaders/vertexShader.shader", "resources/shaders/FragmentShader.shader");
+	Mouse::lockMouseAtCenter(mGameWindow);
+	mShader.loadFromFile("resources/shaders/vertexShader.shader", "resources/shaders/FragmentShader.shader");
 
 	GLCall(glEnable(GL_CULL_FACE));
 	GLCall(glEnable(GL_DEPTH_TEST));
 	GLCall(glEnable(GL_BLEND));
 	GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-	sf::Shader::bind(&shader);
-	shader.setUniform("u_ViewProjection", sf::Glsl::Mat4(sf::Transform::Identity));
+	sf::Shader::bind(&mShader);
+	mShader.setUniform("u_ViewProjection", sf::Glsl::Mat4(sf::Transform::Identity));
 	sf::Shader::bind(nullptr);
 
-	auto test = BlockMap::getBlockMap();
+	auto test = BlockMap::blockMap();
 }
 
 
 bool GameState::handleEvent(const sf::Event& event)
 {
-	Mouse::handleFirstPersonBehaviour(event, gameWindow);
-	gameCamera.handleEvent(event);
+	Mouse::handleFirstPersonBehaviour(event, mGameWindow);
+	mGameCamera.handleEvent(event);
 
 	switch (event.type)
 	{
@@ -49,7 +49,7 @@ bool GameState::handleEvent(const sf::Event& event)
 			if (event.key.code == sf::Mouse::Button::Left)
 			{
 				if (mSelectedBlock.isAnyBlockSelected())
-					testChunk.removeWorldBlock(mSelectedBlock.getBlockPosition());
+					mTestChunk.removeWorldBlock(mSelectedBlock.blockPosition());
 			}
 		}
 	}
@@ -71,12 +71,12 @@ bool GameState::fixedUpdate(const float& deltaTime)
 	 * d = st (distance = speed * time)
 	 */
 
-	gameCamera.fixedUpdate(deltaTime);
-	mSelectedBlock.markFacedBlock(gameCamera, testChunk);
+	mGameCamera.fixedUpdate(deltaTime);
+	mSelectedBlock.markFacedBlock(mGameCamera, mTestChunk);
 
-	testChunk.fixedUpdate(deltaTime);
-	testChunk.generateChunksAround(gameCamera);
-    testChunk.clearFarAwayChunks(gameCamera);
+	mTestChunk.fixedUpdate(deltaTime);
+	mTestChunk.generateChunksAround(mGameCamera);
+    mTestChunk.clearFarAwayChunks(mGameCamera);
 	
 	/*
 	 * Set this state to transparent -- in other words
@@ -116,7 +116,7 @@ void GameState::updateDebugMenu()
 						auto texturePackFolder = texturePackDir.path().filename().string();
 						if (ImGui::MenuItem(texturePackFolder.c_str()))
 						{
-							texturePack.loadTexturePack(texturePackFolder);
+							mTexturePack.loadTexturePack(texturePackFolder);
 						}
 					}
 				}
@@ -140,7 +140,7 @@ void GameState::updateDebugMenu()
 
 bool GameState::update()
 {
-	gameCamera.update();
+	mGameCamera.update();
 
 	updateDebugMenu();
 
@@ -149,7 +149,7 @@ bool GameState::update()
 
 void GameState::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	testChunk.draw(gameRenderer, shader);
-	mSelectedBlock.draw(gameRenderer, shader);
+	mTestChunk.draw(mGameRenderer, mShader);
+	mSelectedBlock.draw(mGameRenderer, mShader);
 }
 

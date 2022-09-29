@@ -44,8 +44,10 @@ private:
 	 */
 	void fixedUpdate(sf::Time deltaTime);
 
+    /**
+     * Updates the logic of the game which is not dependent on time and is performed every frame
+     */
 	void update();
-
 
 	/**
 	 * \brief Displays the game on the image of the game window
@@ -71,7 +73,7 @@ private:
 	static const int SCREEN_WIDTH; //!< Default game window width
 	static const int SCREEN_HEIGHT; //!< Default game window height
 
-	std::unique_ptr<sf::RenderWindow> gameWindow; //!< The window to which the game image should be drawn.
+	std::unique_ptr<sf::RenderWindow> mGameWindow; //!< The window to which the game image should be drawn.
 
 	bool isGameRunning = true;
 
@@ -80,7 +82,7 @@ private:
 	 *
 	 * This saves the memory used so as not to load the same font multiple times in multiple places.
 	 */
-	FontManager fonts;
+	FontManager mFonts;
 
 	
 	/**
@@ -90,7 +92,7 @@ private:
 	 * Among other things, it allows to go from the main menu of the game to the game
 	 * itself, as well as to pause the game.
 	 */
-	StateStack appStack;
+	StateStack mAppStack;
 };
 
 

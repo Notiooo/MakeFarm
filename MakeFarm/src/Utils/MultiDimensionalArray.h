@@ -1,23 +1,6 @@
 #pragma once
 #include <array>
 
-template <class Type, size_t ThisDimension, size_t... NextDimensions>
-struct MultiDimensionalArrayImpl
-{
-    MultiDimensionalArrayImpl() = delete;
-    using type = std::array<typename MultiDimensionalArrayImpl<Type, NextDimensions...>::type, ThisDimension>;
-};
-
-template <class Type, size_t ThisDimension>
-struct MultiDimensionalArrayImpl<Type, ThisDimension>
-{
-    MultiDimensionalArrayImpl() = delete;
-    using type = std::array<Type, ThisDimension>;
-};
-
-template <class Type, size_t... Dimensions>
-using MultiDimensionalArray = typename MultiDimensionalArrayImpl<Type, Dimensions...>::type;
-
 /*
  * Example usage:
  *
@@ -34,3 +17,20 @@ using MultiDimensionalArray = typename MultiDimensionalArrayImpl<Type, Dimension
  * MultiDimensionalArray = std::array<std::array<std::array<std::array<int, 9>, 6>, 2>, 5>;
  *
  */
+
+template <class Type, size_t ThisDimension, size_t... NextDimensions>
+struct MultiDimensionalArrayImpl
+{
+    MultiDimensionalArrayImpl() = delete;
+    using type = std::array<typename MultiDimensionalArrayImpl<Type, NextDimensions...>::type, ThisDimension>;
+};
+
+template <class Type, size_t ThisDimension>
+struct MultiDimensionalArrayImpl<Type, ThisDimension>
+{
+    MultiDimensionalArrayImpl() = delete;
+    using type = std::array<Type, ThisDimension>;
+};
+
+template <class Type, size_t... Dimensions>
+using MultiDimensionalArray = typename MultiDimensionalArrayImpl<Type, Dimensions...>::type;

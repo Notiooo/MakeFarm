@@ -3,33 +3,35 @@
 
 Model3D::Model3D()
 {
-	bufferLayout.push<GLfloat>(3);
-	bufferLayout.push<GLfloat>(2);
+	mBufferLayout.push<GLfloat>(3);
+	mBufferLayout.push<GLfloat>(2);
 }
 
 void Model3D::setMesh(const Mesh3D& mesh)
 {
-	vertexBuffers.clear();
+	mVertexBuffers.clear();
 	
-	vertexBuffers.emplace_back(mesh.vertices.data(), mesh.vertices.size() * sizeof(mesh.vertices[0]));
-	vertexBuffers.emplace_back(mesh.textureCoordinates.data(), mesh.textureCoordinates.size() * sizeof(mesh.textureCoordinates[0]));
-	vertexArray.setBuffer(vertexBuffers, bufferLayout);
+	mVertexBuffers.emplace_back(mesh.vertices.data(), mesh.vertices.size() * sizeof(mesh.vertices[0]));
+	mVertexBuffers.emplace_back(mesh.textureCoordinates.data(), mesh.textureCoordinates.size() * sizeof(mesh.textureCoordinates[0]));
+
+    // TODO: I think I should use there somehow the vertexBuffer not inside vector, maybe?
+    mVertexArray.setBuffer(mVertexBuffers, mBufferLayout);
 	
-	indices.setData(mesh.indices.data(), static_cast<unsigned int>(mesh.indices.size()));
+	mIndices.setData(mesh.indices.data(), static_cast<unsigned int>(mesh.indices.size()));
 
 	#ifdef _DEBUG
-	vertexArray.unbind();
-	indices.unbind();
+	mVertexArray.unbind();
+	mIndices.unbind();
 	#endif
 }
 
 void Model3D::setMesh(Mesh3D&& mesh)
 {
-	this->mesh = std::make_unique<Mesh3D>(std::move(mesh));
-	setMesh(*this->mesh);
+	this->mMesh = std::make_unique<Mesh3D>(std::move(mesh));
+	setMesh(*this->mMesh);
 }
 
 void Model3D::draw(const Renderer3D& renderer3d, const sf::Shader& shader) const
 {
-	renderer3d.draw(vertexArray, indices, shader);
+	renderer3d.draw(mVertexArray, mIndices, shader);
 }

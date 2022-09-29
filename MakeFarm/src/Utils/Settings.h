@@ -4,28 +4,54 @@
 
 
 /**
- * \brief A class to read game settings
+ * \brief A class used to read game settings
  */
 class Settings : sf::NonCopyable
 {
 public:
 	Settings() = default;
 	Settings(const std::string& fileName);
-	
-	void openFile(const std::string& fileName);
-	void closeFile();
 
+    /**
+     * Opens game settings file
+     * @param fileName Name of the settings file
+     */
+	void openFile(const std::string& fileName);
+
+    /**
+     * Closes current game settings file
+     */
+    void closeFile();
+
+    /**
+     * Reads the value of the setting under the specified name from the currently opened settings file.
+     * If there is no such setting, it throws an error.
+     * @tparam T Type of value hiding under a given setting
+     * @param settingName The name of the setting to read from the settings file
+     * @return The value hiding under the given setting name in the currently open settings file
+     */
 	template <typename T>
 	T get(const std::string& settingName) const;
 
+    /**
+     * Checks whether a given setting is available in the currently open file.
+     * @param settingName The name of the setting to read from the settings file
+     * @return The value hiding under the given setting name in the currently open settings file
+     */
 	bool isPresent(const std::string& settingName) const;
 
+    /**
+     * Writes a new setting with the specified name and specified value to the currently open settings file.
+     * @tparam T The type of value that will be written to the file
+     * @param settingName The name of the setting to write to the settings file
+     * @param value Value for a given setting name
+     */
 	template <typename T>
 	void set(const std::string& settingName, const T& value);
 
 private:
-	std::string settingsFilename;
-	mutable std::ifstream settingsFile;
+	std::string mSettingsFilename;
+	mutable std::ifstream mSettingsFile;
 
 	template <typename T>
 	T parseResult(const std::string& settingResult) const;
@@ -35,15 +61,15 @@ private:
 template <typename T>
 T Settings::get(const std::string& settingName) const
 {
-	if (settingsFilename.empty())
+	if (mSettingsFilename.empty())
 		throw std::logic_error("Trying to get content of file of unknown/closed file");
 
 	// It set up fstream to be possible to read it again
-	settingsFile.clear();
-	settingsFile.seekg(0);
+	mSettingsFile.clear();
+	mSettingsFile.seekg(0);
 
 	std::string fileLine;
-	while(std::getline(settingsFile, fileLine))
+	while(std::getline(mSettingsFile, fileLine))
 	{
 		std::stringstream ss(fileLine);
 		std::string foundSetting;
@@ -74,16 +100,16 @@ T Settings::get(const std::string& settingName) const
 template <typename T>
 void Settings::set(const std::string& settingName, const T& value)
 {
-	if (settingsFilename.empty())
+	if (mSettingsFilename.empty())
 		throw std::logic_error("Trying to get content of file of unknown/closed file");
 
 	// Check if the setting is present there
-	std::ofstream settingsFileWrite("temp-" + settingsFilename);
+	std::ofstream settingsFileWrite("temp-" + mSettingsFilename);
 
 	bool found = false;
 
 	std::string fileLine;
-	while (std::getline(settingsFile, fileLine))
+	while (std::getline(mSettingsFile, fileLine))
 	{
 		if(fileLine.rfind(settingName, 0) == 0)
 		{
@@ -104,10 +130,10 @@ void Settings::set(const std::string& settingName, const T& value)
 	settingsFileWrite.close();
 	closeFile();
 
-	std::remove(settingsFilename.c_str());
-	std::rename(("temp-" + settingsFilename).c_str(), settingsFilename.c_str());
+	std::remove(mSettingsFilename.c_str());
+	std::rename(("temp-" + mSettingsFilename).c_str(), mSettingsFilename.c_str());
 
-	openFile(settingsFilename);
+	openFile(mSettingsFilename);
 }
 
 template <typename T>

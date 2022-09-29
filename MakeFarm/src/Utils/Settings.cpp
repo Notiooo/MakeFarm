@@ -2,38 +2,38 @@
 #include "Settings.h"
 
 Settings::Settings(const std::string& fileName)
-	: settingsFilename(fileName)
+	: mSettingsFilename(fileName)
 {
 	openFile(fileName);
 }
 
 void Settings::openFile(const std::string& fileName)
 {
-	settingsFilename = fileName;
-	settingsFile.open(settingsFilename);
+    mSettingsFilename = fileName;
+	mSettingsFile.open(mSettingsFilename);
 
-	if(!settingsFile)
+	if(!mSettingsFile)
 		throw std::logic_error("Opening a file: " + fileName + " has failed");
 }
 
 void Settings::closeFile()
 {
-	settingsFile.close();
-	settingsFilename = "";
-	settingsFile.clear();
+	mSettingsFile.close();
+    mSettingsFilename = "";
+	mSettingsFile.clear();
 }
 
 bool Settings::isPresent(const std::string& settingName) const
 {
-	if (settingsFilename.empty())
+	if (mSettingsFilename.empty())
 		throw std::logic_error("Trying to get content of file of unknown/closed name");
 
 	// It set up fstream to be possible to read it again
-	settingsFile.clear();
-	settingsFile.seekg(0);
+	mSettingsFile.clear();
+	mSettingsFile.seekg(0);
 
 	std::string fileLine;
-	while (std::getline(settingsFile, fileLine))
+	while (std::getline(mSettingsFile, fileLine))
 	{
 		std::stringstream ss(fileLine);
 		std::string foundSetting;

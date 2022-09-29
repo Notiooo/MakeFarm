@@ -5,16 +5,16 @@
 
 #include "Utils/Settings.h"
 
-const BlockMap& BlockMap::getBlockMap()
+const BlockMap& BlockMap::blockMap()
 {
 	static const BlockMap instance;
 
 	return instance;
 }
 
-const BlockType& BlockMap::getBlockType(const std::string& blockName) const
+const BlockType& BlockMap::blockType(const std::string& blockName) const
 {
-	return blockMap.at(blockName);
+	return mBlockMap.at(blockName);
 }
 
 BlockMap::BlockMap()
@@ -91,7 +91,7 @@ void BlockMap::parseDirectory(const std::string& directoryName)
 					blockType.transparent = settingsFile.get<bool>("Transparent");
 				}
 
-				blockMap[fileName] = blockType;
+                mBlockMap[fileName] = blockType;
 
 				settingsFile.closeFile();
 			}

@@ -3,7 +3,7 @@
 
 #include "StateStack.h"
 
-State::State(StateStack& stack): stack(&stack)
+State::State(StateStack& stack): mStack(stack)
 {
 
 }
@@ -28,15 +28,15 @@ bool State::update()
 
 void State::requestPush(State_ID stateID) const noexcept
 {
-	stack->push(stateID);
+	mStack.push(stateID);
 }
 
 void State::requestPop() const noexcept
 {
-	stack->pop();
+	mStack.pop();
 }
 
 void State::requestClear() const noexcept
 {
-	stack->clear();
+	mStack.clear();
 }

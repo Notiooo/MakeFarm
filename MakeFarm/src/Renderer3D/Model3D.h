@@ -7,12 +7,13 @@
 #include "VertexBuffer.h"
 
 
+/**
+ * 3D model consisting of a mesh, which allows to directly draw on the screen.
+ */
 class Model3D
 {
 public:
-
 	Model3D();
-
 	Model3D(Model3D&&) noexcept = default;
 	
 	/**
@@ -27,13 +28,18 @@ public:
 	 * \param mesh Mesh to display
 	 */
 	void setMesh(Mesh3D&& mesh);
+
+    /**
+     * Draws this 3D Model to the game screen
+     * @param renderer3d Renderer drawing the 3D game world onto the 2D screen
+     * @param shader Shader with the help of which the object should be drawn
+     */
 	void draw(const Renderer3D& renderer3d, const sf::Shader& shader) const;
 
 private:
-	VertexArray vertexArray;
-	BufferLayout bufferLayout;
-	IndexBuffer indices;
-	std::vector<VertexBuffer> vertexBuffers;
-
-	std::unique_ptr<Mesh3D> mesh;
+	VertexArray mVertexArray;
+	BufferLayout mBufferLayout;
+	IndexBuffer mIndices;
+	std::vector<VertexBuffer> mVertexBuffers;
+	std::unique_ptr<Mesh3D> mMesh;
 };

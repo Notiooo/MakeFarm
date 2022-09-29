@@ -16,15 +16,15 @@ void MeshBuilder::setFaceSize(const float& faceSize)
 void MeshBuilder::addQuad(const Block::Face& blockFace, const std::vector<GLfloat>& textureQuad,
                           const Block::Coordinate& blockPosition)
 {
-	auto& vertices = chunkMesh.vertices;
-	auto& texCoords = chunkMesh.textureCoordinates;
-	auto& indices = chunkMesh.indices;
+	auto& vertices = mChunkMesh.vertices;
+	auto& texCoords = mChunkMesh.textureCoordinates;
+	auto& indices = mChunkMesh.indices;
 
 	texCoords.insert(texCoords.end(), textureQuad.begin(), textureQuad.end());
 	
-	auto face = getFaceVertices(blockFace);
-	const auto& originPos = mOrigin.getNonBlockMetric();
-	const auto& blockPos = blockPosition.getNonBlockMetric();
+	auto face = faceVertices(blockFace);
+	const auto& originPos = mOrigin.nonBlockMetric();
+	const auto& blockPos = blockPosition.nonBlockMetric();
 
 	/*
 	 * Some blocks are larger than others.
@@ -43,33 +43,33 @@ void MeshBuilder::addQuad(const Block::Face& blockFace, const std::vector<GLfloa
 
 	indices.insert(indices.end(),
 	{
-		index,
-		index + 1,
-		index + 2,
-		
-		index + 2,
-		index + 3,
-		index
+            mIndex,
+            mIndex + 1,
+            mIndex + 2,
+
+            mIndex + 2,
+            mIndex + 3,
+            mIndex
 	});
-	index += 4;
+    mIndex += 4;
 }
 
 void MeshBuilder::resetMesh()
 {
-	chunkMesh.indices.clear();
-	chunkMesh.textureCoordinates.clear();
-	chunkMesh.vertices.clear();
-	index = 0;
+	mChunkMesh.indices.clear();
+	mChunkMesh.textureCoordinates.clear();
+	mChunkMesh.vertices.clear();
+    mIndex = 0;
 }
 
-Mesh3D MeshBuilder::getMesh3D() const
+Mesh3D MeshBuilder::mesh3D() const
 {
-    std::lock_guard _(rebuildMeshMutex);
-	return chunkMesh;
+    std::lock_guard _(mRebuildMeshMutex);
+	return mChunkMesh;
 }
 
 
-std::vector<GLfloat> MeshBuilder::getFaceVertices(const Block::Face& blockFace) const
+std::vector<GLfloat> MeshBuilder::faceVertices(const Block::Face& blockFace) const
 {
 	switch(blockFace)
 	{
@@ -134,10 +134,10 @@ std::vector<GLfloat> MeshBuilder::getFaceVertices(const Block::Face& blockFace) 
 
 void MeshBuilder::blockMesh() const
 {
-    rebuildMeshMutex.lock();
+    mRebuildMeshMutex.lock();
 }
 
 void MeshBuilder::unblockMesh() const
 {
-    rebuildMeshMutex.unlock();
+    mRebuildMeshMutex.unlock();
 }

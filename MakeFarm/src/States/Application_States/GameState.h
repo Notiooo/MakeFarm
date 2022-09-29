@@ -36,8 +36,15 @@ public:
 	 */
 	bool fixedUpdate(const float& deltaTime) override;
 
+    /**
+     * \brief Updates the status/logic of the ImGui Debug Menu
+     */
 	void updateDebugMenu();
-	
+
+    /**
+     * \brief Updates the status/logic of the state which, as a rule, should not depend on the time,
+     * but should execute every single frame.
+     */
 	bool update() override;
 
 	/**
@@ -47,16 +54,19 @@ public:
 	bool handleEvent(const sf::Event& event) override;
 
 private:
-	sf::RenderWindow& gameWindow; //!< Window to which this status is displayed
-	sf::Shader shader;
-	Camera gameCamera;
-	Renderer3D gameRenderer;
+    /** Rendering */
+	sf::RenderWindow& mGameWindow; //!< Window to which this status is displayed
+	sf::Shader mShader;
+	Camera mGameCamera;
+	Renderer3D mGameRenderer;
 
-	TexturePack texturePack;
-	ChunkContainer testChunk;
-	Settings gameSettings;
+    /** Settings */
+	TexturePack mTexturePack;
+	Settings mGameSettings;
 
-	FacedBlock mSelectedBlock;
+    /** Utils */
+    ChunkContainer mTestChunk;
+	FacedBlock mSelectedBlock; //!< Marking the block the player is looking at
 };
 
 

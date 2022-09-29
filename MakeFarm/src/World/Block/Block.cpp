@@ -4,7 +4,7 @@
 #include "BlockMap.h"
 #include "Renderer3D/BufferLayout.h"
 
-sf::Vector3<Block::SizeType> Block::Coordinate::getNonBlockMetric() const
+sf::Vector3<Block::SizeType> Block::Coordinate::nonBlockMetric() const
 {
 	return sf::Vector3<SizeType>(
 		static_cast<SizeType>(x) * BLOCK_SIZE,
@@ -14,32 +14,32 @@ sf::Vector3<Block::SizeType> Block::Coordinate::getNonBlockMetric() const
 }
 
 Block::Block()
-	: blockType(&BlockMap::getBlockMap().getBlockType("Air"))
+	: mBlockType(&BlockMap::blockMap().blockType("Air"))
 {
 }
 
 Block::Block(const std::string& blockName)
-	: blockType(&BlockMap::getBlockMap().getBlockType(blockName))
+	: mBlockType(&BlockMap::blockMap().blockType(blockName))
 {
 }
 
 void Block::setBlockType(const std::string& blockName)
 {
-	blockType = &BlockMap::getBlockMap().getBlockType(blockName);
+	mBlockType = &BlockMap::blockMap().blockType(blockName);
 }
 
 
-Block::TextureId Block::getBlockTextureId(const Block::Face& blockFace) const
+Block::TextureId Block::blockTextureId(const Block::Face& blockFace) const
 {
-	return blockType->textureId.at(blockFace);
+	return mBlockType->textureId.at(blockFace);
 }
 
-std::string Block::getBlockId() const
+std::string Block::blockId() const
 {
-	return blockType->blockFileName;
+	return mBlockType->blockFileName;
 }
 
 bool Block::isTransparent() const
 {
-	return blockType->transparent;
+	return mBlockType->transparent;
 }
