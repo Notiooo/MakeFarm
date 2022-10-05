@@ -12,16 +12,16 @@ bool State::fixedUpdate(const float& deltaTime)
 {
 	/*
 	 * Set this state to transparent -- in other words
-	 * allow States below in stack to be rendered.
+	 * allow States below in stack to be updated.
 	 */
 	return true;
 }
 
-bool State::update()
+bool State::update(const float& deltaTime)
 {
 	/*
 	 * Set this state to transparent -- in other words
-	 * allow States below in stack to be rendered.
+	 * allow States below in stack to be updated.
 	 */
 	return true;
 }

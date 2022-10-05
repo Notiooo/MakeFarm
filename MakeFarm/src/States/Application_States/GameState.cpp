@@ -72,11 +72,6 @@ bool GameState::fixedUpdate(const float& deltaTime)
 	 */
 
 	mGameCamera.fixedUpdate(deltaTime);
-	mSelectedBlock.markFacedBlock(mGameCamera, mTestChunk);
-
-	mTestChunk.fixedUpdate(deltaTime);
-	mTestChunk.generateChunksAround(mGameCamera);
-    mTestChunk.clearFarAwayChunks(mGameCamera);
 	
 	/*
 	 * Set this state to transparent -- in other words
@@ -138,9 +133,14 @@ void GameState::updateDebugMenu()
 	}
 }
 
-bool GameState::update()
+bool GameState::update(const float& deltaTime)
 {
-	mGameCamera.update();
+	mGameCamera.update(deltaTime);
+    mSelectedBlock.markFacedBlock(mGameCamera, mTestChunk);
+
+    mTestChunk.update(deltaTime);
+    mTestChunk.generateChunksAround(mGameCamera);
+    mTestChunk.clearFarAwayChunks(mGameCamera);
 
 	updateDebugMenu();
 

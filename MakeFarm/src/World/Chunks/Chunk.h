@@ -47,8 +47,8 @@ public:
 	void updateMesh();
 
     /**
-     * Updates the status/logic of the state which, as a rule, should not depend on the number of frames generated, but on time.
-     * @param deltaTime the time that has passed since the last frame.
+     * Updates the status/logic of the state at equal intervals independent of the frame rate.
+     * @param deltaTime Time interval
      */
 	void fixedUpdate(const float& deltaTime);
 

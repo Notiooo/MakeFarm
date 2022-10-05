@@ -33,15 +33,16 @@ public:
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const {}
 
 	/**
-	 * \brief Updates the logic of this state
-	 * \param deltaTime the time that has passed since the game was last updated
+	 * \brief Updates the state logic at equal intervals independent of the frame rate.
+	 * \param deltaTime Time interval
 	 */
 	virtual bool fixedUpdate(const float& deltaTime);
 
     /**
-     * \brief Updates the logic of this state which is dependent of the framerate and is performed every frame
+     * \brief Updates the game logic dependent, or independent of time, every rendered frame.
+     * \param deltaTime the time that has passed since the game was last updated.
      */
-	virtual bool update();
+	virtual bool update(const float& deltaTime);
 
 	/**
 	 * \brief It takes input (event) from the user and interprets it

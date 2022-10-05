@@ -15,15 +15,16 @@ public:
     Camera(const sf::RenderTarget& target, sf::Shader& shader);
 
     /**
-     * \brief Updates the logic of this state
-     * \param deltaTime the time that has passed since the game was last updated
+     * \brief Updates the camera logic at equal intervals independent of the frame rate.
+     * \param deltaTime Time interval
      */
     void fixedUpdate(const float& deltaTime);
 
     /**
-     * Updates the logic of the camera which is not dependent on time and is performed every frame
+     * Updates the camera logic dependent, or independent of time, every rendered frame.
+     * \param deltaTime the time that has passed since the game was last updated.
      */
-    void update();
+    void update(const float& deltaTime);
 
     /**
      * Updates ViewProjection inside the game shader to properly display the world
@@ -76,6 +77,58 @@ public:
     static constexpr float MAX_RAY_SIZE = 10 * Block::BLOCK_SIZE;
 
 private:
+    /**
+     * \brief Updates the status/logic of the ImGui Debug Menu
+     */
+    void updateDebugMenu();
+
+    /**
+     * Handle keyboard behavior such as moving the camera inside the game
+     * @param deltaTime the time that has passed since the game was last updated.
+     */
+    void handleKeyboardInputs(const float& deltaTime);
+
+    /**
+     * It changes speed depending on whether the player has pressed
+     * the button responsible for accelerating the camera.
+     *
+     * @param cameraSpeed Base camera speed
+     * @return Accelerated or base camera speed
+     */
+    float applyAdditionalCameraAcceleration(float cameraSpeed) const;
+
+    /**
+     * Handles keyboard behavior for the camera, such as moving the camera.
+     * @param deltaTime the time that has passed since the game was last updated.
+     * @param cameraSpeed Base camera speed
+     */
+    void handleCameraMovement(const float& deltaTime, float cameraSpeed);
+
+    /**
+     * Handles mouse behavior for the camera, such as rotating the camera.
+     * @param deltaTime the time that has passed since the game was last updated.
+     */
+    void handleMouseInputs(const float& deltaTime);
+
+    /**
+     * It keeps an eye on the intervals for pitch, so that moving the camera is natural
+     * and takes place within the intervals known by the players. For example, it is
+     * impossible to perform a 360-degree backflip.
+     */
+    void keepNaturalPitchRanges();
+
+    /**
+     * Calculates yaw and pitch for the camera
+     * @param deltaTime the time that has passed since the game was last updated.
+     */
+    void calculateCameraAngles(const float& deltaTime);
+
+    /**
+     * Calculates the camera's directional vector, which is the final\
+     * vector responsible for the camera's rotation.
+     */
+    void calculateCameraDirectionVector();
+
     const sf::RenderTarget& mRenderTarget;
     sf::Shader& mShader;
 

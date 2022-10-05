@@ -37,7 +37,7 @@ sf::Vector2i Mouse::mouseOffset()
 	return mMouseOffset;
 }
 
-void Mouse::fixedUpdate(const float& deltaTime, const sf::Window& window)
+void Mouse::update(const float& deltaTime, const sf::Window& window)
 {
 	if (isMouseLocked())
 	{

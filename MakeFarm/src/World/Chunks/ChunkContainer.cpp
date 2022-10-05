@@ -85,7 +85,7 @@ void ChunkContainer::rebuildChunks()
 	updateInsignificantChunksMeshes();
 }
 
-void ChunkContainer::fixedUpdate(const float& deltaTime)
+void ChunkContainer::update(const float& deltaTime)
 {
 	rebuildChunks();
 }

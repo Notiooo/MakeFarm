@@ -75,8 +75,8 @@ public:
 
 	
 	/**
-	 * \brief Updates the state game logic on the stack.
-	 * \param deltaTime the time that has passed since the game was last updated.
+	 * \brief Updates the game logic at equal intervals independent of the frame rate.
+	 * \param deltaTime Time interval
 	 *
 	 * Updates the state game logic at the top of the stack. If the state is
 	 * transparent (returns true) then it also updates the state logic below it.
@@ -85,9 +85,14 @@ public:
 	void fixedUpdate(const float& deltaTime);
 
     /**
-     * \brief Updates the logic of the statestack which is not dependent on time and is performed every frame
+     * \brief Updates the game logic dependent, or independent of time, every rendered frame.
+     * \param deltaTime the time that has passed since the game was last updated.
+     *
+	 * Updates the state game logic at the top of the stack. If the state is
+	 * transparent (returns true) then it also updates the state logic below it.
+	 * The state below it is also checked for transparency and the process repeats itself.
      */
-	void update();
+	void update(const float& deltaTime);
 
 	/**
 	 * \brief Draws the states in the stack to the given target with given states.

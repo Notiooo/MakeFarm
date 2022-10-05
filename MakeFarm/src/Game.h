@@ -32,22 +32,41 @@ private:
 	 */
 	void processEvents();
 
-
 	/**
-	 * \brief Updates game logic
-	 * \param deltaTime the time that has passed since the game was last updated.
+	 * \brief Updates the game logic at equal intervals independent of the frame rate.
+	 * \param deltaTime Time interval
+	 *
+	 * This function is very aggravating and highly inefficient. In a certain amount of time it executes
+	 * an equal number of times by which it is ideal, for example, for collision recalculation. Thus, in
+	 * case of lag, there are no situations where the player can run through a wall. Intermediate
+	 * intervals regardless of the frame rate are always recalculated!
 	 *
 	 * Updates the game logic by passing the time that has elapsed
-	 * since the previous fixedUpdate. This allows objects to move independently
+	 * since the previous interval. This allows objects to move independently
 	 * of the speed at which subsequent iterations of the program are executed.
 	 * (distance = speed * time)
 	 */
-	void fixedUpdate(sf::Time deltaTime);
+	void fixedUpdate(const sf::Time& deltaTime);
 
     /**
-     * Updates the logic of the game which is not dependent on time and is performed every frame
+     * Performs fixedUpdate at least a minimum number of times to avoid behavior where, due to high lag,
+     * a character is moved off the wall avoiding collision checking.
+     *
+     * @param frameTimeElapsed the time that has passed since the game was last updated.
      */
-	void update();
+    void performFixedUpdateAtLeastMinimalNumberOfTimes(sf::Time& frameTimeElapsed);
+
+    /**
+     * \brief Updates the game logic dependent, or independent of time, every rendered frame.
+     * \param deltaTime the time that has passed since the game was last updated.
+     *
+     * It is not recommended to use this feature for physics, or general movement.
+	 * Updates the game logic by passing the time that has elapsed since the previous
+     * update call. This allows objects to move independently of the speed at which
+     * subsequent frames of the program are executed.
+	 * (distance = speed * time)
+     */
+    void update(const sf::Time& deltaTime);
 
 	/**
 	 * \brief Displays the game on the image of the game window
@@ -69,6 +88,7 @@ private:
 	void loadResources();
 
 	static const sf::Time TIME_PER_FRAME; //!< The time it takes for one game frame to be generated.
+    static const sf::Time MINIMAL_TIME_PER_FIXED_UPDATE; //!< Minimum time between one fixed update and another
 
 	static const int SCREEN_WIDTH; //!< Default game window width
 	static const int SCREEN_HEIGHT; //!< Default game window height

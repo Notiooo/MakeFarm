@@ -35,10 +35,10 @@ public:
 	void draw(const Renderer3D& renderer3D, const sf::Shader& shader) const;
 
     /**
-     * Updates the status/logic of the state which, as a rule, should not depend on the number of frames generated, but on time.
-     * @param deltaTime the time that has passed since the last frame.
+     * \brief Updates the chunkcontainer logic dependent, or independent of time, every rendered frame.
+     * \param deltaTime the time that has passed since the game was last updated.
      */
-	void fixedUpdate(const float& deltaTime);
+	void update(const float& deltaTime);
 
 	/**
 	 * \brief Number of chunks drawn in one direction from the player

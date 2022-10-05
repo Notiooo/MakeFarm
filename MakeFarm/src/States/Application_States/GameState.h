@@ -30,10 +30,10 @@ public:
 	 */
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
-	/**
-	 * \brief Updates the status/logic of the state
-	 * \param deltaTime the time that has passed since the last frame.
-	 */
+    /**
+     * \brief Updates the state logic at equal intervals independent of the frame rate.
+     * \param deltaTime Time interval
+     */
 	bool fixedUpdate(const float& deltaTime) override;
 
     /**
@@ -42,10 +42,10 @@ public:
 	void updateDebugMenu();
 
     /**
-     * \brief Updates the status/logic of the state which, as a rule, should not depend on the time,
-     * but should execute every single frame.
+     * \brief Updates the game logic dependent, or independent of time, every rendered frame.
+     * \param deltaTime the time that has passed since the game was last updated.
      */
-	bool update() override;
+	bool update(const float& deltaTime) override;
 
 	/**
 	 * \brief It takes input (event) from the user and interprets it

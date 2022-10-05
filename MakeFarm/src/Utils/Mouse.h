@@ -38,11 +38,11 @@ public:
 	static sf::Vector2i mouseOffset();
 
     /**
-     * Updates the status/logic of the state which, as a rule, should not depend on the number of frames generated, but on time.
-     * @param deltaTime the time that has passed since the last frame.
+     * Updates the game logic dependent, or independent of time, every rendered frame.
+     * @param deltaTime the time that has passed since the game was last updated.
      * @param window The window relative to which the cursor is drawn
      */
-	static void fixedUpdate(const float& deltaTime, const sf::Window& window);
+	static void update(const float& deltaTime, const sf::Window& window);
 
     /**
      * It handles mouse behavior typical of first-person game controls.

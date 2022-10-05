@@ -5,7 +5,10 @@
 #include "States/States.h"
 #include "States/Application_States/GameState.h"
 
-const sf::Time Game::TIME_PER_FRAME = sf::seconds(1.f / 60.f);
+constexpr int FRAMES_PER_SECOND = 120;
+constexpr int MINIMAL_FIXED_UPDATES_PER_FRAME = 60;
+
+const sf::Time Game::MINIMAL_TIME_PER_FIXED_UPDATE = sf::seconds(1.f / MINIMAL_FIXED_UPDATES_PER_FRAME);
 const int Game::SCREEN_WIDTH = 1280;
 const int Game::SCREEN_HEIGHT = 720;
 
@@ -20,11 +23,11 @@ Game::Game()
 	settings.stencilBits = 8;
 
     mGameWindow = std::make_unique<sf::RenderWindow>(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT),
-                                                     "Minecraft Clone", sf::Style::Titlebar | sf::Style::Close, settings);
+                                                     "MakeFarm", sf::Style::Titlebar | sf::Style::Close, settings);
 
-	// Limit the framerate to 60 frames per second
-	mGameWindow->setFramerateLimit(60);
+	mGameWindow->setFramerateLimit(FRAMES_PER_SECOND);
 	mGameWindow->setActive(true);
+    loadResources();
 
 	// ImGui setup
 	#ifdef _DEBUG
@@ -41,9 +44,6 @@ Game::Game()
 	// Setup all application-flow states
 	mAppStack.saveState<GameState>(State_ID::GameState, *mGameWindow);
 
-	// load resources
-	loadResources();
-
 	// Initial state of the statestack is TitleState
 	mAppStack.push(State_ID::GameState);
 }
@@ -59,26 +59,37 @@ void Game::run()
 	auto frameTimeElapsed = sf::Time::Zero;
 	while (isGameRunning)
 	{
-		frameTimeElapsed += clock.restart();
-		
-		while (frameTimeElapsed > TIME_PER_FRAME)
-		{
-			// Update world no more than 60 frames per seconds
-			frameTimeElapsed -= TIME_PER_FRAME;
-			processEvents();
-			fixedUpdate(TIME_PER_FRAME);
-		}
+		frameTimeElapsed = clock.restart();
 
-		#ifdef _DEBUG
-		ImGui::SFML::Update(*mGameWindow, frameTimeElapsed);
-		#endif
-		update();
+        #ifdef _DEBUG
+        ImGui::SFML::Update(*mGameWindow, frameTimeElapsed);
+        #endif
+        update(frameTimeElapsed);
+        performFixedUpdateAtLeastMinimalNumberOfTimes(frameTimeElapsed);
+        processEvents();
 
-		render();
+        render();
 	}
 
 	mGameWindow->close();
 	ImGui::SFML::Shutdown();
+}
+
+void Game::performFixedUpdateAtLeastMinimalNumberOfTimes(sf::Time& frameTimeElapsed)
+{
+    if(frameTimeElapsed > MINIMAL_TIME_PER_FIXED_UPDATE)
+    {
+        do
+        {
+            frameTimeElapsed -= MINIMAL_TIME_PER_FIXED_UPDATE;
+            fixedUpdate(MINIMAL_TIME_PER_FIXED_UPDATE);
+        }
+        while (frameTimeElapsed > MINIMAL_TIME_PER_FIXED_UPDATE);
+    }
+    else
+    {
+        fixedUpdate(frameTimeElapsed);
+    }
 }
 
 void Game::processEvents()
@@ -97,17 +108,18 @@ void Game::processEvents()
 	}
 }
 
-void Game::fixedUpdate(sf::Time deltaTime)
+void Game::fixedUpdate(const sf::Time& deltaTime)
 {
 	auto deltaTimeInSeconds = deltaTime.asSeconds();
-
-    Mouse::fixedUpdate(deltaTimeInSeconds, *mGameWindow);
 	mAppStack.fixedUpdate(deltaTimeInSeconds);
 }
 
-void Game::update()
+void Game::update(const sf::Time& deltaTime)
 {
-	mAppStack.update();
+    auto deltaTimeInSeconds = deltaTime.asSeconds();
+    Mouse::update(deltaTimeInSeconds, *mGameWindow);
+
+	mAppStack.update(deltaTimeInSeconds);
 }
 
 void Game::render()

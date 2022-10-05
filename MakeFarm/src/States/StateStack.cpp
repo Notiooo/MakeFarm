@@ -49,7 +49,7 @@ void StateStack::fixedUpdate(const float& deltaTime)
     }
 }
 
-void StateStack::update()
+void StateStack::update(const float& deltaTime)
 {
     applyChanges();
     // Iterate from the highest state to the lowest state, and stop iterating if
@@ -61,7 +61,7 @@ void StateStack::update()
 
         // This allow some states to pause states under it.
         // Like pause for example
-        if (!(*beg)->update())
+        if (!(*beg)->update(deltaTime))
             return;
     }
 }
