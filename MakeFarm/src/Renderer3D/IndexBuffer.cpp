@@ -1,19 +1,19 @@
-#include "pch.h"
 #include "IndexBuffer.h"
+#include "pch.h"
 
 #include "Renderer3D.h"
 
 IndexBuffer::IndexBuffer()
-	: mCount(0)
+    : mCount(0)
 {
     GLCall(glGenBuffers(1, &mBufferId));
 }
 
 IndexBuffer::IndexBuffer(const unsigned int* data, unsigned count)
-	: mCount(count)
+    : mCount(count)
 {
     ASSERT(sizeof(unsigned int) == sizeof(GLuint));
-	
+
     GLCall(glGenBuffers(1, &mBufferId));
     GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mBufferId));
     GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), data, GL_STATIC_DRAW));
@@ -43,5 +43,5 @@ void IndexBuffer::setData(const unsigned int* data, unsigned count)
 
 unsigned IndexBuffer::size() const
 {
-	return mCount;
+    return mCount;
 }

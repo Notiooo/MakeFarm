@@ -1,18 +1,18 @@
-#include "pch.h"
 #include "Camera.h"
+#include "pch.h"
 
-#include <glm/geometric.hpp>
-#include <glm/trigonometric.hpp>
-#include <glm/ext/matrix_clip_space.hpp>
-#include <glm/ext/matrix_transform.hpp>
 #include <SFML/Graphics/Glsl.hpp>
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Window/Keyboard.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/geometric.hpp>
+#include <glm/trigonometric.hpp>
 
 #include "Utils/Mouse.h"
 
 Camera::Camera(const sf::RenderTarget& target, sf::Shader& shader)
-	: mRenderTarget(target)
+    : mRenderTarget(target)
     , mShader(shader)
 {
 
@@ -22,7 +22,8 @@ Camera::Camera(const sf::RenderTarget& target, sf::Shader& shader)
     mViewMatrix = glm::lookAt(mCameraPosition, mCameraPosition + mCameraFront, mCameraUp);
 
     auto targetSize = target.getSize();
-    mProjectionMatrix = glm::perspective(glm::radians(0.0f), static_cast<float>(targetSize.x / targetSize.y), 1.f, 100.f);
+    mProjectionMatrix = glm::perspective(
+        glm::radians(0.0f), static_cast<float>(targetSize.x / targetSize.y), 1.f, 100.f);
 }
 
 void Camera::update(const float& deltaTime)
@@ -39,10 +40,10 @@ void Camera::update(const float& deltaTime)
 
 void Camera::updateViewProjection()
 {
-	sf::Shader::bind(&mShader);
-	glm::mat4 vp = projection() * view();
-	mShader.setUniform("u_ViewProjection", sf::Glsl::Mat4(&vp[0][0]));
-	sf::Shader::bind(nullptr);
+    sf::Shader::bind(&mShader);
+    glm::mat4 vp = projection() * view();
+    mShader.setUniform("u_ViewProjection", sf::Glsl::Mat4(&vp[0][0]));
+    sf::Shader::bind(nullptr);
 }
 
 void Camera::fixedUpdate(const float& deltaTime)
@@ -98,7 +99,7 @@ void Camera::handleKeyboardInputs(const float& deltaTime)
     handleCameraMovement(deltaTime, cameraSpeed);
 }
 
-void Camera::handleCameraMovement(const float &deltaTime, float cameraSpeed)
+void Camera::handleCameraMovement(const float& deltaTime, float cameraSpeed)
 {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
     {
@@ -110,11 +111,13 @@ void Camera::handleCameraMovement(const float &deltaTime, float cameraSpeed)
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
     {
-        mCameraPosition += glm::normalize(glm::cross(mCameraFront, mCameraUp)) * cameraSpeed * deltaTime;
+        mCameraPosition +=
+            glm::normalize(glm::cross(mCameraFront, mCameraUp)) * cameraSpeed * deltaTime;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
     {
-        mCameraPosition -= glm::normalize(glm::cross(mCameraFront, mCameraUp)) * cameraSpeed * deltaTime;
+        mCameraPosition -=
+            glm::normalize(glm::cross(mCameraFront, mCameraUp)) * cameraSpeed * deltaTime;
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
     {
@@ -142,11 +145,9 @@ void Camera::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 void Camera::handleEvent(const sf::Event& event)
 {
-    switch(event.type)
+    switch (event.type)
     {
-	    case sf::Event::MouseWheelMoved:
-            mFovCamera -= event.mouseWheel.delta;
-	        break;
+        case sf::Event::MouseWheelMoved: mFovCamera -= event.mouseWheel.delta; break;
     }
 }
 
@@ -171,4 +172,3 @@ void Camera::updateDebugMenu()
     ImGui::SliderFloat3("Translation", &mCameraPosition.x, 0.0f, 960.0f);
     ImGui::End();
 }
-

@@ -13,7 +13,7 @@
  */
 enum class Textures_ID
 {
-	// No Textures yet
+    // No Textures yet
 };
 
 /**
@@ -28,7 +28,7 @@ using TextureManager = ResourceManager<sf::Texture, Textures_ID>;
  */
 enum class Fonts_ID
 {
-	ArialNarrow,
+    ArialNarrow,
 };
 
 /**

@@ -5,9 +5,9 @@
  */
 struct BufferElement
 {
-    unsigned int type; //!< OpenGL type of given data
-    unsigned int count; //!< Number of elements of given type
-    unsigned char normalized; //!< Is the data normalized
+    unsigned int type;       //!< OpenGL type of given data
+    unsigned int count;      //!< Number of elements of given type
+    unsigned char normalized;//!< Is the data normalized
 
     /**
      * Returns the data size of a given OpenGL type.

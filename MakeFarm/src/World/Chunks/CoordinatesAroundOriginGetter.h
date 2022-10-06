@@ -17,13 +17,13 @@
 class CoordinatesAroundOriginGetter
 {
 public:
-	CoordinatesAroundOriginGetter(sf::Vector3i origin);
+    CoordinatesAroundOriginGetter(sf::Vector3i origin);
 
     /**
      * Returns the next state of the spiral - that is, the next object in xyz coordinates
      * @return The xyz value of the next 3D element of the spiral
      */
-	sf::Vector3i nextValue();
+    sf::Vector3i nextValue();
 
     /**
      * The spiral begins from the beginning
@@ -31,8 +31,8 @@ public:
     void resetToStart();
 
 private:
-	sf::Vector3i mCurrentChunkPosition;
-	sf::Vector3i mChangedPosition{0, 0, 0 };
-	int mCurrentLineLength = 0;
-	Direction mCurrentDirection = Direction::ToTheRight;
+    sf::Vector3i mCurrentChunkPosition;
+    sf::Vector3i mChangedPosition{0, 0, 0};
+    int mCurrentLineLength = 0;
+    Direction mCurrentDirection = Direction::ToTheRight;
 };

@@ -10,31 +10,32 @@
 class TexturePack : public sf::NonCopyable
 {
 public:
-	TexturePack() = default;
-	TexturePack(const std::string& texturePackFolder);
+    TexturePack() = default;
+    TexturePack(const std::string& texturePackFolder);
 
     /**
      * Allows to load any texture pack from the resources folder
      * @param texturePackFolder Name of the folder with the texture pack
      */
-	void loadTexturePack(const std::string& texturePackFolder);
+    void loadTexturePack(const std::string& texturePackFolder);
 
     /**
      * Bind a texture pack for rendering
      */
-	void bind() const;
+    void bind() const;
 
     /**
-     * Returns normalized texture coordinates that can be passed directly along with the vertices to draw the texture.
+     * Returns normalized texture coordinates that can be passed directly along with the vertices to
+     * draw the texture.
      * @param textureId
      * @return
      */
-	std::vector<GLfloat> normalizedCoordinates(Block::TextureId textureId) const;
+    std::vector<GLfloat> normalizedCoordinates(Block::TextureId textureId) const;
 
 private:
-	sf::Texture mTextures;
-	Settings mTexturePackSettings;
-	
-	int mBlockSize;
-	std::string mTexturePackName;
+    sf::Texture mTextures;
+    Settings mTexturePackSettings;
+
+    int mBlockSize;
+    std::string mTexturePackName;
 };

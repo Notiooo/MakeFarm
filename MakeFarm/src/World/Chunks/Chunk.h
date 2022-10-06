@@ -6,10 +6,10 @@
 
 #include "MeshBuilder.h"
 #include "Renderer3D/Model3D.h"
-#include "World/Block/Block.h"
 #include "Renderer3D/Renderer3D.h"
-#include "Utils/MultiDimensionalArray.h"
 #include "Utils/Direction.h"
+#include "Utils/MultiDimensionalArray.h"
+#include "World/Block/Block.h"
 
 class ChunkContainer;
 
@@ -19,125 +19,129 @@ class ChunkContainer;
  */
 class Chunk
 {
-	friend class ChunkContainer;
+    friend class ChunkContainer;
+
 public:
-	Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent);
-	Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack);
+    Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent);
+    Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack);
 
-	Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack, ChunkContainer& parent);
-	Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack);
+    Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack, ChunkContainer& parent);
+    Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack);
 
-	Chunk(Chunk&& rhs) noexcept;
+    Chunk(Chunk&& rhs) noexcept;
 
-	static constexpr int BLOCKS_PER_DIMENSION = 16;
-	static constexpr int BLOCKS_PER_WALL	  = BLOCKS_PER_DIMENSION * BLOCKS_PER_DIMENSION;
-	static constexpr int BLOCKS_IN_CHUNK	  = BLOCKS_PER_WALL * BLOCKS_PER_DIMENSION;
+    static constexpr int BLOCKS_PER_DIMENSION = 16;
+    static constexpr int BLOCKS_PER_WALL = BLOCKS_PER_DIMENSION * BLOCKS_PER_DIMENSION;
+    static constexpr int BLOCKS_IN_CHUNK = BLOCKS_PER_WALL * BLOCKS_PER_DIMENSION;
 
-	static constexpr int CHUNK_WALL_SIZE	  = BLOCKS_PER_DIMENSION * Block::BLOCK_SIZE;
-	static constexpr int CHUNK_AREA_SIZE	  = 6 * CHUNK_WALL_SIZE;
+    static constexpr int CHUNK_WALL_SIZE = BLOCKS_PER_DIMENSION * Block::BLOCK_SIZE;
+    static constexpr int CHUNK_AREA_SIZE = 6 * CHUNK_WALL_SIZE;
 
-	/**
-	 * \brief Prepares/generates the mesh chunk, but does not replace it yet.
-	 */
-	void prepareMesh();
+    /**
+     * \brief Prepares/generates the mesh chunk, but does not replace it yet.
+     */
+    void prepareMesh();
 
-	/**
-	 * \brief Swaps the current chunk mesh with the latest, most recently generated one
-	 */
-	void updateMesh();
+    /**
+     * \brief Swaps the current chunk mesh with the latest, most recently generated one
+     */
+    void updateMesh();
 
     /**
      * Updates the status/logic of the state at equal intervals independent of the frame rate.
      * @param deltaTime Time interval
      */
-	void fixedUpdate(const float& deltaTime);
+    void fixedUpdate(const float& deltaTime);
 
     /**
      * Draws this chunk to the game screen
      * @param renderer3d Renderer drawing the 3D game world onto the 2D screen
      * @param shader Shader with the help of which the object should be drawn
      */
-	void draw(const Renderer3D& renderer3d, const sf::Shader& shader) const;
+    void draw(const Renderer3D& renderer3d, const sf::Shader& shader) const;
 
-	/**
-	 * \brief Returns the block according to the coordinates given relative to the chunk position.
-	 * \param localCoordinates Position in relation to the chunk
-	 * \return Block reference inside chunk
-	 */
-	Block& localBlock(const Block::Coordinate& localCoordinates);
+    /**
+     * \brief Returns the block according to the coordinates given relative to the chunk position.
+     * \param localCoordinates Position in relation to the chunk
+     * \return Block reference inside chunk
+     */
+    Block& localBlock(const Block::Coordinate& localCoordinates);
 
-	/**
-	 * \brief Removes a block on coordinates given relatively to the position of the chunk
-	 * \param localCoordinates Coordinates relative to the position of the chunk
-	 */
-	void removeLocalBlock(const Block::Coordinate& localCoordinates);
+    /**
+     * \brief Removes a block on coordinates given relatively to the position of the chunk
+     * \param localCoordinates Coordinates relative to the position of the chunk
+     */
+    void removeLocalBlock(const Block::Coordinate& localCoordinates);
 
-	/**
-	 * \brief Returns the block according to the coordinates given relative to the chunk position.
-	 * \param localCoordinates Position in relation to the chunk
-	 * \return Block reference inside chunk
-	 */
-	[[nodiscard]] const Block& localBlock(const Block::Coordinate& localCoordinates) const;
+    /**
+     * \brief Returns the block according to the coordinates given relative to the chunk position.
+     * \param localCoordinates Position in relation to the chunk
+     * \return Block reference inside chunk
+     */
+    [[nodiscard]] const Block& localBlock(const Block::Coordinate& localCoordinates) const;
 
-	/**
-	 * \brief Changes global world coordinates to local ones relative to chunk
-	 * \param worldCoordinates World coordinates of the block 
-	 * \return Local coordinates of block relative to chunk
-	 */
-	[[nodiscard]] Block::Coordinate globalToLocalCoordinates(const Block::Coordinate& worldCoordinates) const;
+    /**
+     * \brief Changes global world coordinates to local ones relative to chunk
+     * \param worldCoordinates World coordinates of the block
+     * \return Local coordinates of block relative to chunk
+     */
+    [[nodiscard]] Block::Coordinate globalToLocalCoordinates(
+        const Block::Coordinate& worldCoordinates) const;
 
-	/**
-	 * \brief Changes local chunk coordinates to global ones inside the world
-	 * \param localCoordinates Local coordinates of the block
-	 * \return World coordinates of block inside the world
-	 */
-	[[nodiscard]] Block::Coordinate localToGlobalCoordinates(const Block::Coordinate& localCoordinates) const;
+    /**
+     * \brief Changes local chunk coordinates to global ones inside the world
+     * \param localCoordinates Local coordinates of the block
+     * \return World coordinates of block inside the world
+     */
+    [[nodiscard]] Block::Coordinate localToGlobalCoordinates(
+        const Block::Coordinate& localCoordinates) const;
 
-	/**
-	 * \brief Checks whether the local coordinates relative to the chunk are inside it
-	 * \param localCoordinates Local coordinates relative to chunk
-	 * \return True if local coordinates are inside the chunk, false otherwise
-	 */
-	[[nodiscard]] static bool areLocalCoordinatesInsideChunk(const Block::Coordinate& localCoordinates);
+    /**
+     * \brief Checks whether the local coordinates relative to the chunk are inside it
+     * \param localCoordinates Local coordinates relative to chunk
+     * \return True if local coordinates are inside the chunk, false otherwise
+     */
+    [[nodiscard]] static bool areLocalCoordinatesInsideChunk(
+        const Block::Coordinate& localCoordinates);
 
-	/**
-	 * \brief Checks that the given local coordinates relative to the chunk are at its extremity.
-	 * \param localCoordinates Local coordinates relative to chunk
-	 * \return True if the coordinates are on the edge of the chunk, false otherwise
-	 */
-	[[nodiscard]] bool isLocalCoordinateOnChunkEdge(const Block::Coordinate& localCoordinates);
+    /**
+     * \brief Checks that the given local coordinates relative to the chunk are at its extremity.
+     * \param localCoordinates Local coordinates relative to chunk
+     * \return True if the coordinates are on the edge of the chunk, false otherwise
+     */
+    [[nodiscard]] bool isLocalCoordinateOnChunkEdge(const Block::Coordinate& localCoordinates);
 
-	/**
-	 * \brief Checks whether the chunk is inside any chunk container
-	 * \return True if the chunk is inside any chunk container, false otherwise
-	 */
-	[[nodiscard]] bool belongsToAnyChunkContainer() const;
+    /**
+     * \brief Checks whether the chunk is inside any chunk container
+     * \return True if the chunk is inside any chunk container, false otherwise
+     */
+    [[nodiscard]] bool belongsToAnyChunkContainer() const;
 
-	/**
-	 * \brief Indicates chunk as willing to rebuild mesh in near future
-	 */
-	void markToBeRebuildSlow() const;
+    /**
+     * \brief Indicates chunk as willing to rebuild mesh in near future
+     */
+    void markToBeRebuildSlow() const;
 
-	/**
-	 * \brief Indicates chunk as willing to rebuild mesh in this, or next frame
-	 */
-	void markToBeRebuildFast() const;
+    /**
+     * \brief Indicates chunk as willing to rebuild mesh in this, or next frame
+     */
+    void markToBeRebuildFast() const;
 
 protected:
     /**
      * Generates natural world terrain on a given chunk
      */
-	void generateChunkTerrain();
+    void generateChunkTerrain();
 
     /**
      * Rebuilds other chunks inside the same container around this chunk.
      */
-	void rebuildChunksAround();
+    void rebuildChunksAround();
 
     /**
      * It is rebuilding this mesh fresh. Very expensive operation
      */
-	void rebuildMesh();
+    void rebuildMesh();
 
     /**
      * Returns information whether any chunk is in contact with the listed block.
@@ -146,43 +150,51 @@ protected:
      * @param localCoordinates Block coordinates Coordinates of the block to be checked
      * @return Information on whether the block is in contact with another chunk
      */
-	std::vector<Direction> directionOfBlockFacesInContactWithOtherChunk(const Block::Coordinate& localCoordinates);
+    std::vector<Direction> directionOfBlockFacesInContactWithOtherChunk(
+        const Block::Coordinate& localCoordinates);
 
     /**
-     * Returns the block that is close to it, in the direction determined relative to the block on the local coordinates.
+     * Returns the block that is close to it, in the direction determined relative to the block on
+     * the local coordinates.
      * @param position Local block coordinates inside the chunk
      * @param direction Direction next to which the block you are looking for is located
      * @return Block reference inside chunk
      */
-	[[nodiscard]] Block& localNearbyBlock(const Block::Coordinate& position, const Direction& direction);
+    [[nodiscard]] Block& localNearbyBlock(const Block::Coordinate& position,
+                                          const Direction& direction);
 
     /**
-     * Returns the block that is close to it, in the direction determined relative to the block on the local coordinates.
+     * Returns the block that is close to it, in the direction determined relative to the block on
+     * the local coordinates.
      * @param position Local block coordinates inside the chunk
      * @param direction Direction next to which the block you are looking for is located
      * @return Block reference inside chunk
      */
-	[[nodiscard]] const Block& localNearbyBlock(const Block::Coordinate& localCoordinates, const Direction& direction) const;
+    [[nodiscard]] const Block& localNearbyBlock(const Block::Coordinate& localCoordinates,
+                                                const Direction& direction) const;
 
     /**
-     * Returns the position of the local block, located right next to the local block in the indicated direction.
+     * Returns the position of the local block, located right next to the local block in the
+     * indicated direction.
      * @param position Local block position
      * @param direction Direction next to which the block you are looking for is located
      * @return Block coordinate inside chunk
      */
-	[[nodiscard]] Block::Coordinate localNearbyBlockPosition(const Block::Coordinate& position, const Direction& direction) const;
+    [[nodiscard]] Block::Coordinate localNearbyBlockPosition(const Block::Coordinate& position,
+                                                             const Direction& direction) const;
 
     /**
      * Returns the chunk located in the listed direction from this chunk
      * @param direction Direction next to which the chunk you are looking for is located
      * @return Pointer to chunk found
      */
-	[[nodiscard]] std::shared_ptr<Chunk> chunkNearby(const Direction& direction);
+    [[nodiscard]] std::shared_ptr<Chunk> chunkNearby(const Direction& direction);
 
 private:
-	using ChunkBlocks = MultiDimensionalArray<std::unique_ptr<Block>,
-		BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION>;
-	Chunk(std::shared_ptr<ChunkBlocks> chunkBlocks, Block::Coordinate blockPosition, const TexturePack& texturePack, ChunkContainer& parent);
+    using ChunkBlocks = MultiDimensionalArray<std::unique_ptr<Block>, BLOCKS_PER_DIMENSION,
+                                              BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION>;
+    Chunk(std::shared_ptr<ChunkBlocks> chunkBlocks, Block::Coordinate blockPosition,
+          const TexturePack& texturePack, ChunkContainer& parent);
 
     /**
      * It checks whether a given block face has an "air" or other transparent face
@@ -193,22 +205,23 @@ private:
      * @return Yes if the face next to the face of the indicated block is
      * transparent by which it is visible, false in the real case
      */
-    [[nodiscard]] bool doesBlockFaceHasTransparentNeighbor(const Block::Face& blockFace, const Block::Coordinate& blockPos);
+    [[nodiscard]] bool doesBlockFaceHasTransparentNeighbor(const Block::Face& blockFace,
+                                                           const Block::Coordinate& blockPos);
 
     /**
      * Creates a block mesh on the indicated local coordinates
      * @param pos The indicated position of the block on which the mesh should be created
      */
-	void createBlockMesh(const Block::Coordinate& pos);
-	
-private:
-	Block::Coordinate mChunkPosition;
-	const TexturePack& mTexturePack;
-	ChunkContainer* const mParentContainer;
-	MeshBuilder mMeshBuilder;
-	std::unique_ptr<Model3D> mModel;
+    void createBlockMesh(const Block::Coordinate& pos);
 
-	std::shared_ptr<ChunkBlocks> mChunkOfBlocks;
-	std::recursive_mutex mRebuildMeshMutex;
-	std::future<void> mChunkTerrainGenerationProcess;
+private:
+    Block::Coordinate mChunkPosition;
+    const TexturePack& mTexturePack;
+    ChunkContainer* const mParentContainer;
+    MeshBuilder mMeshBuilder;
+    std::unique_ptr<Model3D> mModel;
+
+    std::shared_ptr<ChunkBlocks> mChunkOfBlocks;
+    std::recursive_mutex mRebuildMeshMutex;
+    std::future<void> mChunkTerrainGenerationProcess;
 };

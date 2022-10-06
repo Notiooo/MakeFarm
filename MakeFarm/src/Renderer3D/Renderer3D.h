@@ -7,17 +7,22 @@
  * Activates breakpoint
  */
 #ifdef _MSC_VER
-#define ASSERT(x) if(!x) __debugbreak();
+    #define ASSERT(x)                                                                              \
+        if (!x)                                                                                    \
+            __debugbreak();
 #else
-#define ASSERT(x) if(!x) raise(SIGTRAP);
+    #define ASSERT(x)                                                                              \
+        if (!x)                                                                                    \
+            raise(SIGTRAP);
 #endif
 
 /**
  * Macro to use on OpenGL functions to correctly catch errors and write them out
  */
-#define GLCall(x) GLClearError();\
-	x;\
-	ASSERT(GLLogCall(#x, __FILE__, __LINE__));
+#define GLCall(x)                                                                                  \
+    GLClearError();                                                                                \
+    x;                                                                                             \
+    ASSERT(GLLogCall(#x, __FILE__, __LINE__));
 
 /**
  * Cleans up OpenGL errors
@@ -40,12 +45,13 @@ class Renderer3D
 {
 public:
     /**
-     * Draws the data given in VertexArray, IndexBuffer to the screen using the interpretation given in Shader.
+     * Draws the data given in VertexArray, IndexBuffer to the screen using the interpretation given
+     * in Shader.
      * @param va Stores all Vertex Data.
      * @param ib Specifies the drawing order of the VertexArray.
      * @param shader Shader telling how to draw data.
      */
-	void draw(const VertexArray& va, const IndexBuffer& ib, const sf::Shader& shader) const;
+    void draw(const VertexArray& va, const IndexBuffer& ib, const sf::Shader& shader) const;
 
     /**
      * Draws the data given in VertexArray to the screen using the interpretation given in Shader.
@@ -53,5 +59,5 @@ public:
      * @param shader Shader telling how to draw data.
      * @param number VertexArray size
      */
-	void draw(const VertexArray& va, const sf::Shader& shader, int number) const;
+    void draw(const VertexArray& va, const sf::Shader& shader, int number) const;
 };

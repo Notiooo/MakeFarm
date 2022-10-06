@@ -6,9 +6,9 @@
  */
 enum class State_ID
 {
-	// === Application flow states === //
-	None, 
-	GameState
+    // === Application flow states === //
+    None,
+    GameState
 };
 
 

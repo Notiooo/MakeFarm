@@ -2,14 +2,14 @@
 
 enum class Direction
 {
-	None,
+    None,
 
-	Above,
-	Below,
-	ToTheLeft,
-	ToTheRight,
-	InFront,
-	Behind,
+    Above,
+    Below,
+    ToTheLeft,
+    ToTheRight,
+    InFront,
+    Behind,
 
-	Counter
+    Counter
 };

@@ -1,7 +1,7 @@
 #pragma once
+#include <SFML/Graphics/RenderStates.hpp>
 #include <glm/matrix.hpp>
 #include <glm/vec3.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
 
 #include "Block/Block.h"
 
@@ -62,7 +62,7 @@ public:
      * @param raySize Length of ray.
      * @return Position at which the tip of the ray is in front of the camera
      */
-    template <typename T>
+    template<typename T>
     sf::Vector3<T> positionAtTheEndOfRayInfrontOfCamera(const float& raySize) const;
 
     /**
@@ -148,7 +148,7 @@ private:
     mutable glm::mat4 mProjectionMatrix;
 };
 
-template <typename T>
+template<typename T>
 sf::Vector3<T> Camera::positionAtTheEndOfRayInfrontOfCamera(const float& raySize) const
 {
     auto result = mCameraPosition + (mCameraFront * raySize);

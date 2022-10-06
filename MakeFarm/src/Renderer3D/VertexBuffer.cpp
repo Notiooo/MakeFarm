@@ -1,6 +1,6 @@
-#include "pch.h"
 #include "VertexBuffer.h"
 #include "Renderer3D/Renderer3D.h"
+#include "pch.h"
 
 VertexBuffer::VertexBuffer(const void* data, unsigned size)
 {

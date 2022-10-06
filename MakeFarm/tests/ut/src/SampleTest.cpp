@@ -1,10 +1,11 @@
 #include "gtest/gtest.h"
 
-namespace {
+namespace
+{
 
 TEST(DummyTest, DummyTestDoingNothing)
 {
     EXPECT_TRUE(true);
 }
 
-}
+}// namespace
