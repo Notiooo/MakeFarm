@@ -1,5 +1,6 @@
 #pragma once
 #include "World/Camera.h"
+#include <World/Chunks/ChunkManager.h>
 
 
 class Renderer3D;
@@ -26,10 +27,10 @@ public:
      * ChunkContainer.
      * @param camera The camera on the basis of which we are looking for the block to which it
      * points
-     * @param chunkContainer ChunkContainter, which contains the chunk with the block we are looking
+     * @param chunkManager ChunkContainter, which contains the chunk with the block we are looking
      * at
      */
-    void markFacedBlock(const Camera& camera, const ChunkContainer& chunkContainer);
+    void markFacedBlock(const Camera& camera, const ChunkManager& chunkManager);
 
     /**
      * Returns the position of the highlighted block

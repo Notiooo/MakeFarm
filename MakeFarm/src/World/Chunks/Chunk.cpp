@@ -3,16 +3,18 @@
 
 #include <utility>
 
-#include "ChunkContainer.h"
-#include "MeshBuilder.h"
 #include "Resources/TexturePack.h"
 #include "Utils/Direction.h"
 #include "World/Block/BlockType.h"
+#include "World/Chunks/ChunkContainer.h"
+#include "World/Chunks/ChunkManager.h"
+#include "World/Chunks/MeshBuilder.h"
 #include <FastNoiseLite.h>
 
 
-Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent)
-    : Chunk(Block::Coordinate::nonBlockToBlockMetric(pixelPosition), texturePack, parent)
+Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent,
+             ChunkManager& manager)
+    : Chunk(Block::Coordinate::nonBlockToBlockMetric(pixelPosition), texturePack, parent, manager)
 {
 }
 
@@ -22,17 +24,18 @@ Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack)
 }
 
 Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack,
-             ChunkContainer& parent)
+             ChunkContainer& parent, ChunkManager& manager)
     : mChunkPosition(std::move(blockPosition))
     , mTexturePack(texturePack)
     , mParentContainer(&parent)
     , mMeshBuilder(mChunkPosition)
     , mChunkOfBlocks(std::make_shared<ChunkBlocks>())
+    , mChunkManager(&manager)
 {
     generateChunkTerrain();
 
-    rebuildChunksAround();
-    markToBeRebuildSlow();
+    // rebuildChunksAround();
+    // rebuildSlow();
 }
 
 Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack)
@@ -41,6 +44,7 @@ Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack)
     , mParentContainer(nullptr)
     , mMeshBuilder(mChunkPosition)
     , mChunkOfBlocks(std::make_shared<ChunkBlocks>())
+    , mChunkManager(nullptr)
 {
     generateChunkTerrain();
 
@@ -55,6 +59,7 @@ Chunk::Chunk(Chunk&& rhs) noexcept
     , mMeshBuilder(mChunkPosition)
     , mModel(std::move(rhs.mModel))
     , mChunkOfBlocks(std::move(rhs.mChunkOfBlocks))
+    , mChunkManager(rhs.mChunkManager)
 {
 }
 
@@ -62,11 +67,12 @@ void Chunk::generateChunkTerrain()
 {
     static FastNoiseLite noise;
     noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-    noise.SetFrequency(0.02);
+    noise.SetFrequency(0.005);
+    noise.SetFractalOctaves(4);
 
-    for (auto x = 0; x < BLOCKS_PER_DIMENSION; ++x)
+    for (auto x = 0; x < BLOCKS_PER_X_DIMENSION; ++x)
     {
-        for (auto z = 0; z < BLOCKS_PER_DIMENSION; ++z)
+        for (auto z = 0; z < BLOCKS_PER_Z_DIMENSION; ++z)
         {
             auto globalCoordinate = localToGlobalCoordinates({x, 0, z});
 
@@ -74,11 +80,11 @@ void Chunk::generateChunkTerrain()
                                                  static_cast<float>(globalCoordinate.z));
 
             heightOfBlocks = (heightOfBlocks + 1) / 2.f;// range of 0 .. 1
-            auto heightOfColumn = heightOfBlocks * ChunkContainer::MAX_HEIGHT_MAP;
+            auto heightOfColumn = heightOfBlocks * ChunkManager::MAX_HEIGHT_MAP;
 
             heightOfColumn -= globalCoordinate.y;
 
-            for (auto y = 0; y < BLOCKS_PER_DIMENSION; ++y)
+            for (auto y = 0; y < BLOCKS_PER_Y_DIMENSION; ++y)
             {
                 if (heightOfColumn > 0)
                 {
@@ -113,11 +119,11 @@ void Chunk::createBlockMesh(const Block::Coordinate& pos)
 
 void Chunk::prepareMesh()
 {
-    for (auto x = 0; x < BLOCKS_PER_DIMENSION; ++x)
+    for (auto x = 0; x < BLOCKS_PER_X_DIMENSION; ++x)
     {
-        for (auto y = 0; y < BLOCKS_PER_DIMENSION; ++y)
+        for (auto y = 0; y < BLOCKS_PER_Y_DIMENSION; ++y)
         {
-            for (auto z = 0; z < BLOCKS_PER_DIMENSION; ++z)
+            for (auto z = 0; z < BLOCKS_PER_Z_DIMENSION; ++z)
             {
                 if (localBlock({x, y, z}).blockId() == "Air")
                 {
@@ -136,7 +142,6 @@ void Chunk::updateMesh()
     {
         mModel = std::make_unique<Model3D>();
     }
-
     mModel->setMesh(mMeshBuilder.mesh3D());
 }
 
@@ -146,9 +151,9 @@ void Chunk::fixedUpdate(const float& deltaTime)
 
 bool Chunk::areLocalCoordinatesInsideChunk(const Block::Coordinate& localCoordinates)
 {
-    if (localCoordinates.x < BLOCKS_PER_DIMENSION && localCoordinates.x >= 0 &&
-        localCoordinates.y < BLOCKS_PER_DIMENSION && localCoordinates.y >= 0 &&
-        localCoordinates.z < BLOCKS_PER_DIMENSION && localCoordinates.z >= 0)
+    if (localCoordinates.x < BLOCKS_PER_X_DIMENSION && localCoordinates.x >= 0 &&
+        localCoordinates.y < BLOCKS_PER_Y_DIMENSION && localCoordinates.y >= 0 &&
+        localCoordinates.z < BLOCKS_PER_Z_DIMENSION && localCoordinates.z >= 0)
     {
         return true;
     }
@@ -158,9 +163,9 @@ bool Chunk::areLocalCoordinatesInsideChunk(const Block::Coordinate& localCoordin
 
 bool Chunk::isLocalCoordinateOnChunkEdge(const Block::Coordinate& localCoordinates)
 {
-    if (localCoordinates.x == BLOCKS_PER_DIMENSION - 1 || localCoordinates.x == 0 ||
-        localCoordinates.y == BLOCKS_PER_DIMENSION - 1 || localCoordinates.y == 0 ||
-        localCoordinates.z == BLOCKS_PER_DIMENSION - 1 || localCoordinates.z == 0)
+    if (localCoordinates.x == BLOCKS_PER_X_DIMENSION - 1 || localCoordinates.x == 0 ||
+        localCoordinates.y == BLOCKS_PER_Y_DIMENSION - 1 || localCoordinates.y == 0 ||
+        localCoordinates.z == BLOCKS_PER_Z_DIMENSION - 1 || localCoordinates.z == 0)
     {
         return true;
     }
@@ -168,73 +173,54 @@ bool Chunk::isLocalCoordinateOnChunkEdge(const Block::Coordinate& localCoordinat
     return false;
 }
 
-void Chunk::markToBeRebuildSlow() const
+void Chunk::rebuildSlow()
 {
-    if (mParentContainer)
+    if (mChunkManager && mParentContainer)
     {
-        std::shared_lock guard(mParentContainer->mChunksAccessMutex);
-        if (auto foundChunk = mParentContainer->mChunks.find(
-                ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition));
-            foundChunk != mParentContainer->mChunks.end())
-        {
-            std::scoped_lock guard(mParentContainer->mChunksToRebuildSlowAccessMutex);
-            auto& vec = mParentContainer->mChunksToRebuildSlow;
-
-            if (auto foundElement = std::find(vec.begin(), vec.end(), foundChunk->second);
-                foundElement != vec.end())
-            {
-                std::rotate(foundElement, foundElement + 1, vec.end());
-            }
-            else
-            {
-                mParentContainer->mChunksToRebuildSlow.push_back(foundChunk->second);
-            }
-        }
+        auto thisChunk = mParentContainer->findChunk(*this);
+        mChunkManager->rebuildSlow(thisChunk);
     }
 }
 
-void Chunk::markToBeRebuildFast() const
+void Chunk::rebuildFast()
 {
-    if (mParentContainer)
+    if (mChunkManager && mParentContainer)
     {
-        std::shared_lock guard(mParentContainer->mChunksAccessMutex);
-        if (auto foundChunk = mParentContainer->mChunks.find(
-                ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition));
-            foundChunk != mParentContainer->mChunks.end())
-        {
-            std::scoped_lock guard(mParentContainer->mChunksToRebuildFastAccessMutex);
-            mParentContainer->mChunksToRebuildFast.push_back(foundChunk->second);
-        }
+        auto thisChunk = mParentContainer->findChunk(*this);
+        mChunkManager->rebuildFast(thisChunk);
     }
 }
 
 void Chunk::rebuildMesh()
 {
-    std::lock_guard _(mRebuildMeshMutex);
-    mMeshBuilder.blockMesh();
     mMeshBuilder.resetMesh();
     prepareMesh();
-    mMeshBuilder.unblockMesh();
 }
 
 void Chunk::rebuildChunksAround()
 {
-    for (auto direction = static_cast<int>(Direction::None) + 1;
-         direction < static_cast<int>(Direction::Counter); ++direction)
+    if (mParentContainer)
     {
-        if (const auto chunk = chunkNearby(static_cast<Direction>(direction)))
+        for (auto direction = static_cast<int>(Direction::None) + 1;
+             direction < static_cast<int>(Direction::Counter); ++direction)
         {
-            chunk->markToBeRebuildSlow();
+            if (const auto chunk =
+                    mParentContainer->chunkNearby(*this, static_cast<Direction>(direction)))
+            {
+                chunk->rebuildSlow();
+            }
         }
     }
 }
 
 void Chunk::removeLocalBlock(const Block::Coordinate& localCoordinates)
 {
+    std::unique_lock guard(mChunkAccessMutex);
     (*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z]->setBlockType(
         "Air");
+    guard.unlock();
 
-    markToBeRebuildFast();
+    rebuildFast();
 }
 
 Block::Coordinate Chunk::globalToLocalCoordinates(const Block::Coordinate& worldCoordinates) const
@@ -255,6 +241,7 @@ Block& Chunk::localNearbyBlock(const Block::Coordinate& position, const Directio
 
 const Block& Chunk::localBlock(const Block::Coordinate& localCoordinates) const
 {
+    std::unique_lock guard(mChunkAccessMutex);
     return *(*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z];
 }
 
@@ -279,43 +266,21 @@ Block::Coordinate Chunk::localNearbyBlockPosition(const Block::Coordinate& posit
     }
 }
 
-std::shared_ptr<Chunk> Chunk::chunkNearby(const Direction& direction)
-{
-    switch (direction)
-    {
-        case Direction::Above:
-            return mParentContainer->blockPositionToChunk(
-                localToGlobalCoordinates({0, BLOCKS_PER_DIMENSION, 0}));
-        case Direction::Below:
-            return mParentContainer->blockPositionToChunk(localToGlobalCoordinates({0, -1, 0}));
-        case Direction::ToTheLeft:
-            return mParentContainer->blockPositionToChunk(localToGlobalCoordinates({-1, 0, 0}));
-        case Direction::ToTheRight:
-            return mParentContainer->blockPositionToChunk(
-                localToGlobalCoordinates({BLOCKS_PER_DIMENSION, 0, 0}));
-        case Direction::InFront:
-            return mParentContainer->blockPositionToChunk(
-                localToGlobalCoordinates({0, 0, BLOCKS_PER_DIMENSION}));
-        case Direction::Behind:
-            return mParentContainer->blockPositionToChunk(localToGlobalCoordinates({0, 0, -1}));
-        default: throw std::runtime_error("Unsupported Direction value was provided");
-    }
-}
-
 Chunk::Chunk(std::shared_ptr<ChunkBlocks> chunkBlocks, Block::Coordinate blockPosition,
-             const TexturePack& texturePack, ChunkContainer& parent)
+             const TexturePack& texturePack, ChunkContainer& parent, ChunkManager& manager)
     : mChunkPosition(std::move(blockPosition))
     , mTexturePack(texturePack)
     , mParentContainer(&parent)
     , mMeshBuilder(mChunkPosition)
     , mChunkOfBlocks(std::move(chunkBlocks))
+    , mChunkManager(&manager)
 {
     prepareMesh();
 }
 
 Block::Coordinate Chunk::localToGlobalCoordinates(const Block::Coordinate& localCoordinates) const
 {
-    return mChunkPosition + localCoordinates;
+    return static_cast<Block::Coordinate>(mChunkPosition + localCoordinates);
 }
 
 std::vector<Direction> Chunk::directionOfBlockFacesInContactWithOtherChunk(
@@ -323,7 +288,7 @@ std::vector<Direction> Chunk::directionOfBlockFacesInContactWithOtherChunk(
 {
     std::vector<Direction> directions;
 
-    if (localCoordinates.x == BLOCKS_PER_DIMENSION - 1)
+    if (localCoordinates.x == BLOCKS_PER_X_DIMENSION - 1)
     {
         directions.emplace_back(Direction::ToTheRight);
     }
@@ -331,7 +296,7 @@ std::vector<Direction> Chunk::directionOfBlockFacesInContactWithOtherChunk(
     {
         directions.emplace_back(Direction::ToTheLeft);
     }
-    if (localCoordinates.y == BLOCKS_PER_DIMENSION - 1)
+    if (localCoordinates.y == BLOCKS_PER_Y_DIMENSION - 1)
     {
         directions.emplace_back(Direction::Above);
     }
@@ -339,7 +304,7 @@ std::vector<Direction> Chunk::directionOfBlockFacesInContactWithOtherChunk(
     {
         directions.emplace_back(Direction::Below);
     }
-    if (localCoordinates.z == BLOCKS_PER_DIMENSION - 1)
+    if (localCoordinates.z == BLOCKS_PER_Z_DIMENSION - 1)
     {
         directions.emplace_back(Direction::InFront);
     }
@@ -397,4 +362,8 @@ void Chunk::draw(const Renderer3D& renderer3d, const sf::Shader& shader) const
     {
         mModel->draw(renderer3d, shader);
     }
+}
+const Block::Coordinate& Chunk::positionInBlocks() const
+{
+    return mChunkPosition;
 }

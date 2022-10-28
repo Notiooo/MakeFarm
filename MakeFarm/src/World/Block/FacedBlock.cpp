@@ -4,10 +4,10 @@
 #include "Renderer3D/Model3D.h"
 #include "Resources/TexturePack.h"
 #include "World/Camera.h"
-#include "World/Chunks/ChunkContainer.h"
+#include "World/Chunks/ChunkManager.h"
 #include "World/Chunks/MeshBuilder.h"
 
-void FacedBlock::markFacedBlock(const Camera& camera, const ChunkContainer& chunkContainer)
+void FacedBlock::markFacedBlock(const Camera& camera, const ChunkManager& chunkManager)
 {
     static auto rayStep = Block::BLOCK_SIZE * 0.01f;
     for (float raySize = rayStep; raySize < Camera::MAX_RAY_SIZE; raySize += rayStep)
@@ -35,7 +35,7 @@ void FacedBlock::markFacedBlock(const Camera& camera, const ChunkContainer& chun
 
         auto facedBlock = Block::Coordinate::nonBlockToBlockMetric(facedPosition);
 
-        if (const auto blockPtr = chunkContainer.worldBlock(facedBlock))
+        if (const auto blockPtr = chunkManager.chunks().worldBlock(facedBlock))
         {
             if (blockPtr->blockId() != "Air")
             {

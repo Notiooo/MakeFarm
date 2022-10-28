@@ -18,7 +18,7 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window)
     , mGameCamera(mGameWindow, mShader)
     , mGameSettings("settings.cfg")
     , mTexturePack("defaultTextures")
-    , mTestChunk(mTexturePack)
+    , mChunkManager(mTexturePack)
     , mSelectedBlock(mTexturePack)
 {
     Mouse::lockMouseAtCenter(mGameWindow);
@@ -51,7 +51,7 @@ bool GameState::handleEvent(const sf::Event& event)
             {
                 if (mSelectedBlock.isAnyBlockSelected())
                 {
-                    mTestChunk.removeWorldBlock(mSelectedBlock.blockPosition());
+                    mChunkManager.chunks().removeWorldBlock(mSelectedBlock.blockPosition());
                 }
             }
         }
@@ -143,11 +143,11 @@ void GameState::updateDebugMenu()
 bool GameState::update(const float& deltaTime)
 {
     mGameCamera.update(deltaTime);
-    mSelectedBlock.markFacedBlock(mGameCamera, mTestChunk);
+    mSelectedBlock.markFacedBlock(mGameCamera, mChunkManager);
 
-    mTestChunk.update(deltaTime);
-    mTestChunk.generateChunksAround(mGameCamera);
-    mTestChunk.clearFarAwayChunks(mGameCamera);
+    mChunkManager.update(deltaTime);
+    mChunkManager.generateChunksAround(mGameCamera);
+    mChunkManager.clearFarAwayChunks(mGameCamera);
 
     updateDebugMenu();
 
@@ -156,6 +156,6 @@ bool GameState::update(const float& deltaTime)
 
 void GameState::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    mTestChunk.draw(mGameRenderer, mShader);
+    mChunkManager.draw(mGameRenderer, mShader);
     mSelectedBlock.draw(mGameRenderer, mShader);
 }

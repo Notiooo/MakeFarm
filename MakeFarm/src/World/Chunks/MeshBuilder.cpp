@@ -69,7 +69,7 @@ void MeshBuilder::resetMesh()
 
 Mesh3D MeshBuilder::mesh3D() const
 {
-    std::lock_guard _(mRebuildMeshMutex);
+    // std::lock_guard _(mRebuildMeshMutex);
     return mChunkMesh;
 }
 

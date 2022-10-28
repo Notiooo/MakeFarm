@@ -10,7 +10,7 @@
 #include "World/Block/FacedBlock.h"
 #include "World/Camera.h"
 #include "World/Chunks/Chunk.h"
-#include "World/Chunks/ChunkContainer.h"
+#include "World/Chunks/ChunkManager.h"
 
 class StateStack;
 
@@ -65,7 +65,7 @@ private:
     Settings mGameSettings;
 
     /** Utils */
-    ChunkContainer mTestChunk;
+    ChunkManager mChunkManager;
     FacedBlock mSelectedBlock;//!< Marking the block the player is looking at
 };
 

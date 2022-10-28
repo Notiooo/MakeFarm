@@ -22,7 +22,7 @@ void Model3D::setMesh(const Mesh3D& mesh)
 
     mIndices.setData(mesh.indices.data(), static_cast<unsigned int>(mesh.indices.size()));
 
-    // clang-format off
+// clang-format off
     #ifdef _DEBUG
     mVertexArray.unbind();
     mIndices.unbind();
@@ -32,8 +32,8 @@ void Model3D::setMesh(const Mesh3D& mesh)
 
 void Model3D::setMesh(Mesh3D&& mesh)
 {
-    this->mMesh = std::make_unique<Mesh3D>(std::move(mesh));
-    setMesh(*this->mMesh);
+    mMesh = std::make_unique<Mesh3D>(std::move(mesh));
+    setMesh(*mMesh);
 }
 
 void Model3D::draw(const Renderer3D& renderer3d, const sf::Shader& shader) const

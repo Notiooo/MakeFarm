@@ -3,6 +3,7 @@
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <shared_mutex>
 
 #include "MeshBuilder.h"
 #include "Renderer3D/Model3D.h"
@@ -12,6 +13,7 @@
 #include "World/Block/Block.h"
 
 class ChunkContainer;
+class ChunkManager;
 
 
 /**
@@ -19,23 +21,23 @@ class ChunkContainer;
  */
 class Chunk
 {
-    friend class ChunkContainer;
-
 public:
-    Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent);
+    Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent,
+          ChunkManager& manager);
+
     Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack);
 
-    Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack, ChunkContainer& parent);
-    Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack);
+    Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack, ChunkContainer& parent,
+          ChunkManager& manager);
 
+    Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack);
     Chunk(Chunk&& rhs) noexcept;
 
-    static constexpr int BLOCKS_PER_DIMENSION = 16;
-    static constexpr int BLOCKS_PER_WALL = BLOCKS_PER_DIMENSION * BLOCKS_PER_DIMENSION;
-    static constexpr int BLOCKS_IN_CHUNK = BLOCKS_PER_WALL * BLOCKS_PER_DIMENSION;
-
-    static constexpr int CHUNK_WALL_SIZE = BLOCKS_PER_DIMENSION * Block::BLOCK_SIZE;
-    static constexpr int CHUNK_AREA_SIZE = 6 * CHUNK_WALL_SIZE;
+    static constexpr int BLOCKS_PER_X_DIMENSION = 16;
+    static constexpr int BLOCKS_PER_Y_DIMENSION = 127;
+    static constexpr int BLOCKS_PER_Z_DIMENSION = 16;
+    static constexpr int BLOCKS_IN_CHUNK =
+        BLOCKS_PER_X_DIMENSION * BLOCKS_PER_Y_DIMENSION * BLOCKS_PER_Z_DIMENSION;
 
     /**
      * \brief Prepares/generates the mesh chunk, but does not replace it yet.
@@ -118,30 +120,19 @@ public:
     [[nodiscard]] bool belongsToAnyChunkContainer() const;
 
     /**
+     * It is rebuilding this mesh fresh. Very expensive operation
+     */
+    void rebuildMesh();
+
+    /**
      * \brief Indicates chunk as willing to rebuild mesh in near future
      */
-    void markToBeRebuildSlow() const;
+    void rebuildSlow();
 
     /**
      * \brief Indicates chunk as willing to rebuild mesh in this, or next frame
      */
-    void markToBeRebuildFast() const;
-
-protected:
-    /**
-     * Generates natural world terrain on a given chunk
-     */
-    void generateChunkTerrain();
-
-    /**
-     * Rebuilds other chunks inside the same container around this chunk.
-     */
-    void rebuildChunksAround();
-
-    /**
-     * It is rebuilding this mesh fresh. Very expensive operation
-     */
-    void rebuildMesh();
+    void rebuildFast();
 
     /**
      * Returns information whether any chunk is in contact with the listed block.
@@ -152,6 +143,16 @@ protected:
      */
     std::vector<Direction> directionOfBlockFacesInContactWithOtherChunk(
         const Block::Coordinate& localCoordinates);
+
+    /**
+     * Returns the position of the local block, located right next to the local block in the
+     * indicated direction.
+     * @param position Local block position
+     * @param direction Direction next to which the block you are looking for is located
+     * @return Block coordinate inside chunk
+     */
+    [[nodiscard]] Block::Coordinate localNearbyBlockPosition(const Block::Coordinate& position,
+                                                             const Direction& direction) const;
 
     /**
      * Returns the block that is close to it, in the direction determined relative to the block on
@@ -174,27 +175,27 @@ protected:
                                                 const Direction& direction) const;
 
     /**
-     * Returns the position of the local block, located right next to the local block in the
-     * indicated direction.
-     * @param position Local block position
-     * @param direction Direction next to which the block you are looking for is located
-     * @return Block coordinate inside chunk
+     * @brief Returns the position on the block scale.
+     * @return Coordinates of the block of the beginning of the chunk.
      */
-    [[nodiscard]] Block::Coordinate localNearbyBlockPosition(const Block::Coordinate& position,
-                                                             const Direction& direction) const;
-
-    /**
-     * Returns the chunk located in the listed direction from this chunk
-     * @param direction Direction next to which the chunk you are looking for is located
-     * @return Pointer to chunk found
-     */
-    [[nodiscard]] std::shared_ptr<Chunk> chunkNearby(const Direction& direction);
+    const Block::Coordinate& positionInBlocks() const;
 
 private:
-    using ChunkBlocks = MultiDimensionalArray<std::unique_ptr<Block>, BLOCKS_PER_DIMENSION,
-                                              BLOCKS_PER_DIMENSION, BLOCKS_PER_DIMENSION>;
+    using ChunkBlocks = MultiDimensionalArray<std::unique_ptr<Block>, BLOCKS_PER_X_DIMENSION,
+                                              BLOCKS_PER_Y_DIMENSION, BLOCKS_PER_Z_DIMENSION>;
+
     Chunk(std::shared_ptr<ChunkBlocks> chunkBlocks, Block::Coordinate blockPosition,
-          const TexturePack& texturePack, ChunkContainer& parent);
+          const TexturePack& texturePack, ChunkContainer& parent, ChunkManager& manager);
+
+    /**
+     * Generates natural world terrain on a given chunk
+     */
+    void generateChunkTerrain();
+
+    /**
+     * Rebuilds other chunks inside the same container around this chunk.
+     */
+    void rebuildChunksAround();
 
     /**
      * It checks whether a given block face has an "air" or other transparent face
@@ -215,13 +216,17 @@ private:
     void createBlockMesh(const Block::Coordinate& pos);
 
 private:
+    mutable std::recursive_mutex mChunkAccessMutex;
+
     Block::Coordinate mChunkPosition;
     const TexturePack& mTexturePack;
+
     ChunkContainer* const mParentContainer;
+    ChunkManager* const mChunkManager;
+
     MeshBuilder mMeshBuilder;
     std::unique_ptr<Model3D> mModel;
 
+    std::mutex mRebuildMutex;
     std::shared_ptr<ChunkBlocks> mChunkOfBlocks;
-    std::recursive_mutex mRebuildMeshMutex;
-    std::future<void> mChunkTerrainGenerationProcess;
 };

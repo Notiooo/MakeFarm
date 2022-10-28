@@ -19,6 +19,7 @@ set(PROJECT_SOURCES
         Utils/Settings.cpp
         Utils/utils.cpp
         Utils/Direction.cpp
+        Utils/IteratorRanges.cpp
         World/Block/Block.cpp
         World/Block/BlockMap.cpp
         World/Block/BlockType.cpp
@@ -26,6 +27,8 @@ set(PROJECT_SOURCES
         World/Camera.cpp
         World/Chunks/Chunk.cpp
         World/Chunks/ChunkContainer.cpp
+        World/Chunks/ChunkManager.cpp
+        World/Chunks/AsyncProcessedObjects.cpp
         World/Chunks/CoordinatesAroundOriginGetter.cpp
         World/Chunks/MeshBuilder.cpp
         )
