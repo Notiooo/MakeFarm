@@ -37,7 +37,7 @@ void FacedBlock::markFacedBlock(const Camera& camera, const ChunkManager& chunkM
 
         if (const auto blockPtr = chunkManager.chunks().worldBlock(facedBlock))
         {
-            if (blockPtr->blockId() != "Air")
+            if (blockPtr->blockId() != BlockId::Air)
             {
                 const Block::Coordinate& blockPosition = std::move(facedBlock);
                 MeshBuilder cubeBuilder(Block::Coordinate(0, 0, 0));

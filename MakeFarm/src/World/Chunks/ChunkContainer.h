@@ -44,11 +44,25 @@ public:
     ChunkContainer() = default;
 
     /**
-     * Draws this chunk container to the game screen
+     * Draws terrain of chunks in the container to the game screen
      * @param renderer3d Renderer drawing the 3D game world onto the 2D screen
      * @param shader Shader with the help of which the object should be drawn
      */
-    void draw(const Renderer3D& renderer3D, const sf::Shader& shader) const;
+    void drawTerrain(const Renderer3D& renderer3D, const sf::Shader& shader) const;
+
+    /**
+     * Draws liquids of chunks in the container to the game screen
+     * @param renderer3d Renderer drawing the 3D game world onto the 2D screen
+     * @param shader Shader with the help of which the object should be drawn
+     */
+    void drawLiquids(const Renderer3D& renderer3D, const sf::Shader& shader) const;
+
+    /**
+     * Draws florals of chunks in the container to the game screen
+     * @param renderer3d Renderer drawing the 3D game world onto the 2D screen
+     * @param shader Shader with the help of which the object should be drawn
+     */
+    void drawFlorals(const Renderer3D& renderer3D, const sf::Shader& shader) const;
 
     /**
      * \brief Updates the chunkcontainer logic dependent, or independent of time, every rendered
@@ -62,6 +76,13 @@ public:
      * \return Pointer to block found, or nullptr if not found
      */
     [[nodiscard]] const Block* worldBlock(const Block::Coordinate& worldBlockCoordinates) const;
+
+    /**
+     * \brief Finds a block inside a container based on the global position of the block
+     * \param worldBlockCoordinates Global position of the block inside the game world
+     * \return Pointer to block found, or nullptr if not found
+     */
+    [[nodiscard]] Block* worldBlock(const Block::Coordinate& worldBlockCoordinates);
 
     /**
      * \brief Returns information about whether a block on a given position has been already created
@@ -159,6 +180,22 @@ public:
      */
     bool isPresent(const ChunkContainer::Coordinate& chunkPosition) const;
 
+    /**
+     * @brief It insert a block in a chunk without rebuilding the chunk. If there was another block
+     * then it is overwritten.
+     * @param id Block identifier
+     * @param worldCoordinate World coordinates of the block to place
+     */
+    void placeBlockWithoutRebuild(const BlockId& id, Block::Coordinate worldCoordinate);
+
+    /**
+     * @brief It tries to insert a block in a chunk without rebuilding the chunk. If there is an air
+     * block in a particular location, it inserts a new block. Otherwise, it does nothing.
+     * @param id Block identifier
+     * @param worldCoordinate World coordinates of the block to place
+     */
+    void tryToPlaceBlockWithoutRebuild(const BlockId& id, Block::Coordinate worldCoordinate);
+
 private:
     /**
      * \brief Based on the position of the block in the game world, it returns the chunk that
@@ -168,12 +205,68 @@ private:
     [[nodiscard]] std::shared_ptr<const Chunk> blockPositionToChunk(
         const Block::Coordinate& worldBlockCoordinates) const;
 
+    /**
+     * @brief It checks if a new chunk appeared that has queued blocks to be inserted.
+     */
+    void placeScheduledBlocksForNewAppearingChunks();
+
+    /**
+     * @brief It checks if a new chunk appeared that has queued blocks to be inserted.
+     */
+    void placeScheduledBlocksForPresentChunks();
+
+    /**
+     * @brief It checks if a new chunk appeared that has queued blocks to be inserted instead of air
+     * blocks.
+     */
+    void tryToPlaceScheduledBlocksForPresentChunks();
+
+    /**
+     * @brief It checks if a new chunk appeared that has queued blocks to be inserted instead of air
+     * blocks.
+     */
+    void tryToPlaceScheduledBlocksForNewAppearingChunks();
+
 private:
     /**
      * @brief Mutex guarding access to chunk resources so that
      * multiple threads don't create access problems.
      */
     mutable std::shared_mutex mChunksAccessMutex;
+
+    /**
+     * @brief Stores information on a block to appear in one of the newly created chunks in
+     * the future
+     */
+    struct BlockToBePlaced
+    {
+        ChunkContainer::Coordinate chunkCoordinates;
+        BlockId blockid;
+        Block::Coordinate worldBlockCoordinates;
+    };
+
+    /**
+     * @brief Mutex making sure too many processes don't use the block queue to insert new blocks
+     * into a future chunk
+     */
+    mutable std::recursive_mutex mBlockToBePlacedAccessMutex;
+
+    /**
+     * @brief A queue of blocks that will be inserted into a chunk that has not yet been created.
+     */
+    std::list<BlockToBePlaced> mBlockToBePlacedInFutureChunks;
+
+    /**
+     * @brief Mutex making sure too many processes don't use the block queue to insert new blocks
+     * into a future chunk instead of air blocks
+     */
+    mutable std::recursive_mutex mBlockMightBePlacedAccessMutex;
+
+    /**
+     * @brief A queue of blocks that might replace air block with new block in a chunk that has not
+     * yet been created.
+     */
+    std::list<BlockToBePlaced> mBlockMightBePlacedInFutureChunks;
 
     /**
      * @brief Unordered map storing chunks inside this container.

@@ -12,9 +12,9 @@ const BlockMap& BlockMap::blockMap()
     return instance;
 }
 
-const BlockType& BlockMap::blockType(const std::string& blockName) const
+const BlockType& BlockMap::blockType(const BlockId& blockId) const
 {
-    return mBlockMap.at(blockName);
+    return mBlockMap.at(blockId);
 }
 
 BlockMap::BlockMap()
@@ -93,7 +93,12 @@ void BlockMap::parseDirectory(const std::string& directoryName)
                     blockType.transparent = settingsFile.get<bool>("Transparent");
                 }
 
-                mBlockMap[fileName] = blockType;
+                if (settingsFile.isPresent("Id"))
+                {
+                    auto blockId = static_cast<BlockId>(settingsFile.get<int>("Id"));
+                    blockType.blockId = blockId;
+                    mBlockMap[blockId] = blockType;
+                }
 
                 settingsFile.closeFile();
             }

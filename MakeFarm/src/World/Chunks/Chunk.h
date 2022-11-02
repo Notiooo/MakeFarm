@@ -11,9 +11,11 @@
 #include "Utils/Direction.h"
 #include "Utils/MultiDimensionalArray.h"
 #include "World/Block/Block.h"
+#include "World/Block/BlockId.h"
 
 class ChunkContainer;
 class ChunkManager;
+class TerrainGenerator;
 
 
 /**
@@ -32,12 +34,16 @@ public:
 
     Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack);
     Chunk(Chunk&& rhs) noexcept;
+    ~Chunk();
 
     static constexpr int BLOCKS_PER_X_DIMENSION = 16;
     static constexpr int BLOCKS_PER_Y_DIMENSION = 127;
     static constexpr int BLOCKS_PER_Z_DIMENSION = 16;
     static constexpr int BLOCKS_IN_CHUNK =
         BLOCKS_PER_X_DIMENSION * BLOCKS_PER_Y_DIMENSION * BLOCKS_PER_Z_DIMENSION;
+
+    using ChunkBlocks = MultiDimensionalArray<std::unique_ptr<Block>, BLOCKS_PER_X_DIMENSION,
+                                              BLOCKS_PER_Y_DIMENSION, BLOCKS_PER_Z_DIMENSION>;
 
     /**
      * \brief Prepares/generates the mesh chunk, but does not replace it yet.
@@ -56,11 +62,25 @@ public:
     void fixedUpdate(const float& deltaTime);
 
     /**
-     * Draws this chunk to the game screen
+     * Draws this chunk terrain to the game screen
      * @param renderer3d Renderer drawing the 3D game world onto the 2D screen
      * @param shader Shader with the help of which the object should be drawn
      */
-    void draw(const Renderer3D& renderer3d, const sf::Shader& shader) const;
+    void drawTerrain(const Renderer3D& renderer3d, const sf::Shader& shader) const;
+
+    /**
+     * Draws this chunk liquids to the game screen
+     * @param renderer3d Renderer drawing the 3D game world onto the 2D screen
+     * @param shader Shader with the help of which the object should be drawn
+     */
+    void drawLiquids(const Renderer3D& renderer3d, const sf::Shader& shader) const;
+
+    /**
+     * Draws this chunk floral to the game screen
+     * @param renderer3d Renderer drawing the 3D game world onto the 2D screen
+     * @param shader Shader with the help of which the object should be drawn
+     */
+    void drawFlorals(const Renderer3D& renderer3d, const sf::Shader& shader) const;
 
     /**
      * \brief Returns the block according to the coordinates given relative to the chunk position.
@@ -74,6 +94,26 @@ public:
      * \param localCoordinates Coordinates relative to the position of the chunk
      */
     void removeLocalBlock(const Block::Coordinate& localCoordinates);
+
+
+    /**
+     * @brief Inserts a block into the map without rebuilding the mesh. If another block was there
+     * then it is replaced. The function is safe if the block goes beyond the current chunk.
+     * @param blockId Block identifier
+     * @param localCoordinates Coordinates relative to the position of the chunk
+     */
+    void placeBlockWithoutRebuild(const BlockId& blockId,
+                                  const Block::Coordinate& localCoordinates);
+
+    /**
+     * \brief Tries to insert a block into the map without rebuilding the mesh. If in that place
+     * there was different block than air it does nothing. The function is safe if the block goes
+     * beyond the current chunk.
+     * \param blockId Block Identifier
+     * \param localCoordinates Coordinates relative to the position of the chunk
+     */
+    void tryToPlaceBlockWithoutRebuild(const BlockId& blockId,
+                                       const Block::Coordinate& localCoordinates);
 
     /**
      * \brief Returns the block according to the coordinates given relative to the chunk position.
@@ -181,9 +221,6 @@ public:
     const Block::Coordinate& positionInBlocks() const;
 
 private:
-    using ChunkBlocks = MultiDimensionalArray<std::unique_ptr<Block>, BLOCKS_PER_X_DIMENSION,
-                                              BLOCKS_PER_Y_DIMENSION, BLOCKS_PER_Z_DIMENSION>;
-
     Chunk(std::shared_ptr<ChunkBlocks> chunkBlocks, Block::Coordinate blockPosition,
           const TexturePack& texturePack, ChunkContainer& parent, ChunkManager& manager);
 
@@ -209,6 +246,18 @@ private:
     [[nodiscard]] bool doesBlockFaceHasTransparentNeighbor(const Block::Face& blockFace,
                                                            const Block::Coordinate& blockPos);
 
+
+    /**
+     * @brief Checks whether a given block face is in contact with a block of the specified type
+     * @param blockFace Face of the block to be checked
+     * @param blockPos Block position to be checked
+     * @param blockId Block identifier
+     * @return
+     */
+    [[nodiscard]] bool doesBlockFaceHasGivenBlockNeighbour(const Block::Face& blockFace,
+                                                           const Block::Coordinate& blockPos,
+                                                           const BlockId& blockId);
+
     /**
      * Creates a block mesh on the indicated local coordinates
      * @param pos The indicated position of the block on which the mesh should be created
@@ -217,16 +266,24 @@ private:
 
 private:
     mutable std::recursive_mutex mChunkAccessMutex;
+    mutable std::recursive_mutex mModelsAccessMutex;
 
+    std::unique_ptr<TerrainGenerator> mTerrainGenerator;
     Block::Coordinate mChunkPosition;
     const TexturePack& mTexturePack;
 
     ChunkContainer* const mParentContainer;
     ChunkManager* const mChunkManager;
 
-    MeshBuilder mMeshBuilder;
-    std::unique_ptr<Model3D> mModel;
 
-    std::mutex mRebuildMutex;
+    // TODO: This system should be changed to a better one. Consider distance.
+    MeshBuilder mTerrainMeshBuilder;
+    MeshBuilder mFluidMeshBuilder;
+    MeshBuilder mFloralMeshBuilder;
+
+    std::unique_ptr<Model3D> mTerrainModel;
+    std::unique_ptr<Model3D> mFluidModel;
+    std::unique_ptr<Model3D> mFloralModel;
+
     std::shared_ptr<ChunkBlocks> mChunkOfBlocks;
 };

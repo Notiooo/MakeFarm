@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BlockId.h"
 #include "Utils/CoordinateBase.h"
 
 class BlockType;
@@ -9,7 +10,7 @@ class Block
 {
 public:
     Block();
-    Block(const std::string& blockName);
+    Block(const BlockId& blockId);
 
     /**
      * \brief The type of variable that is used to define the side of the block
@@ -94,9 +95,9 @@ public:
 
     /**
      * Sets the block's settings to match those in the cfg files of the resources/blocks folder
-     * @param blockName The name of the cfg file
+     * @param blockId The identifier of the block
      */
-    void setBlockType(const std::string& blockName);
+    void setBlockType(const BlockId& blockId);
 
     /**
      * Retrieves the ID of the texture that is on the given block face
@@ -106,16 +107,23 @@ public:
     [[nodiscard]] TextureId blockTextureId(const Block::Face& blockFace) const;
 
     /**
-     * Returns a block identifier that equals the name of the cfg file
-     * @return Block identifier that equals the name of the cfg file
+     * Returns a block identifier
+     * @return Identifier of the block
      */
-    [[nodiscard]] std::string blockId() const;
+    [[nodiscard]] BlockId blockId() const;
 
     /**
      * Returns information about whether the block is transparent. For example, it can be glass.
      * @return True if the block is transparent, false otherwise
      */
     [[nodiscard]] bool isTransparent() const;
+
+    /**
+     * @brief Returns information whether the object is a plant part of the environment, such as
+     * leaves or flowers. Such things are drawn separately so that under their transparency the area
+     * behind them should be visible.
+     */
+    [[nodiscard]] bool isFloral() const;
 
 
 private:

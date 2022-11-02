@@ -12,18 +12,18 @@ sf::Vector3<Block::SizeType> Block::Coordinate::nonBlockMetric() const
 }
 
 Block::Block()
-    : mBlockType(&BlockMap::blockMap().blockType("Air"))
+    : mBlockType(&BlockMap::blockMap().blockType(BlockId::Air))
 {
 }
 
-Block::Block(const std::string& blockName)
-    : mBlockType(&BlockMap::blockMap().blockType(blockName))
+Block::Block(const BlockId& blockId)
+    : mBlockType(&BlockMap::blockMap().blockType(blockId))
 {
 }
 
-void Block::setBlockType(const std::string& blockName)
+void Block::setBlockType(const BlockId& blockId)
 {
-    mBlockType = &BlockMap::blockMap().blockType(blockName);
+    mBlockType = &BlockMap::blockMap().blockType(blockId);
 }
 
 
@@ -32,12 +32,21 @@ Block::TextureId Block::blockTextureId(const Block::Face& blockFace) const
     return mBlockType->textureId.at(blockFace);
 }
 
-std::string Block::blockId() const
+BlockId Block::blockId() const
 {
-    return mBlockType->blockFileName;
+    return mBlockType->blockId;
 }
 
 bool Block::isTransparent() const
 {
     return mBlockType->transparent;
+}
+
+bool Block::isFloral() const
+{
+    switch (blockId())
+    {
+        case BlockId::Leaves: return true;
+        default: return false;
+    }
 }

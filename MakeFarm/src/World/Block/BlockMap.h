@@ -15,10 +15,10 @@ public:
 
     /**
      * Returns the type of block, which is information about the block
-     * @param blockName The name of the cfg file
+     * @param blockId The identifier of the block
      * @return Block information set
      */
-    const BlockType& blockType(const std::string& blockName) const;
+    const BlockType& blockType(const BlockId& blockId) const;
 
 private:
     BlockMap();
@@ -32,5 +32,5 @@ private:
     /**
      * Maps filename to specific BlockType
      */
-    std::unordered_map<std::string, BlockType> mBlockMap;
+    std::unordered_map<BlockId, BlockType> mBlockMap;
 };

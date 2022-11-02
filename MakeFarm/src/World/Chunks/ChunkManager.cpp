@@ -7,11 +7,14 @@
 void ChunkManager::draw(const Renderer3D& renderer3D, const sf::Shader& shader) const
 {
     mTexturePack.bind();
-    mChunkContainer.draw(renderer3D, shader);
+    mChunkContainer.drawTerrain(renderer3D, shader);
+    mChunkContainer.drawLiquids(renderer3D, shader);
+    mChunkContainer.drawFlorals(renderer3D, shader);
 }
 
 void ChunkManager::update(const float& deltaTime)
 {
+    mChunkContainer.update(deltaTime);
     rebuildChunks();
 }
 

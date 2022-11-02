@@ -1,22 +1,98 @@
 #include "ChunkContainer.h"
 #include "pch.h"
+#include <Utils/IteratorRanges.h>
 
 #include "CoordinatesAroundOriginGetter.h"
 #include "World/Block/BlockMap.h"
 
 
-void ChunkContainer::draw(const Renderer3D& renderer3D, const sf::Shader& shader) const
+void ChunkContainer::drawTerrain(const Renderer3D& renderer3D, const sf::Shader& shader) const
 {
     std::unique_lock guard(mChunksAccessMutex);
     for (auto& [coordinate, chunk]: data())
     {
-        chunk->draw(renderer3D, shader);
+        chunk->drawTerrain(renderer3D, shader);
+    }
+}
+
+void ChunkContainer::drawLiquids(const Renderer3D& renderer3D, const sf::Shader& shader) const
+{
+    std::unique_lock guard(mChunksAccessMutex);
+    for (auto& [coordinate, chunk]: data())
+    {
+        chunk->drawLiquids(renderer3D, shader);
+    }
+}
+
+void ChunkContainer::drawFlorals(const Renderer3D& renderer3D, const sf::Shader& shader) const
+{
+    std::unique_lock guard(mChunksAccessMutex);
+    for (auto& [coordinate, chunk]: data())
+    {
+        chunk->drawFlorals(renderer3D, shader);
     }
 }
 
 void ChunkContainer::update(const float& deltaTime)
 {
-    // Nothing yet
+    placeScheduledBlocksForNewAppearingChunks();
+    tryToPlaceScheduledBlocksForNewAppearingChunks();
+}
+
+void ChunkContainer::placeScheduledBlocksForNewAppearingChunks()
+{
+    std::scoped_lock guard(mBlockToBePlacedAccessMutex);
+    if (!mBlockToBePlacedInFutureChunks.empty())
+    {
+        placeScheduledBlocksForPresentChunks();
+    }
+}
+
+void ChunkContainer::tryToPlaceScheduledBlocksForNewAppearingChunks()
+{
+    std::scoped_lock guard(mBlockMightBePlacedAccessMutex);
+    if (!mBlockMightBePlacedInFutureChunks.empty())
+    {
+        tryToPlaceScheduledBlocksForPresentChunks();
+    }
+}
+
+void ChunkContainer::tryToPlaceScheduledBlocksForPresentChunks()
+{
+    for (auto [begIter, endIter] = iterator_range(mBlockMightBePlacedInFutureChunks);
+         begIter != endIter;)
+    {
+        if (isPresent(begIter->chunkCoordinates))
+        {
+            auto block = worldBlock(begIter->worldBlockCoordinates);
+            if (block && block->blockId() == BlockId::Air)
+            {
+                block->setBlockType(begIter->blockid);
+            }
+            begIter = mBlockMightBePlacedInFutureChunks.erase(begIter);
+        }
+        else
+        {
+            ++begIter;
+        }
+    }
+}
+
+void ChunkContainer::placeScheduledBlocksForPresentChunks()
+{
+    for (auto [begIter, endIter] = iterator_range(mBlockToBePlacedInFutureChunks);
+         begIter != endIter;)
+    {
+        if (isPresent(begIter->chunkCoordinates))
+        {
+            worldBlock(begIter->worldBlockCoordinates)->setBlockType(begIter->blockid);
+            begIter = mBlockToBePlacedInFutureChunks.erase(begIter);
+        }
+        else
+        {
+            ++begIter;
+        }
+    }
 }
 
 sf::Vector3i ChunkContainer::Coordinate::nonChunkMetric() const
@@ -54,6 +130,12 @@ const Block* ChunkContainer::worldBlock(const Block::Coordinate& worldBlockCoord
         return &chunk->localBlock(chunk->globalToLocalCoordinates(worldBlockCoordinates));
     }
     return nullptr;
+}
+
+Block* ChunkContainer::worldBlock(const Block::Coordinate& worldBlockCoordinates)
+{
+    return const_cast<Block*>(
+        static_cast<const ChunkContainer&>(*this).worldBlock(worldBlockCoordinates));
 }
 
 bool ChunkContainer::doesWorldBlockExist(const Block::Coordinate& worldBlockCoordinates) const
@@ -197,4 +279,43 @@ bool ChunkContainer::isPresent(const ChunkContainer::Coordinate& chunkPosition) 
 {
     std::unique_lock guard(mChunksAccessMutex);
     return data().find(chunkPosition) != data().end();
+}
+
+void ChunkContainer::placeBlockWithoutRebuild(const BlockId& id, Block::Coordinate worldCoordinate)
+{
+    if (const auto chunk = blockPositionToChunk(worldCoordinate))
+    {
+        chunk->localBlock(chunk->globalToLocalCoordinates(worldCoordinate)).setBlockType(id);
+    }
+    else
+    {
+        const auto& chunkCoordinates =
+            ChunkContainer::Coordinate::blockToChunkMetric(worldCoordinate);
+
+        std::scoped_lock guard(mBlockToBePlacedAccessMutex);
+        mBlockToBePlacedInFutureChunks.push_back(
+            BlockToBePlaced{chunkCoordinates, id, worldCoordinate});
+    }
+}
+
+void ChunkContainer::tryToPlaceBlockWithoutRebuild(const BlockId& id,
+                                                   Block::Coordinate worldCoordinate)
+{
+    if (const auto chunk = blockPositionToChunk(worldCoordinate))
+    {
+        auto& localBlock = chunk->localBlock(chunk->globalToLocalCoordinates(worldCoordinate));
+        if (localBlock.blockId() == BlockId::Air)
+        {
+            localBlock.setBlockType(id);
+        }
+    }
+    else
+    {
+        const auto& chunkCoordinates =
+            ChunkContainer::Coordinate::blockToChunkMetric(worldCoordinate);
+
+        std::scoped_lock guard(mBlockMightBePlacedAccessMutex);
+        mBlockMightBePlacedInFutureChunks.push_back(
+            BlockToBePlaced{chunkCoordinates, id, worldCoordinate});
+    }
 }

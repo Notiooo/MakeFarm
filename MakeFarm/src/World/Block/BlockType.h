@@ -7,6 +7,7 @@
  */
 struct BlockType
 {
+    BlockId blockId;
     std::string blockFileName;
     std::string blockName;
     bool transparent = false;

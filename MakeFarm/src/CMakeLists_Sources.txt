@@ -31,4 +31,5 @@ set(PROJECT_SOURCES
         World/Chunks/AsyncProcessedObjects.cpp
         World/Chunks/CoordinatesAroundOriginGetter.cpp
         World/Chunks/MeshBuilder.cpp
+        World/Chunks/TerrainGenerator.cpp
         )
