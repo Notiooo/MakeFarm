@@ -1,6 +1,8 @@
 set(PROJECT_SOURCES
         Game.cpp
         pch.cpp
+        Player/Player.cpp
+        Physics/AABB.cpp
         Renderer3D/Buffer.cpp
         Renderer3D/BufferElement.cpp
         Renderer3D/BufferLayout.cpp

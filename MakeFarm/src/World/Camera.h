@@ -32,6 +32,12 @@ public:
     void updateViewProjection();
 
     /**
+     * Updates ViewProjection inside the game shader to properly display the world
+     * @param shader Shader with which view projection should be calculated
+     */
+    void updateViewProjection(sf::Shader& shader) const;
+
+    /**
      * \brief Draws the camera to the passed target
      * \param target where it should be drawn to
      * \param states provides information about rendering process (transform, shader, blend mode)
@@ -48,13 +54,13 @@ public:
      * Returns the view matrix.
      * @return View matrix.
      */
-    glm::mat4 view();
+    glm::mat4 view() const;
 
     /**
      * Returns projection matrix.
      * @return Projection matrix.
      */
-    glm::mat4 projection();
+    glm::mat4 projection() const;
 
     /**
      * Returns the position at which the tip of the ray is in front of the camera
@@ -70,6 +76,46 @@ public:
      * @return Current position of the camera.
      */
     glm::vec3 cameraPosition() const;
+
+    /**
+     * @brief Sets the camera position
+     * @param newPosition The new position on which the camera should be placed.
+     */
+    void cameraPosition(const glm::vec3& newPosition);
+
+    /**
+     * Camera viewing direction (front).
+     * @return Returns front camera viewing direction.
+     */
+    glm::vec3 direction() const;
+
+    /**
+     * Returns the direction of the camera (front) without taking into account the pitch, i.e. the
+     * up-down rotation of the camera.
+     * @return Returns front camera viewing direction without pitch (no up-down rotation).
+     */
+    glm::vec3 directionWithoutPitch() const;
+
+    /**
+     * @brief Returns the right direction of the camera, which is the cross product of the front and
+     * upward vectors.
+     * @return Right direction of the camera.
+     */
+    glm::vec3 rightDirection() const;
+
+    /**
+     * @brief Returns the right direction of the camera without pitch, which is the cross product of
+     * the front and upward vectors without respecting pitch, that is, the up-and-down rotation of
+     * the camera.
+     * @return Right direction of the camera without pitch (without up-and-down rotation of camera)
+     */
+    glm::vec3 rightDirectionWithoutPitch() const;
+
+    /**
+     * @brief Returns the upward direction of the camera
+     * @return Upward direction of the camera.
+     */
+    glm::vec3 upwardDirection() const;
 
     /**
      * The maximum ray length to which blocks in front of the camera should be checked.
@@ -135,7 +181,8 @@ private:
     glm::vec3 mCameraPosition = glm::vec3(0, 0, 0);
     glm::vec3 mCameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 mCameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 mDirection;
+
+    glm::vec3 mCameraFrontWithoutPitch = glm::vec3(0.0f, 0.0f, -1.0f);
 
     float mYaw = -90.f;
     float mPitch = 0.f;

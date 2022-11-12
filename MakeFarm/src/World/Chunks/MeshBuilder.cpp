@@ -1,10 +1,18 @@
 #include "MeshBuilder.h"
-#include "pch.h"
 
+#include "pch.h"
+#include <utility>
+
+#include "Physics/AABB.h"
 #include "World/Chunks/Chunk.h"
 
-MeshBuilder::MeshBuilder(const Block::Coordinate& origin)
-    : mOrigin(origin)
+MeshBuilder::MeshBuilder(Block::Coordinate origin)
+    : mOrigin(std::move(origin))
+{
+}
+
+MeshBuilder::MeshBuilder()
+    : mOrigin(Block::Coordinate{0, 0, 0})
 {
 }
 
@@ -16,9 +24,9 @@ void MeshBuilder::setFaceSize(const float& faceSize)
 void MeshBuilder::addQuad(const Block::Face& blockFace, const std::vector<GLfloat>& textureQuad,
                           const Block::Coordinate& blockPosition)
 {
-    auto& vertices = mChunkMesh.vertices;
-    auto& texCoords = mChunkMesh.textureCoordinates;
-    auto& indices = mChunkMesh.indices;
+    auto& vertices = mMesh.vertices;
+    auto& texCoords = mMesh.textureCoordinates;
+    auto& indices = mMesh.indices;
 
     texCoords.insert(texCoords.end(), textureQuad.begin(), textureQuad.end());
 
@@ -61,16 +69,16 @@ void MeshBuilder::addQuad(const Block::Face& blockFace, const std::vector<GLfloa
 
 void MeshBuilder::resetMesh()
 {
-    mChunkMesh.indices.clear();
-    mChunkMesh.textureCoordinates.clear();
-    mChunkMesh.vertices.clear();
+    mMesh.indices.clear();
+    mMesh.textureCoordinates.clear();
+    mMesh.vertices.clear();
     mIndex = 0;
 }
 
 Mesh3D MeshBuilder::mesh3D() const
 {
     // std::lock_guard _(mRebuildMeshMutex);
-    return mChunkMesh;
+    return mMesh;
 }
 
 
@@ -87,11 +95,17 @@ std::vector<GLfloat> MeshBuilder::faceVertices(const Block::Face& blockFace) con
                 0, 1, 0,// top far left
             };
 
-        case Block::Face::Left: return {0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0};
+        case Block::Face::Left:
+            return {// x  y  z
+                    0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0};
 
-        case Block::Face::Right: return {1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1};
+        case Block::Face::Right:
+            return {// x  y  z
+                    1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1};
 
-        case Block::Face::Bottom: return {0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1};
+        case Block::Face::Bottom:
+            return {// x  y  z
+                    0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1};
 
         case Block::Face::Front:
             return {
@@ -112,12 +126,39 @@ std::vector<GLfloat> MeshBuilder::faceVertices(const Block::Face& blockFace) con
     }
 }
 
-void MeshBuilder::blockMesh() const
+void MeshBuilder::addAABB(const AABB& aabb)
 {
-    mRebuildMeshMutex.lock();
-}
+    for (int blockFace = 0; blockFace < static_cast<int>(Block::Face::Counter); ++blockFace)
+    {
+        auto& vertices = mMesh.vertices;
+        auto& indices = mMesh.indices;
 
-void MeshBuilder::unblockMesh() const
-{
-    mRebuildMeshMutex.unlock();
+        auto face = faceVertices(static_cast<Block::Face>(blockFace));
+        auto [collisionBoxMin, collisionBoxMax] = aabb.collisionBox();
+
+        auto collisionBoxSize = aabb.collisionBoxSize();
+        const auto& originPos = collisionBoxMin;
+
+        for (int i = 0; i < 3 * 4; i += 3)
+        {
+            // a row in given face (x,y,z)
+            vertices.emplace_back(face[i] * collisionBoxSize.x + originPos.x);
+            vertices.emplace_back(face[i + 1] * collisionBoxSize.y + originPos.y);
+            vertices.emplace_back(face[i + 2] * collisionBoxSize.z + originPos.z);
+        }
+
+        // clang-format off
+        indices.insert(indices.end(),
+                   {
+                    mIndex,
+                    mIndex + 1,
+                    mIndex + 2,
+
+                    mIndex + 2,
+                    mIndex + 3,
+                    mIndex
+                   });
+        // clang-format on
+        mIndex += 4;
+    }
 }

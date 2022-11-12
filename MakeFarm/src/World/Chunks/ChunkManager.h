@@ -43,9 +43,11 @@ public:
     /**
      * Draws this chunk container to the game screen
      * @param renderer3d Renderer drawing the 3D game world onto the 2D screen
-     * @param shader Shader with the help of which the object should be drawn
+     * @param worldRendererShader Shader with the help of which the object should be drawn
+     * @param collisionRendererShader Shader responsible for rendering collisions
      */
-    void draw(const Renderer3D& renderer3D, const sf::Shader& shader) const;
+    void draw(const Renderer3D& renderer3D, const sf::Shader& worldRendererShader,
+              const sf::Shader& collisionRendererShader) const;
 
     /**
      * \brief Updates the chunkcontainer logic dependent, or independent of time, every rendered
@@ -54,16 +56,16 @@ public:
     void update(const float& deltaTime);
 
     /**
-     * \brief Generates new chunks around the camera
-     * \param camera The camera around which the chunks are to be generated
+     * \brief Generates new chunks around the given position (origin)
+     * \param position The position around which the chunks are to be generated
      */
-    void generateChunksAround(const Camera& camera);
+    void generateChunksAround(const glm::vec3& position);
 
     /**
-     * \briefRemoves chunks too far from the camera
-     * \param camera Camera based on which chunks will be removed
+     * \brief Removes chunks too far from the camera
+     * \param position Position (origin) based on which chunks will be removed
      */
-    void clearFarAwayChunks(const Camera& camera);
+    void clearFarAwayChunks(const glm::vec3& position);
 
     /**
      * \brief Indicates chunk as willing to rebuild mesh in near future

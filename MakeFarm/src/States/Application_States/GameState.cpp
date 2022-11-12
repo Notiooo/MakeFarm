@@ -15,24 +15,23 @@
 GameState::GameState(StateStack& stack, sf::RenderWindow& window)
     : State(stack)
     , mGameWindow(window)
-    , mGameCamera(mGameWindow, mShader)
+    , mPlayer({0.f, 150.f, 0.f}, mGameWindow, m3DWorldRendererShader)
     , mGameSettings("settings.cfg")
     , mTexturePack("defaultTextures")
     , mChunkManager(mTexturePack)
     , mSelectedBlock(mTexturePack)
 {
     Mouse::lockMouseAtCenter(mGameWindow);
-    mShader.loadFromFile("resources/shaders/vertexShader.shader",
-                         "resources/shaders/FragmentShader.shader");
+    m3DWorldRendererShader.loadFromFile("resources/shaders/3DWorldRenderer/VertexShader.shader",
+                                        "resources/shaders/3DWorldRenderer/FragmentShader.shader");
+
+    mCollisionsShader.loadFromFile("resources/shaders/WireframeRenderer/VertexShader.shader",
+                                   "resources/shaders/WireframeRenderer/FragmentShader.shader");
 
     GLCall(glEnable(GL_CULL_FACE));
     GLCall(glEnable(GL_DEPTH_TEST));
     GLCall(glEnable(GL_BLEND));
     GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-    sf::Shader::bind(&mShader);
-    mShader.setUniform("u_ViewProjection", sf::Glsl::Mat4(sf::Transform::Identity));
-    sf::Shader::bind(nullptr);
 
     auto test = BlockMap::blockMap();
 }
@@ -41,7 +40,7 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window)
 bool GameState::handleEvent(const sf::Event& event)
 {
     Mouse::handleFirstPersonBehaviour(event, mGameWindow);
-    mGameCamera.handleEvent(event);
+    mPlayer.handleEvent(event);
 
     switch (event.type)
     {
@@ -74,7 +73,8 @@ bool GameState::fixedUpdate(const float& deltaTime)
      * d = st (distance = speed * time)
      */
 
-    mGameCamera.fixedUpdate(deltaTime);
+    mPlayer.fixedUpdate(deltaTime, mChunkManager.chunks());
+    // mPlayer.updateCollision(mChunkManager.chunks());
 
     /*
      * Set this state to transparent -- in other words
@@ -142,12 +142,13 @@ void GameState::updateDebugMenu()
 
 bool GameState::update(const float& deltaTime)
 {
-    mGameCamera.update(deltaTime);
-    mSelectedBlock.markFacedBlock(mGameCamera, mChunkManager);
+    mPlayer.update(deltaTime);
+    mPlayer.camera().updateViewProjection(mCollisionsShader);
+    // mSelectedBlock.markFacedBlock(mGameCamera, mChunkManager);
 
     mChunkManager.update(deltaTime);
-    mChunkManager.generateChunksAround(mGameCamera);
-    mChunkManager.clearFarAwayChunks(mGameCamera);
+    mChunkManager.generateChunksAround(mPlayer.position());
+    mChunkManager.clearFarAwayChunks(mPlayer.position());
 
     updateDebugMenu();
 
@@ -156,6 +157,7 @@ bool GameState::update(const float& deltaTime)
 
 void GameState::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    mChunkManager.draw(mGameRenderer, mShader);
-    mSelectedBlock.draw(mGameRenderer, mShader);
+    mChunkManager.draw(mGameRenderer, m3DWorldRendererShader, mCollisionsShader);
+    mSelectedBlock.draw(mGameRenderer, m3DWorldRendererShader);
+    mPlayer.draw(target, states);
 }

@@ -36,6 +36,21 @@ public:
      */
     void draw(const Renderer3D& renderer3d, const sf::Shader& shader) const;
 
+    /**
+     * Draws this 3D Model to the game screen
+     * @param renderer3d Renderer drawing the 3D game world onto the 2D screen
+     * @param shader Shader with the help of which the object should be drawn
+     */
+    void draw(const Renderer3D& renderer3d, const sf::Shader& shader,
+              const Renderer3D::DrawMode& drawMode) const;
+
+    /**
+     * @brief Sets the given buffer layout for this model which represents the arrangement of data
+     * in memory.
+     * @param bufferLayout BufferLayout which represents the arrangement of data.
+     */
+    void setLayout(const BufferLayout& bufferLayout);
+
 private:
     VertexArray mVertexArray;
     BufferLayout mBufferLayout;

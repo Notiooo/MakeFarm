@@ -93,6 +93,11 @@ void BlockMap::parseDirectory(const std::string& directoryName)
                     blockType.transparent = settingsFile.get<bool>("Transparent");
                 }
 
+                if (settingsFile.isPresent("Collidable"))
+                {
+                    blockType.collidable = settingsFile.get<bool>("Collidable");
+                }
+
                 if (settingsFile.isPresent("Id"))
                 {
                     auto blockId = static_cast<BlockId>(settingsFile.get<int>("Id"));

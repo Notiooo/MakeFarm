@@ -3,7 +3,15 @@
 #include <shared_mutex>
 
 #include "Chunk.h"
+#include "Physics/AABB.h"
 #include "World/Camera.h"
+
+
+#define DRAW_DEBUG_COLLISIONS false
+
+#if DRAW_DEBUG_COLLISIONS
+    #include <Physics/AABB.h>
+#endif
 
 /**
  * \brief A container of chunks to manage them easily.
@@ -63,6 +71,15 @@ public:
      * @param shader Shader with the help of which the object should be drawn
      */
     void drawFlorals(const Renderer3D& renderer3D, const sf::Shader& shader) const;
+
+#if DRAW_DEBUG_COLLISIONS
+    /**
+     * @brief Draws the collisions that have occurred
+     * @param renderer3D Renderer3D responsible for drawing collisions to the screen
+     * @param shader Shader displaying collisions
+     */
+    void drawOccuredCollisions(const Renderer3D& renderer3D, const sf::Shader& shader) const;
+#endif
 
     /**
      * \brief Updates the chunkcontainer logic dependent, or independent of time, every rendered
@@ -196,6 +213,21 @@ public:
      */
     void tryToPlaceBlockWithoutRebuild(const BlockId& id, Block::Coordinate worldCoordinate);
 
+    /**
+     * @brief Checks if a given collision box collides with a block in any chunk contained in the
+     * container.
+     * @param aabb Collision box to check if it collides with any block
+     * @return True if it collides, false otherwise
+     */
+    bool doesItCollide(const AABB& aabb) const;
+
+    /**
+     * @brief Blocks that the collision box touches and that are not airborne
+     * @param aabb Collision box to check if it collides with blocks
+     * @return A vector of non-air blocks touched by a collision box.
+     */
+    std::vector<Block> nonAirBlocksItTouches(const AABB& aabb) const;
+
 private:
     /**
      * \brief Based on the position of the block in the game world, it returns the chunk that
@@ -226,6 +258,15 @@ private:
      * blocks.
      */
     void tryToPlaceScheduledBlocksForNewAppearingChunks();
+
+    /**
+     * @brief Checks if there is a collision between the collision block and the specified point
+     * @param aabb A collision box that is checked to see if the point lies in it
+     * @param nonBlockMetricPoint Point given in non-metric coordinates
+     * @return True if there was a collision, false otherwise.
+     */
+    bool isThereCollisionBetweenBlockAtGivenPoint(const AABB& aabb,
+                                                  sf::Vector3f nonBlockMetricPoint) const;
 
 private:
     /**
@@ -272,4 +313,12 @@ private:
      * @brief Unordered map storing chunks inside this container.
      */
     Chunks mData;
+
+    /** == Debug == */
+#if DRAW_DEBUG_COLLISIONS
+    void addCollisionToDebugDraw(const AABB& aabb) const;
+    void limitDrawnCollisions() const;
+    mutable std::deque<AABB> mOccuredCollisions;
+    sf::Shader mCollisionsShader;
+#endif
 };

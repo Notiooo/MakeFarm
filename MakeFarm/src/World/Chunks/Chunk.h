@@ -16,6 +16,7 @@
 class ChunkContainer;
 class ChunkManager;
 class TerrainGenerator;
+class AABB;
 
 
 /**
@@ -263,6 +264,7 @@ private:
      * @param pos The indicated position of the block on which the mesh should be created
      */
     void createBlockMesh(const Block::Coordinate& pos);
+
 
 private:
     mutable std::recursive_mutex mChunkAccessMutex;

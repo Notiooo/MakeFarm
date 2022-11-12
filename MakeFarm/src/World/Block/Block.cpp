@@ -50,3 +50,7 @@ bool Block::isFloral() const
         default: return false;
     }
 }
+bool Block::isCollidable() const
+{
+    return mBlockType->collidable;
+}

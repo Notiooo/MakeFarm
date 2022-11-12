@@ -1,9 +1,8 @@
 #include "ChunkContainer.h"
-#include "pch.h"
-#include <Utils/IteratorRanges.h>
-
 #include "CoordinatesAroundOriginGetter.h"
 #include "World/Block/BlockMap.h"
+#include "pch.h"
+#include <Utils/IteratorRanges.h>
 
 
 void ChunkContainer::drawTerrain(const Renderer3D& renderer3D, const sf::Shader& shader) const
@@ -32,6 +31,29 @@ void ChunkContainer::drawFlorals(const Renderer3D& renderer3D, const sf::Shader&
         chunk->drawFlorals(renderer3D, shader);
     }
 }
+
+#if DRAW_DEBUG_COLLISIONS
+void ChunkContainer::drawOccuredCollisions(const Renderer3D& renderer3D,
+                                           const sf::Shader& shader) const
+{
+    MeshBuilder collisionsMeshBuilder;
+    for (auto collisionAABB: mOccuredCollisions)
+    {
+        collisionsMeshBuilder.addAABB(collisionAABB);
+    }
+    Model3D collisionModel;
+
+    BufferLayout bufferLayout;
+    bufferLayout.push<GLfloat>(3);
+
+    collisionModel.setLayout(bufferLayout);
+    collisionModel.setMesh(collisionsMeshBuilder.mesh3D());
+
+    glDisable(GL_DEPTH_TEST);
+    collisionModel.draw(renderer3D, shader, Renderer3D::DrawMode::Lines);
+    glEnable(GL_DEPTH_TEST);
+}
+#endif
 
 void ChunkContainer::update(const float& deltaTime)
 {
@@ -173,7 +195,6 @@ void ChunkContainer::removeWorldBlock(const Block::Coordinate& worldBlockCoordin
     {
         auto localCoordinates = chunk->globalToLocalCoordinates(worldBlockCoordinates);
 
-        // TODO: Something with mutex would probably be useful there. Observe this part.
         chunk->removeLocalBlock(localCoordinates);
 
         /*
@@ -319,3 +340,162 @@ void ChunkContainer::tryToPlaceBlockWithoutRebuild(const BlockId& id,
             BlockToBePlaced{chunkCoordinates, id, worldCoordinate});
     }
 }
+
+bool ChunkContainer::doesItCollide(const AABB& aabb) const
+{
+    auto [minPoint, maxPoint] = aabb.collisionBox();
+
+    for (auto x = minPoint.x; x <= maxPoint.x;)
+    {
+        for (auto y = minPoint.y; y <= maxPoint.y;)
+        {
+            for (auto z = minPoint.z; z <= maxPoint.z;)
+            {
+                if (isThereCollisionBetweenBlockAtGivenPoint(aabb, sf::Vector3f(x, y, z)))
+                {
+                    return true;
+                }
+
+                if (z < maxPoint.z)
+                {
+                    z = maxPoint.z;
+                }
+                else
+                {
+                    z += Block::BLOCK_SIZE;
+                }
+            }
+            if (y < maxPoint.y)
+            {
+                y = maxPoint.y;
+            }
+            else
+            {
+                y += Block::BLOCK_SIZE;
+            }
+        }
+
+        if (x < maxPoint.x)
+        {
+            x = maxPoint.x;
+        }
+        else
+        {
+            x += Block::BLOCK_SIZE;
+        }
+    }
+
+    return false;
+}
+
+bool ChunkContainer::isThereCollisionBetweenBlockAtGivenPoint(
+    const AABB& aabb, sf::Vector3f nonBlockMetricPoint) const
+{
+    auto blockCoordinates = Block::Coordinate::nonBlockToBlockMetric(nonBlockMetricPoint);
+    auto block = worldBlock(blockCoordinates);
+    if (block && block->isCollidable())
+    {
+        auto blockAABB = AABB({Block::BLOCK_SIZE, Block::BLOCK_SIZE, Block::BLOCK_SIZE});
+
+        auto blockCoordinatesNonBlockMetric = blockCoordinates.nonBlockMetric();
+        blockAABB.updatePosition({blockCoordinatesNonBlockMetric.x,
+                                  blockCoordinatesNonBlockMetric.y,
+                                  blockCoordinatesNonBlockMetric.z},
+                                 AABB::RelativeTo::LeftBottomBack);
+
+        if (aabb.intersect(blockAABB))
+        {
+#if DRAW_DEBUG_COLLISIONS
+            addCollisionToDebugDraw(aabb);
+            addCollisionToDebugDraw(blockAABB);
+            limitDrawnCollisions();
+#endif
+            return true;
+        }
+    }
+    return false;
+}
+
+std::vector<Block> ChunkContainer::nonAirBlocksItTouches(const AABB& aabb) const
+{
+    auto blocksThatCollide = std::vector<Block>{};
+    auto [minPoint, maxPoint] = aabb.collisionBox();
+
+    for (auto x = minPoint.x; x <= maxPoint.x;)
+    {
+        for (auto y = minPoint.y; y <= maxPoint.y;)
+        {
+            for (auto z = minPoint.z; z <= maxPoint.z;)
+            {
+                auto blockCoordinates =
+                    Block::Coordinate::nonBlockToBlockMetric(sf::Vector3f(x, y, z));
+                auto block = worldBlock(blockCoordinates);
+                if (block && block->blockId() != BlockId::Air)
+                {
+                    auto blockAABB =
+                        AABB({Block::BLOCK_SIZE, Block::BLOCK_SIZE, Block::BLOCK_SIZE});
+
+                    auto blockCoordinatesNonBlockMetric = blockCoordinates.nonBlockMetric();
+                    blockAABB.updatePosition({blockCoordinatesNonBlockMetric.x,
+                                              blockCoordinatesNonBlockMetric.y,
+                                              blockCoordinatesNonBlockMetric.z},
+                                             AABB::RelativeTo::LeftBottomBack);
+
+                    if (aabb.intersect(blockAABB))
+                    {
+                        blocksThatCollide.emplace_back(block->blockId());
+                    }
+                }
+
+                if (z < maxPoint.z)
+                {
+                    z = maxPoint.z;
+                }
+                else
+                {
+                    z += Block::BLOCK_SIZE;
+                }
+            }
+            if (y < maxPoint.y)
+            {
+                y = maxPoint.y;
+            }
+            else
+            {
+                y += Block::BLOCK_SIZE;
+            }
+        }
+
+        if (x < maxPoint.x)
+        {
+            x = maxPoint.x;
+        }
+        else
+        {
+            x += Block::BLOCK_SIZE;
+        }
+    }
+
+    return blocksThatCollide;
+}
+
+#if DRAW_DEBUG_COLLISIONS
+void ChunkContainer::limitDrawnCollisions() const
+{
+    if (mOccuredCollisions.size() > 10)
+    {
+        mOccuredCollisions.pop_front();
+    }
+}
+#endif
+
+#if DRAW_DEBUG_COLLISIONS
+void ChunkContainer::addCollisionToDebugDraw(const AABB& aabb) const
+{
+    if (std::find(mOccuredCollisions.cbegin(), mOccuredCollisions.cend(), aabb) ==
+        mOccuredCollisions.cend())
+    {
+        mOccuredCollisions.push_back(aabb);
+    }
+}
+#endif

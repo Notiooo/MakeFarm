@@ -3,12 +3,12 @@
 
 #include <SFML/Graphics/Shader.hpp>
 
+#include "Player/Player.h"
 #include "Renderer3D/Renderer3D.h"
 #include "Resources/TexturePack.h"
 #include "States/State.h"
 #include "Utils/Settings.h"
 #include "World/Block/FacedBlock.h"
-#include "World/Camera.h"
 #include "World/Chunks/Chunk.h"
 #include "World/Chunks/ChunkManager.h"
 
@@ -56,8 +56,9 @@ public:
 private:
     /** Rendering */
     sf::RenderWindow& mGameWindow;//!< Window to which this status is displayed
-    sf::Shader mShader;
-    Camera mGameCamera;
+    sf::Shader m3DWorldRendererShader;
+    sf::Shader mCollisionsShader;
+    Player mPlayer;
     Renderer3D mGameRenderer;
 
     /** Settings */

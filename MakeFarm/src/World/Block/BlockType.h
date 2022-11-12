@@ -11,5 +11,6 @@ struct BlockType
     std::string blockFileName;
     std::string blockName;
     bool transparent = false;
+    bool collidable = true;
     std::unordered_map<Block::Face, Block::TextureId> textureId;
 };

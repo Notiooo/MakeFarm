@@ -476,5 +476,4 @@ void Chunk::tryToPlaceBlockWithoutRebuild(const BlockId& blockId,
     }
 }
 
-
 Chunk::~Chunk() = default;

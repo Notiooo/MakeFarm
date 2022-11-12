@@ -28,7 +28,7 @@ void VertexArray::setBuffer(const std::vector<VertexBuffer>& vb, const BufferLay
 {
     const auto& elements = layout.bufferElements();
 
-    if (vb.size() != elements.size())
+    if (vb.size() && (vb.size() != elements.size()))
     {
         throw std::runtime_error("Given vertex buffer, and buffer layout are incompatible!");
     }

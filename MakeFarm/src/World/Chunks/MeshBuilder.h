@@ -6,6 +6,7 @@
 
 
 class Chunk;
+class AABB;
 
 /**
  * It can generate a mesh, which can then be projected onto the screen as a 3D object.
@@ -13,7 +14,8 @@ class Chunk;
 class MeshBuilder
 {
 public:
-    explicit MeshBuilder(const Block::Coordinate& origin);
+    explicit MeshBuilder(Block::Coordinate origin);
+    MeshBuilder();
     MeshBuilder(MeshBuilder&&) noexcept = default;
 
     /**
@@ -32,20 +34,17 @@ public:
     void addQuad(const Block::Face& blockFace, const std::vector<GLfloat>& textureQuad,
                  const Block::Coordinate& blockPosition);
 
+
+    /**
+     * @brief
+     * @param aabb
+     */
+    void addAABB(const AABB& aabb);
+
     /**
      * Resets the state of the mesh and returns to the initial values
      */
     void resetMesh();
-
-    /**
-     * Blocks mesh from rebuilding
-     */
-    void blockMesh() const;
-
-    /**
-     * Unblocks mesh from rebuilding
-     */
-    void unblockMesh() const;
 
     /**
      * Returns the 3d mesh created
@@ -63,8 +62,7 @@ private:
 
 private:
     GLuint mIndex = 0;
-    const Block::Coordinate& mOrigin;
-    mutable std::recursive_mutex mRebuildMeshMutex;
-    Mesh3D mChunkMesh;
+    Block::Coordinate mOrigin;
+    Mesh3D mMesh;
     float mBlockFaceSize = Block::BLOCK_SIZE;
 };

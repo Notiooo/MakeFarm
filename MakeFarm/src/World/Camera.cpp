@@ -15,10 +15,6 @@ Camera::Camera(const sf::RenderTarget& target, sf::Shader& shader)
     : mRenderTarget(target)
     , mShader(shader)
 {
-
-    mDirection.x = cos(glm::radians(mYaw)) * cos(glm::radians(mPitch));
-    mDirection.y = sin(glm::radians(mPitch));
-    mDirection.z = sin(glm::radians(mYaw)) * cos(glm::radians(mPitch));
     mViewMatrix = glm::lookAt(mCameraPosition, mCameraPosition + mCameraFront, mCameraUp);
 
     auto targetSize = target.getSize();
@@ -40,9 +36,14 @@ void Camera::update(const float& deltaTime)
 
 void Camera::updateViewProjection()
 {
-    sf::Shader::bind(&mShader);
+    updateViewProjection(mShader);
+}
+
+void Camera::updateViewProjection(sf::Shader& shader) const
+{
+    sf::Shader::bind(&shader);
     glm::mat4 vp = projection() * view();
-    mShader.setUniform("u_ViewProjection", sf::Glsl::Mat4(&vp[0][0]));
+    shader.setUniform("u_ViewProjection", sf::Glsl::Mat4(&vp[0][0]));
     sf::Shader::bind(nullptr);
 }
 
@@ -63,10 +64,16 @@ void Camera::handleMouseInputs(const float& deltaTime)
 
 void Camera::calculateCameraDirectionVector()
 {
-    mDirection.x = cos(glm::radians(mYaw)) * cos(glm::radians(mPitch));
-    mDirection.y = sin(glm::radians(mPitch));
-    mDirection.z = sin(glm::radians(mYaw)) * cos(glm::radians(mPitch));
-    mCameraFront = glm::normalize(mDirection);
+    glm::vec3 direction;
+    direction.x = cos(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+    direction.y = sin(glm::radians(mPitch));
+    direction.z = sin(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+    mCameraFront = glm::normalize(direction);
+
+    direction.x = cos(glm::radians(mYaw));
+    direction.y = 0;
+    direction.z = sin(glm::radians(mYaw));
+    mCameraFrontWithoutPitch = glm::normalize(direction);
 }
 
 void Camera::calculateCameraAngles(const float& deltaTime)
@@ -151,12 +158,12 @@ void Camera::handleEvent(const sf::Event& event)
     }
 }
 
-glm::mat4 Camera::view()
+glm::mat4 Camera::view() const
 {
     return mViewMatrix;
 }
 
-glm::mat4 Camera::projection()
+glm::mat4 Camera::projection() const
 {
     return mProjectionMatrix;
 }
@@ -171,4 +178,34 @@ void Camera::updateDebugMenu()
     ImGui::Begin("Camera");
     ImGui::SliderFloat3("Translation", &mCameraPosition.x, 0.0f, 960.0f);
     ImGui::End();
+}
+
+glm::vec3 Camera::direction() const
+{
+    return mCameraFront;
+}
+
+glm::vec3 Camera::rightDirection() const
+{
+    return glm::cross(mCameraFront, mCameraUp);
+}
+
+glm::vec3 Camera::rightDirectionWithoutPitch() const
+{
+    return glm::cross(mCameraFrontWithoutPitch, mCameraUp);
+}
+
+glm::vec3 Camera::upwardDirection() const
+{
+    return mCameraUp;
+}
+
+void Camera::cameraPosition(const glm::vec3& newPosition)
+{
+    mCameraPosition = newPosition;
+}
+
+glm::vec3 Camera::directionWithoutPitch() const
+{
+    return mCameraFrontWithoutPitch;
 }

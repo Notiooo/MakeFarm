@@ -44,6 +44,13 @@ bool GLLogCall(const char* function, const char* file, int line);
 class Renderer3D
 {
 public:
+    enum class DrawMode
+    {
+        Lines,
+        Triangles,
+        Quads
+    };
+
     /**
      * Draws the data given in VertexArray, IndexBuffer to the screen using the interpretation given
      * in Shader.
@@ -51,7 +58,8 @@ public:
      * @param ib Specifies the drawing order of the VertexArray.
      * @param shader Shader telling how to draw data.
      */
-    void draw(const VertexArray& va, const IndexBuffer& ib, const sf::Shader& shader) const;
+    void draw(const VertexArray& va, const IndexBuffer& ib, const sf::Shader& shader,
+              const DrawMode& drawMode = DrawMode::Triangles) const;
 
     /**
      * Draws the data given in VertexArray to the screen using the interpretation given in Shader.
@@ -59,5 +67,9 @@ public:
      * @param shader Shader telling how to draw data.
      * @param number VertexArray size
      */
-    void draw(const VertexArray& va, const sf::Shader& shader, int number) const;
+    void draw(const VertexArray& va, const sf::Shader& shader, int number,
+              const DrawMode& drawMode = DrawMode::Triangles) const;
+
+private:
+    unsigned toOpenGL(const DrawMode& drawMode) const;
 };

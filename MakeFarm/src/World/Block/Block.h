@@ -70,9 +70,19 @@ public:
         template<typename T>
         static Coordinate nonBlockToBlockMetric(const sf::Vector3<T>& nonBlockVector)
         {
-            return Block::Coordinate(static_cast<SizeType>(nonBlockVector.x) / BLOCK_SIZE,
-                                     static_cast<SizeType>(nonBlockVector.y) / BLOCK_SIZE,
-                                     static_cast<SizeType>(nonBlockVector.z) / BLOCK_SIZE);
+            // -0.50 ; 73.98 ; -0.07
+            // -1    ; 73    ; -1
+
+            static auto fastFloor = [](const float& numberToFloor)
+            {
+                const auto truncated = static_cast<int>(numberToFloor);
+                return truncated - (truncated > numberToFloor);
+            };
+
+            return Block::Coordinate(
+                static_cast<SizeType>(fastFloor(nonBlockVector.x)) / BLOCK_SIZE,
+                static_cast<SizeType>(fastFloor(nonBlockVector.y)) / BLOCK_SIZE,
+                static_cast<SizeType>(fastFloor(nonBlockVector.z)) / BLOCK_SIZE);
         };
     };
 
@@ -117,6 +127,12 @@ public:
      * @return True if the block is transparent, false otherwise
      */
     [[nodiscard]] bool isTransparent() const;
+
+    /**
+     * Returns information about whether the block is collidable. For example, it can be water/air.
+     * @return True if the block is collidable, false otherwise
+     */
+    [[nodiscard]] bool isCollidable() const;
 
     /**
      * @brief Returns information whether the object is a plant part of the environment, such as

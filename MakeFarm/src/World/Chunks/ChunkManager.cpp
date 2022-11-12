@@ -4,12 +4,16 @@
 #include "World/Chunks/CoordinatesAroundOriginGetter.h"
 #include "pch.h"
 
-void ChunkManager::draw(const Renderer3D& renderer3D, const sf::Shader& shader) const
+void ChunkManager::draw(const Renderer3D& renderer3D, const sf::Shader& worldRendererShader,
+                        const sf::Shader& collisionRendererShader) const
 {
     mTexturePack.bind();
-    mChunkContainer.drawTerrain(renderer3D, shader);
-    mChunkContainer.drawLiquids(renderer3D, shader);
-    mChunkContainer.drawFlorals(renderer3D, shader);
+    mChunkContainer.drawTerrain(renderer3D, worldRendererShader);
+    mChunkContainer.drawLiquids(renderer3D, worldRendererShader);
+    mChunkContainer.drawFlorals(renderer3D, worldRendererShader);
+#if DRAW_DEBUG_COLLISIONS
+    mChunkContainer.drawOccuredCollisions(renderer3D, collisionRendererShader);
+#endif
 }
 
 void ChunkManager::update(const float& deltaTime)
@@ -102,14 +106,12 @@ void ChunkManager::updateChunkMeshes()
     }
 }
 
-void ChunkManager::generateChunksAround(const Camera& camera)
+void ChunkManager::generateChunksAround(const glm::vec3& position)
 {
-    const auto cameraPosition = camera.cameraPosition();
-    const auto currentChunkOfCamera =
-        ChunkContainer::Coordinate::blockToChunkMetric(Block::Coordinate::nonBlockToBlockMetric(
-            sf::Vector3i(cameraPosition.x, cameraPosition.y, cameraPosition.z)));
+    const auto chunkInThatPosition = ChunkContainer::Coordinate::blockToChunkMetric(
+        Block::Coordinate::nonBlockToBlockMetric(sf::Vector3i(position.x, position.y, position.z)));
 
-    createThreadsGeneratingNewChunks(currentChunkOfCamera);
+    createThreadsGeneratingNewChunks(chunkInThatPosition);
     processFinishedThreadsGeneratingNewChunks();
 }
 
@@ -163,14 +165,12 @@ void ChunkManager::updateMeshForEveryChunkWhichIsNotDuringProcessing(
     }
 }
 
-void ChunkManager::clearFarAwayChunks(const Camera& camera)
+void ChunkManager::clearFarAwayChunks(const glm::vec3& position)
 {
     std::vector<ChunkContainer::Chunks::key_type> coordinateOfChunksToDelete;
 
-    const auto cameraPosition = camera.cameraPosition();
-    const auto currentChunkOfCamera =
-        ChunkContainer::Coordinate::blockToChunkMetric(Block::Coordinate::nonBlockToBlockMetric(
-            sf::Vector3i(cameraPosition.x, cameraPosition.y, cameraPosition.z)));
+    const auto currentChunkOfCamera = ChunkContainer::Coordinate::blockToChunkMetric(
+        Block::Coordinate::nonBlockToBlockMetric(sf::Vector3i(position.x, position.y, position.z)));
 
     /*
      * In the current drawing stage, chunks are not drawn according to the distance from the camera.
