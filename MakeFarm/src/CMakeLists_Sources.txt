@@ -25,7 +25,8 @@ set(PROJECT_SOURCES
         World/Block/Block.cpp
         World/Block/BlockMap.cpp
         World/Block/BlockType.cpp
-        World/Block/FacedBlock.cpp
+        World/Block/HighlightedBlock.cpp
+        World/Block/WireframeBlock.cpp
         World/Camera.cpp
         World/Chunks/Chunk.cpp
         World/Chunks/ChunkContainer.cpp

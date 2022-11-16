@@ -15,18 +15,14 @@
 GameState::GameState(StateStack& stack, sf::RenderWindow& window)
     : State(stack)
     , mGameWindow(window)
-    , mPlayer({0.f, 150.f, 0.f}, mGameWindow, m3DWorldRendererShader)
+    , mChunkManager(mTexturePack)
+    , mPlayer({0.f, 150.f, 0.f}, mGameWindow, m3DWorldRendererShader, mChunkManager)
     , mGameSettings("settings.cfg")
     , mTexturePack("defaultTextures")
-    , mChunkManager(mTexturePack)
-    , mSelectedBlock(mTexturePack)
 {
     Mouse::lockMouseAtCenter(mGameWindow);
     m3DWorldRendererShader.loadFromFile("resources/shaders/3DWorldRenderer/VertexShader.shader",
                                         "resources/shaders/3DWorldRenderer/FragmentShader.shader");
-
-    mCollisionsShader.loadFromFile("resources/shaders/WireframeRenderer/VertexShader.shader",
-                                   "resources/shaders/WireframeRenderer/FragmentShader.shader");
 
     GLCall(glEnable(GL_CULL_FACE));
     GLCall(glEnable(GL_DEPTH_TEST));
@@ -41,20 +37,6 @@ bool GameState::handleEvent(const sf::Event& event)
 {
     Mouse::handleFirstPersonBehaviour(event, mGameWindow);
     mPlayer.handleEvent(event);
-
-    switch (event.type)
-    {
-        case sf::Event::MouseButtonPressed:
-        {
-            if (event.key.code == sf::Mouse::Button::Left)
-            {
-                if (mSelectedBlock.isAnyBlockSelected())
-                {
-                    mChunkManager.chunks().removeWorldBlock(mSelectedBlock.blockPosition());
-                }
-            }
-        }
-    }
 
     /*
      * Set this state to transparent -- in other words
@@ -143,10 +125,8 @@ void GameState::updateDebugMenu()
 bool GameState::update(const float& deltaTime)
 {
     mPlayer.update(deltaTime);
-    mPlayer.camera().updateViewProjection(mCollisionsShader);
-    // mSelectedBlock.markFacedBlock(mGameCamera, mChunkManager);
 
-    mChunkManager.update(deltaTime);
+    mChunkManager.update(deltaTime, mPlayer.camera());
     mChunkManager.generateChunksAround(mPlayer.position());
     mChunkManager.clearFarAwayChunks(mPlayer.position());
 
@@ -157,7 +137,6 @@ bool GameState::update(const float& deltaTime)
 
 void GameState::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    mChunkManager.draw(mGameRenderer, m3DWorldRendererShader, mCollisionsShader);
-    mSelectedBlock.draw(mGameRenderer, m3DWorldRendererShader);
-    mPlayer.draw(target, states);
+    mChunkManager.draw(mGameRenderer, m3DWorldRendererShader);
+    mPlayer.draw(mGameRenderer, target, states);
 }

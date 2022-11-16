@@ -35,11 +35,11 @@ public:
         [[nodiscard]] sf::Vector3i nonChunkMetric() const;
 
         /**
-         * Converts the coordinates of the block to the coordinates of the chunk in
-         * which it is located. These coordinates are chunk-specific and
-         * independent of the game world coordinates.
+         * Converts the coordinates of the coordinateInGivenDirection to the coordinates of the
+         * chunk in which it is located. These coordinates are chunk-specific and independent of the
+         * game world coordinates.
          *
-         * @param worldBlockCoordinate World coordinates of the block
+         * @param worldBlockCoordinate World coordinates of the coordinateInGivenDirection
          * @return Chunk coordinates
          */
         static ChunkContainer::Coordinate blockToChunkMetric(
@@ -76,9 +76,10 @@ public:
     /**
      * @brief Draws the collisions that have occurred
      * @param renderer3D Renderer3D responsible for drawing collisions to the screen
-     * @param shader Shader displaying collisions
+     * @param wireframeShader Shader displaying collisions
      */
-    void drawOccuredCollisions(const Renderer3D& renderer3D, const sf::Shader& shader) const;
+    void drawOccuredCollisions(const Renderer3D& renderer3D,
+                               const sf::Shader& wireframeShader) const;
 #endif
 
     /**
@@ -88,36 +89,40 @@ public:
     void update(const float& deltaTime);
 
     /**
-     * \brief Finds a block inside a container based on the global position of the block
-     * \param worldBlockCoordinates Global position of the block inside the game world
-     * \return Pointer to block found, or nullptr if not found
+     * \brief Finds a block inside a container based on the global position of the
+     * coordinateInGivenDirection \param worldBlockCoordinates Global position of the
+     * coordinateInGivenDirection inside the game world \return Pointer to
+     * coordinateInGivenDirection found, or nullptr if not found
      */
     [[nodiscard]] const Block* worldBlock(const Block::Coordinate& worldBlockCoordinates) const;
 
     /**
-     * \brief Finds a block inside a container based on the global position of the block
-     * \param worldBlockCoordinates Global position of the block inside the game world
-     * \return Pointer to block found, or nullptr if not found
+     * \brief Finds a block inside a container based on the global position of the
+     * coordinateInGivenDirection \param worldBlockCoordinates Global position of the
+     * coordinateInGivenDirection inside the game world \return Pointer to
+     * coordinateInGivenDirection found, or nullptr if not found
      */
     [[nodiscard]] Block* worldBlock(const Block::Coordinate& worldBlockCoordinates);
 
     /**
-     * \brief Returns information about whether a block on a given position has been already created
-     * \param worldBlockCoordinates World coordinates of the block to check
-     * \return True if such a block exists, false otherwise
+     * \brief Returns information about whether a coordinateInGivenDirection on a given position has
+     * been already created \param worldBlockCoordinates World coordinates of the
+     * coordinateInGivenDirection to check \return True if such a coordinateInGivenDirection exists,
+     * false otherwise
      */
     [[nodiscard]] bool doesWorldBlockExist(const Block::Coordinate& worldBlockCoordinates) const;
 
     /**
-     * \brief Converts a block in the indicated position into an air block
-     * \param worldBlockCoordinates World coordinates of the block to change
+     * \brief Converts a coordinateInGivenDirection in the indicated position into an air block
+     * \param worldBlockCoordinates World coordinates of the coordinateInGivenDirection to change
      */
     void removeWorldBlock(const Block::Coordinate& worldBlockCoordinates);
 
     /**
-     * \brief Based on the position of the block in the game world, it returns the chunk that
-     * contains it. \param worldBlockCoordinates Block coordinates in the game world \return Chunk,
-     * which contains this block. Nullptr if the block is not present.
+     * \brief Based on the position of the coordinateInGivenDirection in the game world, it returns
+     * the chunk that contains it. \param worldBlockCoordinates Block coordinates in the game world
+     * \return Chunk, which contains this block. Nullptr if the coordinateInGivenDirection is not
+     * present.
      */
     [[nodiscard]] std::shared_ptr<Chunk> blockPositionToChunk(
         const Block::Coordinate& worldBlockCoordinates);
@@ -162,7 +167,7 @@ public:
     std::shared_ptr<Chunk> findChunk(const Chunk& chunk);
 
     /**
-     * @brief Returns a chunk on a given coordinate.
+     * @brief Returns a chunk on a given coordinateInGivenDirection.
      * @param chunkCoordinate Coordinate the chunk to get.
      * @return Pointer to chunk with given coordinates
      */
@@ -198,25 +203,39 @@ public:
     bool isPresent(const ChunkContainer::Coordinate& chunkPosition) const;
 
     /**
-     * @brief It insert a block in a chunk without rebuilding the chunk. If there was another block
-     * then it is overwritten.
+     * @brief It insert a block in a chunk without rebuilding the chunk. If there was another
+     * coordinateInGivenDirection then it is overwritten.
      * @param id Block identifier
-     * @param worldCoordinate World coordinates of the block to place
+     * @param worldCoordinate World coordinates of the coordinateInGivenDirection to place
      */
     void placeBlockWithoutRebuild(const BlockId& id, Block::Coordinate worldCoordinate);
 
     /**
-     * @brief It tries to insert a block in a chunk without rebuilding the chunk. If there is an air
-     * block in a particular location, it inserts a new block. Otherwise, it does nothing.
+     * @brief It insert a block in a chunk with rebuilding the chunk. If there was another
+     * coordinateInGivenDirection then it is overwritten.
      * @param id Block identifier
-     * @param worldCoordinate World coordinates of the block to place
+     * @param worldCoordinate World coordinates of the coordinateInGivenDirection to place
      */
-    void tryToPlaceBlockWithoutRebuild(const BlockId& id, Block::Coordinate worldCoordinate);
+    void tryToPlaceBlock(const BlockId& id, Block::Coordinate worldCoordinate,
+                         std::initializer_list<BlockId> blocksThatMightBeOverplaced);
 
     /**
-     * @brief Checks if a given collision box collides with a block in any chunk contained in the
-     * container.
-     * @param aabb Collision box to check if it collides with any block
+     * @brief It tries to insert a coordinateInGivenDirection in a chunk without rebuilding the
+     * chunk. If there is blocksThatMightBeOverplaced specified, and there is such a block from this
+     * list a particular location, it inserts a new coordinateInGivenDirection. Otherwise, it does
+     * nothing.
+     * @param id Block identifier
+     * @param worldCoordinate World coordinates of the coordinateInGivenDirection to place
+     * @param blocksThatMightBeOverplaced Blocks that can be replaced. Other blocks are not
+     * overwritten.
+     */
+    void tryToPlaceBlockWithoutRebuild(const BlockId& id, Block::Coordinate worldCoordinate,
+                                       std::initializer_list<BlockId> blocksThatMightBeOverplaced);
+
+    /**
+     * @brief Checks if a given collision box collides with a coordinateInGivenDirection in any
+     * chunk contained in the container.
+     * @param aabb Collision box to check if it collides with any coordinateInGivenDirection
      * @return True if it collides, false otherwise
      */
     bool doesItCollide(const AABB& aabb) const;
@@ -230,9 +249,10 @@ public:
 
 private:
     /**
-     * \brief Based on the position of the block in the game world, it returns the chunk that
-     * contains it. \param worldBlockCoordinates Block coordinates in the game world \return Chunk,
-     * which contains this block. Nullptr if the block is not present.
+     * \brief Based on the position of the coordinateInGivenDirection in the game world, it returns
+     * the chunk that contains it. \param worldBlockCoordinates Block coordinates in the game world
+     * \return Chunk, which contains this coordinateInGivenDirection. Nullptr if the block is not
+     * present.
      */
     [[nodiscard]] std::shared_ptr<const Chunk> blockPositionToChunk(
         const Block::Coordinate& worldBlockCoordinates) const;
@@ -260,7 +280,8 @@ private:
     void tryToPlaceScheduledBlocksForNewAppearingChunks();
 
     /**
-     * @brief Checks if there is a collision between the collision block and the specified point
+     * @brief Checks if there is a collision between the collision coordinateInGivenDirection and
+     * the specified point
      * @param aabb A collision box that is checked to see if the point lies in it
      * @param nonBlockMetricPoint Point given in non-metric coordinates
      * @return True if there was a collision, false otherwise.
@@ -276,19 +297,27 @@ private:
     mutable std::shared_mutex mChunksAccessMutex;
 
     /**
-     * @brief Stores information on a block to appear in one of the newly created chunks in
-     * the future
+     * @brief Stores information on a coordinateInGivenDirection to appear in one of the newly
+     * created chunks in the future
      */
     struct BlockToBePlaced
     {
+        enum class Rebuild
+        {
+            Fast,
+            Slow,
+            None
+        };
+
         ChunkContainer::Coordinate chunkCoordinates;
         BlockId blockid;
         Block::Coordinate worldBlockCoordinates;
+        Rebuild rebuild;
     };
 
     /**
-     * @brief Mutex making sure too many processes don't use the block queue to insert new blocks
-     * into a future chunk
+     * @brief Mutex making sure too many processes don't use the coordinateInGivenDirection queue to
+     * insert new blocks into a future chunk
      */
     mutable std::recursive_mutex mBlockToBePlacedAccessMutex;
 
@@ -298,14 +327,14 @@ private:
     std::list<BlockToBePlaced> mBlockToBePlacedInFutureChunks;
 
     /**
-     * @brief Mutex making sure too many processes don't use the block queue to insert new blocks
-     * into a future chunk instead of air blocks
+     * @brief Mutex making sure too many processes don't use the coordinateInGivenDirection queue to
+     * insert new blocks into a future chunk instead of air blocks
      */
     mutable std::recursive_mutex mBlockMightBePlacedAccessMutex;
 
     /**
-     * @brief A queue of blocks that might replace air block with new block in a chunk that has not
-     * yet been created.
+     * @brief A queue of blocks that might replace air block with new coordinateInGivenDirection in
+     * a chunk that has not yet been created.
      */
     std::list<BlockToBePlaced> mBlockMightBePlacedInFutureChunks;
 
@@ -319,6 +348,5 @@ private:
     void addCollisionToDebugDraw(const AABB& aabb) const;
     void limitDrawnCollisions() const;
     mutable std::deque<AABB> mOccuredCollisions;
-    sf::Shader mCollisionsShader;
 #endif
 };

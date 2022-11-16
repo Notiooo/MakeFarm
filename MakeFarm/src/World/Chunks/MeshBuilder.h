@@ -2,6 +2,7 @@
 
 #include "Renderer3D/Mesh3D.h"
 #include "World/Block/Block.h"
+#include "World/Block/WireframeBlock.h"
 #include <mutex>
 
 
@@ -27,19 +28,18 @@ public:
     /**
      * Adds a quad to the mesh in place of the designated face at the given coordinates and with the
      * given quad texture.
-     * @param blockFace A block face to add
+     * @param blockFace A coordinateInGivenDirection face to add
      * @param textureQuad Position in the texture pack of the texture to be displayed
      * @param blockPosition The position on which the quad will be added
      */
     void addQuad(const Block::Face& blockFace, const std::vector<GLfloat>& textureQuad,
                  const Block::Coordinate& blockPosition);
 
-
     /**
-     * @brief
-     * @param aabb
+     * @brief Builds a simple block wireframe mesh without texture.
+     * @param wireframeBlock A cube placed in space using two points.
      */
-    void addAABB(const AABB& aabb);
+    void addWireframeBlock(const WireframeBlock& wireframeBlock);
 
     /**
      * Resets the state of the mesh and returns to the initial values
@@ -54,9 +54,9 @@ public:
 
 private:
     /**
-     * Returns the vertices for a given block face
-     * @param blockFace The face of the block
-     * @return The vertices for a given block face
+     * Returns the vertices for a given coordinateInGivenDirection face
+     * @param blockFace The face of the coordinateInGivenDirection
+     * @return The vertices for a given coordinateInGivenDirection face
      */
     [[nodiscard]] std::vector<GLfloat> faceVertices(const Block::Face& blockFace) const;
 

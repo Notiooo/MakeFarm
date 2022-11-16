@@ -25,6 +25,18 @@
     ASSERT(GLLogCall(#x, __FILE__, __LINE__));
 
 /**
+ * @brief An auxiliary function that allows to properly call drawing to the screen in SFML
+ * so as not to do damage to OpenGL in the background.
+ *
+ * @param drawable Object that can be drawn to a render target.
+ * @param target where it should be drawn to
+ * @param states  provides information about rendering process (coordinateInGivenDirection, shader,
+ * blend mode)
+ */
+void SfmlDraw(const sf::Drawable& drawable, sf::RenderTarget& target,
+              const sf::RenderStates states);
+
+/**
  * Cleans up OpenGL errors
  */
 void GLClearError();

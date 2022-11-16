@@ -1,6 +1,9 @@
 #include "Renderer3D.h"
 #include "pch.h"
 
+#include <SFML/Graphics/Drawable.hpp>
+#include <SFML/Graphics/RenderStates.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Shader.hpp>
 
 void GLClearError()
@@ -22,6 +25,13 @@ bool GLLogCall(const char* function, const char* file, int line)
     return true;
 }
 
+void SfmlDraw(const sf::Drawable& drawable, sf::RenderTarget& target, const sf::RenderStates states)
+{
+    target.pushGLStates();
+    target.draw(drawable, states);
+    target.popGLStates();
+}
+
 void Renderer3D::draw(const VertexArray& va, const IndexBuffer& ib, const sf::Shader& shader,
                       const DrawMode& drawMode) const
 {
@@ -30,7 +40,7 @@ void Renderer3D::draw(const VertexArray& va, const IndexBuffer& ib, const sf::Sh
     ib.bind();
     GLCall(glDrawElements(toOpenGL(drawMode), ib.size(), GL_UNSIGNED_INT, nullptr));
 
-    // clang-format off
+// clang-format off
     #ifdef _DEBUG
     sf::Shader::bind(nullptr);
     va.unbind();
@@ -46,7 +56,7 @@ void Renderer3D::draw(const VertexArray& va, const sf::Shader& shader, int numbe
     va.bind();
     GLCall(glDrawArrays(toOpenGL(drawMode), 0, number));
 
-    // clang-format off
+// clang-format off
     #ifdef _DEBUG
     sf::Shader::bind(nullptr);
     va.unbind();
@@ -61,5 +71,6 @@ unsigned Renderer3D::toOpenGL(const Renderer3D::DrawMode& drawMode) const
         case DrawMode::Lines: return GL_LINES;
         case DrawMode::Triangles: return GL_TRIANGLES;
         case DrawMode::Quads: return GL_QUADS;
+        default: throw std::runtime_error("This DrawMode is not supported!");
     }
 }

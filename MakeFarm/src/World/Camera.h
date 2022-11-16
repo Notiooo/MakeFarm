@@ -40,7 +40,8 @@ public:
     /**
      * \brief Draws the camera to the passed target
      * \param target where it should be drawn to
-     * \param states provides information about rendering process (transform, shader, blend mode)
+     * \param states provides information about rendering process (coordinateInGivenDirection,
+     * shader, blend mode)
      */
     void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) const;
 
@@ -116,11 +117,6 @@ public:
      * @return Upward direction of the camera.
      */
     glm::vec3 upwardDirection() const;
-
-    /**
-     * The maximum ray length to which blocks in front of the camera should be checked.
-     */
-    static constexpr float MAX_RAY_SIZE = 10 * Block::BLOCK_SIZE;
 
 private:
     /**

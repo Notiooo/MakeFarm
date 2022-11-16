@@ -12,7 +12,7 @@ CoordinateBase::CoordinateBase(const sf::Vector3i& blockCoordinates)
 }
 
 CoordinateBase::CoordinateBase(CoordinateBase&& rhs) noexcept
-    : mBlockCoordinates(std::move(rhs.mBlockCoordinates))
+    : mBlockCoordinates(rhs.mBlockCoordinates)
     , x(mBlockCoordinates.x)
     , y(mBlockCoordinates.y)
     , z(mBlockCoordinates.z)

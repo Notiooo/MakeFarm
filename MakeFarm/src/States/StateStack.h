@@ -30,7 +30,7 @@
  *
  *  StateStack allows states at the top to cover states below.
  *  Thus, for example, a "Game State" can be covered by a "Pause State",
- *  which will block it from updating game logic and displaying itself.
+ *  which will coordinateInGivenDirection it from updating game logic and displaying itself.
  *  Of course, the pop() operation will remove the "Pause State" and
  *  restore the covered "Game State" perfectly from when it was covered.
  *  States, however, have the option of marking individual functions as
@@ -97,7 +97,8 @@ public:
     /**
      * \brief Draws the states in the stack to the given target with given states.
      * \param target where drawable object should be drawn to.
-     * \param states provides information about rendering process (transform, shader, blend mode)
+     * \param states provides information about rendering process (coordinateInGivenDirection,
+     * shader, blend mode)
      *
      * Draws the states at the top of the stack. If the state is transparent (returns true)
      * then it also draw the state below it. The state below it is also checked for

@@ -11,7 +11,7 @@
 /**
  * \brief Texture IDs under which individual textures can be saved and read.
  */
-enum class Textures_ID
+enum class Textures_Id
 {
     // No Textures yet
 };
@@ -19,7 +19,7 @@ enum class Textures_ID
 /**
  * \brief Object storing textures of the game
  */
-using TextureManager = ResourceManager<sf::Texture, Textures_ID>;
+using TextureManager = ResourceManager<sf::Texture, Textures_Id>;
 
 // ====== Fonts ======= //
 

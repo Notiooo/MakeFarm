@@ -457,13 +457,15 @@ void Chunk::placeBlockWithoutRebuild(const BlockId& blockId,
 }
 
 void Chunk::tryToPlaceBlockWithoutRebuild(const BlockId& blockId,
-                                          const Block::Coordinate& localCoordinates)
+                                          const Block::Coordinate& localCoordinates,
+                                          std::initializer_list<BlockId> blockThatMightBeOverplaced)
 {
     if (areLocalCoordinatesInsideChunk(localCoordinates))
     {
         std::unique_lock guard(mChunkAccessMutex);
         auto& block = (*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z];
-        if (block->blockId() == BlockId::Air)
+        if (std::find(blockThatMightBeOverplaced.begin(), blockThatMightBeOverplaced.end(),
+                      block->blockId()) != blockThatMightBeOverplaced.end())
         {
             block->setBlockType(blockId);
         }
@@ -472,7 +474,7 @@ void Chunk::tryToPlaceBlockWithoutRebuild(const BlockId& blockId,
     else if (belongsToAnyChunkContainer())
     {
         auto globalCoordinates = localToGlobalCoordinates(localCoordinates);
-        mParentContainer->tryToPlaceBlockWithoutRebuild(blockId, globalCoordinates);
+        mParentContainer->tryToPlaceBlockWithoutRebuild(blockId, globalCoordinates, {BlockId::Air});
     }
 }
 

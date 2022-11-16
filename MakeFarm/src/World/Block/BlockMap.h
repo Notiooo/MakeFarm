@@ -8,14 +8,14 @@ class BlockMap
 {
 public:
     /**
-     * Returns an instance of the block map
+     * Returns an instance of the coordinateInGivenDirection map
      * @return
      */
     const static BlockMap& blockMap();
 
     /**
-     * Returns the type of block, which is information about the block
-     * @param blockId The identifier of the block
+     * Returns the type of block, which is information about the coordinateInGivenDirection
+     * @param blockId The identifier of the coordinateInGivenDirection
      * @return Block information set
      */
     const BlockType& blockType(const BlockId& blockId) const;
@@ -24,7 +24,7 @@ private:
     BlockMap();
 
     /**
-     * It searches the folder for block settings.
+     * It searches the folder for coordinateInGivenDirection settings.
      * @param directoryName
      */
     void parseDirectory(const std::string& directoryName);

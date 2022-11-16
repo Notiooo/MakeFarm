@@ -34,12 +34,12 @@ void ChunkContainer::drawFlorals(const Renderer3D& renderer3D, const sf::Shader&
 
 #if DRAW_DEBUG_COLLISIONS
 void ChunkContainer::drawOccuredCollisions(const Renderer3D& renderer3D,
-                                           const sf::Shader& shader) const
+                                           const sf::Shader& wireframeShader) const
 {
     MeshBuilder collisionsMeshBuilder;
     for (auto collisionAABB: mOccuredCollisions)
     {
-        collisionsMeshBuilder.addAABB(collisionAABB);
+        collisionsMeshBuilder.addWireframeBlock(collisionAABB.collisionBox());
     }
     Model3D collisionModel;
 
@@ -50,7 +50,7 @@ void ChunkContainer::drawOccuredCollisions(const Renderer3D& renderer3D,
     collisionModel.setMesh(collisionsMeshBuilder.mesh3D());
 
     glDisable(GL_DEPTH_TEST);
-    collisionModel.draw(renderer3D, shader, Renderer3D::DrawMode::Lines);
+    collisionModel.draw(renderer3D, wireframeShader);
     glEnable(GL_DEPTH_TEST);
 }
 #endif
@@ -108,6 +108,16 @@ void ChunkContainer::placeScheduledBlocksForPresentChunks()
         if (isPresent(begIter->chunkCoordinates))
         {
             worldBlock(begIter->worldBlockCoordinates)->setBlockType(begIter->blockid);
+
+            if (begIter->rebuild != BlockToBePlaced::Rebuild::None)
+            {
+                auto chunk = blockPositionToChunk(begIter->worldBlockCoordinates);
+                switch (begIter->rebuild)
+                {
+                    case BlockToBePlaced::Rebuild::Fast: chunk->rebuildFast();
+                    case BlockToBePlaced::Rebuild::Slow: chunk->rebuildSlow();
+                }
+            }
             begIter = mBlockToBePlacedInFutureChunks.erase(begIter);
         }
         else
@@ -201,7 +211,8 @@ void ChunkContainer::removeWorldBlock(const Block::Coordinate& worldBlockCoordin
          * When removing a block, you may find that it is in contact with an adjacent chunk.
          * Rebuilding one chunk doesn't help, because the neighboring chunk remains in the form
          * where it assumes the block is there. This leads to a hole in the chunk. For this reason,
-         * you must rebuild all chunks that are in contact with the block being removed.
+         * you must rebuild all chunks that are in contact with the coordinateInGivenDirection being
+         * removed.
          */
         const auto directions =
             chunk->directionOfBlockFacesInContactWithOtherChunk(localCoordinates);
@@ -315,17 +326,45 @@ void ChunkContainer::placeBlockWithoutRebuild(const BlockId& id, Block::Coordina
 
         std::scoped_lock guard(mBlockToBePlacedAccessMutex);
         mBlockToBePlacedInFutureChunks.push_back(
-            BlockToBePlaced{chunkCoordinates, id, worldCoordinate});
+            BlockToBePlaced{chunkCoordinates, id, worldCoordinate, BlockToBePlaced::Rebuild::None});
     }
 }
 
-void ChunkContainer::tryToPlaceBlockWithoutRebuild(const BlockId& id,
-                                                   Block::Coordinate worldCoordinate)
+void ChunkContainer::tryToPlaceBlock(const BlockId& id, Block::Coordinate worldCoordinate,
+                                     std::initializer_list<BlockId> blocksThatMightBeOverplaced)
 {
     if (const auto chunk = blockPositionToChunk(worldCoordinate))
     {
         auto& localBlock = chunk->localBlock(chunk->globalToLocalCoordinates(worldCoordinate));
-        if (localBlock.blockId() == BlockId::Air)
+
+        if (std::find(blocksThatMightBeOverplaced.begin(), blocksThatMightBeOverplaced.end(),
+                      localBlock.blockId()) != blocksThatMightBeOverplaced.end())
+        {
+            localBlock.setBlockType(id);
+            chunk->rebuildFast();
+        }
+    }
+    else
+    {
+        const auto& chunkCoordinates =
+            ChunkContainer::Coordinate::blockToChunkMetric(worldCoordinate);
+
+        std::scoped_lock guard(mBlockToBePlacedAccessMutex);
+        mBlockToBePlacedInFutureChunks.push_back(
+            BlockToBePlaced{chunkCoordinates, id, worldCoordinate, BlockToBePlaced::Rebuild::Fast});
+    }
+}
+
+void ChunkContainer::tryToPlaceBlockWithoutRebuild(
+    const BlockId& id, Block::Coordinate worldCoordinate,
+    std::initializer_list<BlockId> blocksThatMightBeOverplaced)
+{
+    if (const auto chunk = blockPositionToChunk(worldCoordinate))
+    {
+        auto& localBlock = chunk->localBlock(chunk->globalToLocalCoordinates(worldCoordinate));
+
+        if (std::find(blocksThatMightBeOverplaced.begin(), blocksThatMightBeOverplaced.end(),
+                      localBlock.blockId()) != blocksThatMightBeOverplaced.end())
         {
             localBlock.setBlockType(id);
         }
@@ -337,7 +376,7 @@ void ChunkContainer::tryToPlaceBlockWithoutRebuild(const BlockId& id,
 
         std::scoped_lock guard(mBlockMightBePlacedAccessMutex);
         mBlockMightBePlacedInFutureChunks.push_back(
-            BlockToBePlaced{chunkCoordinates, id, worldCoordinate});
+            BlockToBePlaced{chunkCoordinates, id, worldCoordinate, BlockToBePlaced::Rebuild::None});
     }
 }
 
@@ -398,10 +437,7 @@ bool ChunkContainer::isThereCollisionBetweenBlockAtGivenPoint(
         auto blockAABB = AABB({Block::BLOCK_SIZE, Block::BLOCK_SIZE, Block::BLOCK_SIZE});
 
         auto blockCoordinatesNonBlockMetric = blockCoordinates.nonBlockMetric();
-        blockAABB.updatePosition({blockCoordinatesNonBlockMetric.x,
-                                  blockCoordinatesNonBlockMetric.y,
-                                  blockCoordinatesNonBlockMetric.z},
-                                 AABB::RelativeTo::LeftBottomBack);
+        blockAABB.updatePosition(blockCoordinatesNonBlockMetric, AABB::RelativeTo::LeftBottomBack);
 
         if (aabb.intersect(blockAABB))
         {
@@ -436,9 +472,7 @@ std::vector<Block> ChunkContainer::nonAirBlocksItTouches(const AABB& aabb) const
                         AABB({Block::BLOCK_SIZE, Block::BLOCK_SIZE, Block::BLOCK_SIZE});
 
                     auto blockCoordinatesNonBlockMetric = blockCoordinates.nonBlockMetric();
-                    blockAABB.updatePosition({blockCoordinatesNonBlockMetric.x,
-                                              blockCoordinatesNonBlockMetric.y,
-                                              blockCoordinatesNonBlockMetric.z},
+                    blockAABB.updatePosition(blockCoordinatesNonBlockMetric,
                                              AABB::RelativeTo::LeftBottomBack);
 
                     if (aabb.intersect(blockAABB))

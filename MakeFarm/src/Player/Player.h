@@ -1,5 +1,6 @@
 #pragma once
 #include "Physics/AABB.h"
+#include "World/Block/HighlightedBlock.h"
 #include "World/Camera.h"
 #include <SFML/Graphics/RectangleShape.hpp>
 
@@ -8,7 +9,8 @@ class ChunkContainer;
 class Player
 {
 public:
-    Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf::Shader& shader);
+    Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf::Shader& shader,
+           ChunkManager& chunkManager);
 
     static constexpr float PLAYER_MAX_FALLING_SPEED = 20.f;
     static constexpr float PLAYER_WALKING_SPEED = 5.f;
@@ -22,9 +24,11 @@ public:
     /**
      * \brief Draws player to the passed target
      * \param target where it should be drawn to
-     * \param states provides information about rendering process (transform, shader, blend mode)
+     * \param states provides information about rendering process (coordinateInGivenDirection,
+     * shader, blend mode)
      */
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+    void draw(const Renderer3D& renderer3D, sf::RenderTarget& target,
+              sf::RenderStates states) const;
 
     /**
      * Updates the Player logic dependent, or independent of time, every rendered frame.
@@ -141,10 +145,12 @@ private:
     AABB aabbHeadAboveEyes() const;
 
     /**
-     * @brief Checks if a given collision box collides with a block with the given id
+     * @brief Checks if a given collision box collides with a coordinateInGivenDirection with the
+     * given id
      * @param aabb The collision box, the collision of which should be checked
      * @param chunkContainer Container storing chunks
-     * @param blockId Identifier of the block with which the collision should be checked
+     * @param blockId Identifier of the coordinateInGivenDirection with which the collision should
+     * be checked
      * @return True if the collision occurred, false otherwise
      */
     bool doesItCollideWithGivenNonAirBlock(const AABB& aabb, const ChunkContainer& chunkContainer,
@@ -156,14 +162,53 @@ private:
      */
     void updateInformationIfPlayersEyesAreInWater(const ChunkContainer& chunkContainer);
 
+    /**
+     * @brief He is trying to put a block through the player - where the player is looking.
+     */
+    void tryPlaceBlock();
+
+    /**
+     * @brief Destroys the block marked by the player.
+     */
+    void tryDestroyBlock();
+
+    /**
+     * @brief Player jumps if it is on the ground.
+     */
+    void tryJump();
+
+    /**
+     * @brief Supports mouse-related player events.
+     * @param event user input
+     */
+    void handleMouseEvents(const sf::Event& event);
+
+    /**
+     * @brief Supports keyboarfd-related player events.
+     * @param event user input
+     */
+    void handleKeyboardEvents(const sf::Event& event);
+
+    /**
+     * @brief TODO: THIS
+     * @param coordinates TODO: THIS
+     * @return TODO: THIS
+     */
+    bool doesPlayerCollideWithBlock(const Block::Coordinate& coordinates) const;
+
     Camera mCamera;
     AABB mAABB;
+    HighlightedBlock mSelectedBlock;
+    ChunkManager& mChunkManager;
+    sf::Shader mWireframeShader;
 
     bool mIsPlayerOnGround = false;
     bool mIsPlayerInWater = false;
     bool mArePlayerEyesInWater = false;
 
     sf::RectangleShape mWaterInWaterEffect;
+    sf::Sprite mCrosshair;
+    sf::Texture mCrosshairTexture;
 
     glm::vec3 mPosition;
     glm::vec3 mPlayerMovementVelocity = glm::vec3(0.f, 0.f, 0.f);

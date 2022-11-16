@@ -39,7 +39,7 @@ void BlockMap::parseDirectory(const std::string& directoryName)
                 settingsFile.openFile(filePath);
                 blockType.blockFileName = fileName;
 
-                // Set name of the block
+                // Set name of the coordinateInGivenDirection
                 if (settingsFile.isPresent("Name"))
                 {
                     blockType.blockName = settingsFile.get<std::string>("Name");
@@ -49,7 +49,7 @@ void BlockMap::parseDirectory(const std::string& directoryName)
                     blockType.blockName = "Unnamed Block";
                 }
 
-                // Set main texture of the block
+                // Set main texture of the coordinateInGivenDirection
                 if (settingsFile.isPresent("Texture"))
                 {
                     auto generalTexture = settingsFile.get<Block::TextureId>("Texture");

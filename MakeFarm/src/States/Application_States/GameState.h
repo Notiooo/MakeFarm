@@ -5,10 +5,11 @@
 
 #include "Player/Player.h"
 #include "Renderer3D/Renderer3D.h"
+#include "Resources/Resources.h"
 #include "Resources/TexturePack.h"
 #include "States/State.h"
 #include "Utils/Settings.h"
-#include "World/Block/FacedBlock.h"
+#include "World/Block/HighlightedBlock.h"
 #include "World/Chunks/Chunk.h"
 #include "World/Chunks/ChunkManager.h"
 
@@ -26,7 +27,8 @@ public:
     /**
      * \brief Draws only this state to the passed target
      * \param target where it should be drawn to
-     * \param states provides information about rendering process (transform, shader, blend mode)
+     * \param states provides information about rendering process (coordinateInGivenDirection,
+     * shader, blend mode)
      */
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
@@ -57,8 +59,6 @@ private:
     /** Rendering */
     sf::RenderWindow& mGameWindow;//!< Window to which this status is displayed
     sf::Shader m3DWorldRendererShader;
-    sf::Shader mCollisionsShader;
-    Player mPlayer;
     Renderer3D mGameRenderer;
 
     /** Settings */
@@ -67,7 +67,7 @@ private:
 
     /** Utils */
     ChunkManager mChunkManager;
-    FacedBlock mSelectedBlock;//!< Marking the block the player is looking at
+    Player mPlayer;
 };
 
 

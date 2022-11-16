@@ -3,7 +3,7 @@
 
 
 /**
- * It carries with it information about the type of block.
+ * It carries with it information about the type of coordinateInGivenDirection.
  */
 struct BlockType
 {

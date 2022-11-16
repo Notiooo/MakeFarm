@@ -4,20 +4,32 @@
 #include "World/Chunks/CoordinatesAroundOriginGetter.h"
 #include "pch.h"
 
-void ChunkManager::draw(const Renderer3D& renderer3D, const sf::Shader& worldRendererShader,
-                        const sf::Shader& collisionRendererShader) const
+ChunkManager::ChunkManager(const TexturePack& texturePack)
+    : mTexturePack(texturePack)
+{
+#if DRAW_DEBUG_COLLISIONS
+    mWireframeShader.loadFromFile("resources/shaders/WireframeRenderer/VertexShader.shader",
+                                  "resources/shaders/WireframeRenderer/GeometryShader.shader",
+                                  "resources/shaders/WireframeRenderer/FragmentShader.shader");
+#endif
+}
+
+void ChunkManager::draw(const Renderer3D& renderer3D, const sf::Shader& worldRendererShader) const
 {
     mTexturePack.bind();
     mChunkContainer.drawTerrain(renderer3D, worldRendererShader);
     mChunkContainer.drawLiquids(renderer3D, worldRendererShader);
     mChunkContainer.drawFlorals(renderer3D, worldRendererShader);
 #if DRAW_DEBUG_COLLISIONS
-    mChunkContainer.drawOccuredCollisions(renderer3D, collisionRendererShader);
+    mChunkContainer.drawOccuredCollisions(renderer3D, mWireframeShader);
 #endif
 }
 
-void ChunkManager::update(const float& deltaTime)
+void ChunkManager::update(const float& deltaTime, const Camera& camera)
 {
+#if DRAW_DEBUG_COLLISIONS
+    camera.updateViewProjection(mWireframeShader);
+#endif
     mChunkContainer.update(deltaTime);
     rebuildChunks();
 }
@@ -280,11 +292,6 @@ bool ChunkManager::isChunkDuringProcessing(const ChunkContainer::Coordinate& chu
     return std::find(std::begin(mCurrentlyProcessedChunks.objectsToBeProcessed),
                      std::end(mCurrentlyProcessedChunks.objectsToBeProcessed),
                      chunkPosition) != std::end(mCurrentlyProcessedChunks.objectsToBeProcessed);
-}
-
-ChunkManager::ChunkManager(const TexturePack& texturePack)
-    : mTexturePack(texturePack)
-{
 }
 
 const ChunkContainer& ChunkManager::chunks() const

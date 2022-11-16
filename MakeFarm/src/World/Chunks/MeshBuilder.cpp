@@ -89,26 +89,42 @@ std::vector<GLfloat> MeshBuilder::faceVertices(const Block::Face& blockFace) con
         case Block::Face::Top:
             return {
                 // x  y  z
-                0, 1, 1,// top close left
-                1, 1, 1,// top close right
-                1, 1, 0,// top far right
-                0, 1, 0,// top far left
+                0, 1, 1,// top far left
+                1, 1, 1,// top far right
+                1, 1, 0,// top close right
+                0, 1, 0,// top close left
             };
 
         case Block::Face::Left:
-            return {// x  y  z
-                    0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0};
+            return {
+                // x  y  z
+                0, 0, 0,// left bottom close
+                0, 0, 1,// left bottom far
+                0, 1, 1,// left top far
+                0, 1, 0 // left top close
+            };
 
         case Block::Face::Right:
-            return {// x  y  z
-                    1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1};
+            return {
+                // x  y  z
+                1, 0, 1,// right bottom far
+                1, 0, 0,// right bottom close
+                1, 1, 0,// right top close
+                1, 1, 1 // right top far
+            };
 
         case Block::Face::Bottom:
-            return {// x  y  z
-                    0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1};
+            return {
+                // x  y  z
+                0, 0, 0,// bottom left close
+                1, 0, 0,// bottom right close
+                1, 0, 1,// bottom right far
+                0, 0, 1 // bottom left far
+            };
 
         case Block::Face::Front:
             return {
+                // x  y  z
                 0, 0, 1,// front left bottom
                 1, 0, 1,// front right bottom
                 1, 1, 1,// front right top
@@ -117,6 +133,7 @@ std::vector<GLfloat> MeshBuilder::faceVertices(const Block::Face& blockFace) con
 
         case Block::Face::Back:
             return {
+                // x  y  z
                 1, 0, 0,// back right bottom
                 0, 0, 0,// back left bottom
                 0, 1, 0,// back left top
@@ -126,7 +143,7 @@ std::vector<GLfloat> MeshBuilder::faceVertices(const Block::Face& blockFace) con
     }
 }
 
-void MeshBuilder::addAABB(const AABB& aabb)
+void MeshBuilder::addWireframeBlock(const WireframeBlock& wireframeBlock)
 {
     for (int blockFace = 0; blockFace < static_cast<int>(Block::Face::Counter); ++blockFace)
     {
@@ -134,10 +151,9 @@ void MeshBuilder::addAABB(const AABB& aabb)
         auto& indices = mMesh.indices;
 
         auto face = faceVertices(static_cast<Block::Face>(blockFace));
-        auto [collisionBoxMin, collisionBoxMax] = aabb.collisionBox();
 
-        auto collisionBoxSize = aabb.collisionBoxSize();
-        const auto& originPos = collisionBoxMin;
+        auto collisionBoxSize = wireframeBlock.max - wireframeBlock.min;
+        const auto& originPos = wireframeBlock.min;
 
         for (int i = 0; i < 3 * 4; i += 3)
         {

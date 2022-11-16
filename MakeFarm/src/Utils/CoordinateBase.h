@@ -2,7 +2,7 @@
 #include <SFML/System/Vector3.hpp>
 
 /**
- * A base class of coordinate systems in 3D space.
+ * A base class of coordinateInGivenDirection systems in 3D space.
  * Works correctly in hashmap and has correctly created arithmetic and comparison operators.
  */
 struct CoordinateBase

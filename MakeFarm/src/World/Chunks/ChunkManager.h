@@ -46,14 +46,13 @@ public:
      * @param worldRendererShader Shader with the help of which the object should be drawn
      * @param collisionRendererShader Shader responsible for rendering collisions
      */
-    void draw(const Renderer3D& renderer3D, const sf::Shader& worldRendererShader,
-              const sf::Shader& collisionRendererShader) const;
+    void draw(const Renderer3D& renderer3D, const sf::Shader& worldRendererShader) const;
 
     /**
      * \brief Updates the chunkcontainer logic dependent, or independent of time, every rendered
      * frame. \param deltaTime the time that has passed since the game was last updated.
      */
-    void update(const float& deltaTime);
+    void update(const float& deltaTime, const Camera& camera);
 
     /**
      * \brief Generates new chunks around the given position (origin)
@@ -259,6 +258,10 @@ private:
     AsyncProcessedObjects<std::shared_ptr<Chunk>> mChunkToRebuildFast;
     AsyncProcessedObjects<std::shared_ptr<Chunk>> mChunkToRebuildSlow;
     AsyncProcessedObjects<ChunkContainer::Coordinate> mCurrentlyProcessedChunks;
+
+#if DRAW_DEBUG_COLLISIONS
+    sf::Shader mWireframeShader;
+#endif
 };
 
 template<typename T>
