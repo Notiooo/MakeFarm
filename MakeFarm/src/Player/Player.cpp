@@ -214,7 +214,7 @@ void Player::tryPlaceBlock()
         {
             mChunkManager.chunks().tryToPlaceBlock(
                 BlockId::Dirt, coordinatesOfBlockToBePlaced,
-                {HighlightedBlock::BLOCKS_THAT_MIGHT_BE_OVERPLACED});
+                {HighlightedBlock::BLOCKS_THAT_MIGHT_BE_OVERPLACED}, Chunk::RebuildOperation::Fast);
         }
     }
 }

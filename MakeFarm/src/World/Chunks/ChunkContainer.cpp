@@ -57,17 +57,7 @@ void ChunkContainer::drawOccuredCollisions(const Renderer3D& renderer3D,
 
 void ChunkContainer::update(const float& deltaTime)
 {
-    placeScheduledBlocksForNewAppearingChunks();
     tryToPlaceScheduledBlocksForNewAppearingChunks();
-}
-
-void ChunkContainer::placeScheduledBlocksForNewAppearingChunks()
-{
-    std::scoped_lock guard(mBlockToBePlacedAccessMutex);
-    if (!mBlockToBePlacedInFutureChunks.empty())
-    {
-        placeScheduledBlocksForPresentChunks();
-    }
 }
 
 void ChunkContainer::tryToPlaceScheduledBlocksForNewAppearingChunks()
@@ -84,41 +74,18 @@ void ChunkContainer::tryToPlaceScheduledBlocksForPresentChunks()
     for (auto [begIter, endIter] = iterator_range(mBlockMightBePlacedInFutureChunks);
          begIter != endIter;)
     {
-        if (isPresent(begIter->chunkCoordinates))
+        auto& blockToBePlaced = *begIter;
+        if (isPresent(blockToBePlaced.chunkCoordinates))
         {
-            auto block = worldBlock(begIter->worldBlockCoordinates);
-            if (block && block->blockId() == BlockId::Air)
-            {
-                block->setBlockType(begIter->blockid);
-            }
+            auto chunk = blockPositionToChunk(blockToBePlaced.worldBlockCoordinates);
+            auto blockLocalCoordinates =
+                chunk->globalToLocalCoordinates(blockToBePlaced.worldBlockCoordinates);
+
+            chunk->tryToPlaceBlock(blockToBePlaced.blockid, blockLocalCoordinates,
+                                   blockToBePlaced.blocksThatMightBeOverplaced,
+                                   blockToBePlaced.rebuild);
+
             begIter = mBlockMightBePlacedInFutureChunks.erase(begIter);
-        }
-        else
-        {
-            ++begIter;
-        }
-    }
-}
-
-void ChunkContainer::placeScheduledBlocksForPresentChunks()
-{
-    for (auto [begIter, endIter] = iterator_range(mBlockToBePlacedInFutureChunks);
-         begIter != endIter;)
-    {
-        if (isPresent(begIter->chunkCoordinates))
-        {
-            worldBlock(begIter->worldBlockCoordinates)->setBlockType(begIter->blockid);
-
-            if (begIter->rebuild != BlockToBePlaced::Rebuild::None)
-            {
-                auto chunk = blockPositionToChunk(begIter->worldBlockCoordinates);
-                switch (begIter->rebuild)
-                {
-                    case BlockToBePlaced::Rebuild::Fast: chunk->rebuildFast();
-                    case BlockToBePlaced::Rebuild::Slow: chunk->rebuildSlow();
-                }
-            }
-            begIter = mBlockToBePlacedInFutureChunks.erase(begIter);
         }
         else
         {
@@ -313,61 +280,15 @@ bool ChunkContainer::isPresent(const ChunkContainer::Coordinate& chunkPosition) 
     return data().find(chunkPosition) != data().end();
 }
 
-void ChunkContainer::placeBlockWithoutRebuild(const BlockId& id, Block::Coordinate worldCoordinate)
-{
-    if (const auto chunk = blockPositionToChunk(worldCoordinate))
-    {
-        chunk->localBlock(chunk->globalToLocalCoordinates(worldCoordinate)).setBlockType(id);
-    }
-    else
-    {
-        const auto& chunkCoordinates =
-            ChunkContainer::Coordinate::blockToChunkMetric(worldCoordinate);
-
-        std::scoped_lock guard(mBlockToBePlacedAccessMutex);
-        mBlockToBePlacedInFutureChunks.push_back(
-            BlockToBePlaced{chunkCoordinates, id, worldCoordinate, BlockToBePlaced::Rebuild::None});
-    }
-}
-
 void ChunkContainer::tryToPlaceBlock(const BlockId& id, Block::Coordinate worldCoordinate,
-                                     std::initializer_list<BlockId> blocksThatMightBeOverplaced)
+                                     std::vector<BlockId> blocksThatMightBeOverplaced,
+                                     Chunk::RebuildOperation postPlaceRebuild)
 {
     if (const auto chunk = blockPositionToChunk(worldCoordinate))
     {
-        auto& localBlock = chunk->localBlock(chunk->globalToLocalCoordinates(worldCoordinate));
-
-        if (std::find(blocksThatMightBeOverplaced.begin(), blocksThatMightBeOverplaced.end(),
-                      localBlock.blockId()) != blocksThatMightBeOverplaced.end())
-        {
-            localBlock.setBlockType(id);
-            chunk->rebuildFast();
-        }
-    }
-    else
-    {
-        const auto& chunkCoordinates =
-            ChunkContainer::Coordinate::blockToChunkMetric(worldCoordinate);
-
-        std::scoped_lock guard(mBlockToBePlacedAccessMutex);
-        mBlockToBePlacedInFutureChunks.push_back(
-            BlockToBePlaced{chunkCoordinates, id, worldCoordinate, BlockToBePlaced::Rebuild::Fast});
-    }
-}
-
-void ChunkContainer::tryToPlaceBlockWithoutRebuild(
-    const BlockId& id, Block::Coordinate worldCoordinate,
-    std::initializer_list<BlockId> blocksThatMightBeOverplaced)
-{
-    if (const auto chunk = blockPositionToChunk(worldCoordinate))
-    {
-        auto& localBlock = chunk->localBlock(chunk->globalToLocalCoordinates(worldCoordinate));
-
-        if (std::find(blocksThatMightBeOverplaced.begin(), blocksThatMightBeOverplaced.end(),
-                      localBlock.blockId()) != blocksThatMightBeOverplaced.end())
-        {
-            localBlock.setBlockType(id);
-        }
+        auto localChunkCoordinates = chunk->globalToLocalCoordinates(worldCoordinate);
+        chunk->tryToPlaceBlock(id, localChunkCoordinates, blocksThatMightBeOverplaced,
+                               postPlaceRebuild);
     }
     else
     {
@@ -375,8 +296,8 @@ void ChunkContainer::tryToPlaceBlockWithoutRebuild(
             ChunkContainer::Coordinate::blockToChunkMetric(worldCoordinate);
 
         std::scoped_lock guard(mBlockMightBePlacedAccessMutex);
-        mBlockMightBePlacedInFutureChunks.push_back(
-            BlockToBePlaced{chunkCoordinates, id, worldCoordinate, BlockToBePlaced::Rebuild::None});
+        mBlockMightBePlacedInFutureChunks.push_back(BlockToBePlaced{
+            chunkCoordinates, id, worldCoordinate, postPlaceRebuild, blocksThatMightBeOverplaced});
     }
 }
 
@@ -384,43 +305,29 @@ bool ChunkContainer::doesItCollide(const AABB& aabb) const
 {
     auto [minPoint, maxPoint] = aabb.collisionBox();
 
-    for (auto x = minPoint.x; x <= maxPoint.x;)
+    auto incrementPoint = [](float& point, float& dimension)
     {
-        for (auto y = minPoint.y; y <= maxPoint.y;)
+        if (dimension < point)
         {
-            for (auto z = minPoint.z; z <= maxPoint.z;)
+            dimension = point;
+        }
+        else
+        {
+            dimension += Block::BLOCK_SIZE;
+        }
+    };
+
+    for (auto x = minPoint.x; x <= maxPoint.x; incrementPoint(maxPoint.x, x))
+    {
+        for (auto y = minPoint.y; y <= maxPoint.y; incrementPoint(maxPoint.y, y))
+        {
+            for (auto z = minPoint.z; z <= maxPoint.z; incrementPoint(maxPoint.z, z))
             {
                 if (isThereCollisionBetweenBlockAtGivenPoint(aabb, sf::Vector3f(x, y, z)))
                 {
                     return true;
                 }
-
-                if (z < maxPoint.z)
-                {
-                    z = maxPoint.z;
-                }
-                else
-                {
-                    z += Block::BLOCK_SIZE;
-                }
             }
-            if (y < maxPoint.y)
-            {
-                y = maxPoint.y;
-            }
-            else
-            {
-                y += Block::BLOCK_SIZE;
-            }
-        }
-
-        if (x < maxPoint.x)
-        {
-            x = maxPoint.x;
-        }
-        else
-        {
-            x += Block::BLOCK_SIZE;
         }
     }
 
@@ -457,15 +364,28 @@ std::vector<Block> ChunkContainer::nonAirBlocksItTouches(const AABB& aabb) const
     auto blocksThatCollide = std::vector<Block>{};
     auto [minPoint, maxPoint] = aabb.collisionBox();
 
-    for (auto x = minPoint.x; x <= maxPoint.x;)
+    auto incrementPoint = [](float& point, float& dimension)
     {
-        for (auto y = minPoint.y; y <= maxPoint.y;)
+        if (dimension < point)
         {
-            for (auto z = minPoint.z; z <= maxPoint.z;)
+            dimension = point;
+        }
+        else
+        {
+            dimension += Block::BLOCK_SIZE;
+        }
+    };
+
+    for (auto x = minPoint.x; x <= maxPoint.x; incrementPoint(maxPoint.x, x))
+    {
+        for (auto y = minPoint.y; y <= maxPoint.y; incrementPoint(maxPoint.y, y))
+        {
+            for (auto z = minPoint.z; z <= maxPoint.z; incrementPoint(maxPoint.z, z))
             {
                 auto blockCoordinates =
                     Block::Coordinate::nonBlockToBlockMetric(sf::Vector3f(x, y, z));
                 auto block = worldBlock(blockCoordinates);
+                
                 if (block && block->blockId() != BlockId::Air)
                 {
                     auto blockAABB =
@@ -480,33 +400,7 @@ std::vector<Block> ChunkContainer::nonAirBlocksItTouches(const AABB& aabb) const
                         blocksThatCollide.emplace_back(block->blockId());
                     }
                 }
-
-                if (z < maxPoint.z)
-                {
-                    z = maxPoint.z;
-                }
-                else
-                {
-                    z += Block::BLOCK_SIZE;
-                }
             }
-            if (y < maxPoint.y)
-            {
-                y = maxPoint.y;
-            }
-            else
-            {
-                y += Block::BLOCK_SIZE;
-            }
-        }
-
-        if (x < maxPoint.x)
-        {
-            x = maxPoint.x;
-        }
-        else
-        {
-            x += Block::BLOCK_SIZE;
         }
     }
 

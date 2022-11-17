@@ -2,6 +2,7 @@
 #include <future>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <queue>
 #include <shared_mutex>
 
@@ -45,6 +46,16 @@ public:
 
     using ChunkBlocks = MultiDimensionalArray<std::unique_ptr<Block>, BLOCKS_PER_X_DIMENSION,
                                               BLOCKS_PER_Y_DIMENSION, BLOCKS_PER_Z_DIMENSION>;
+
+    /**
+     * @brief Determines the chunk rebuilding operation that can be performed
+     */
+    enum class RebuildOperation
+    {
+        None,
+        Fast,
+        Slow
+    };
 
     /**
      * \brief Prepares/generates the mesh chunk, but does not replace it yet.
@@ -96,30 +107,18 @@ public:
      */
     void removeLocalBlock(const Block::Coordinate& localCoordinates);
 
-
     /**
-     * @brief Inserts a block into the map without rebuilding the mesh. If another
-     * coordinateInGivenDirection was there then it is replaced. The function is safe if the
-     * coordinateInGivenDirection goes beyond the current chunk.
-     * @param blockId Block identifier
-     * @param localCoordinates Coordinates relative to the position of the chunk
-     */
-    void placeBlockWithoutRebuild(const BlockId& blockId,
-                                  const Block::Coordinate& localCoordinates);
-
-    /**
-     * \brief Tries to insert a coordinateInGivenDirection into the map without rebuilding the mesh.
-     * If in that place there was different block than was mentioned in "blockThatMightBeOverplaced"
-     * it does nothing. The function is safe if the coordinateInGivenDirection goes beyond the
-     * current chunk.
+     * \brief It tries to insert the indicated block in the indicated place in the chunk.
      * \param blockId Block Identifier
      * \param localCoordinates Coordinates relative to the position of the chunk
-     * \param blockThatMightBeOverplaced Blocks that can be overwritten by a function. Others cannot be overwritten.
+     * \param blocksThatMightBeOverplaced Blocks that can be overwritten by a function. Others
+     * cannot be overwritten.
+     * \param rebuildOperation An operation that determines whether and how quickly a chunk should
+     * be rebuilt after a block is placed.
      */
-    void tryToPlaceBlockWithoutRebuild(const BlockId& blockId,
-                                       const Block::Coordinate& localCoordinates,
-                                       std::initializer_list<BlockId> blockThatMightBeOverplaced = {
-                                           BlockId::Air});
+    void tryToPlaceBlock(const BlockId& blockId, const Block::Coordinate& localCoordinates,
+                         std::vector<BlockId> blocksThatMightBeOverplaced = {BlockId::Air},
+                         const RebuildOperation& rebuildOperation = RebuildOperation::None);
 
     /**
      * \brief Returns the coordinateInGivenDirection according to the coordinates given relative to
@@ -163,7 +162,7 @@ public:
      * \brief Checks whether the chunk is inside any chunk container
      * \return True if the chunk is inside any chunk container, false otherwise
      */
-    [[nodiscard]] bool belongsToAnyChunkContainer() const;
+    [[nodiscard]] bool thisChunkBelongsToAnyChunkContainer() const;
 
     /**
      * It is rebuilding this mesh fresh. Very expensive operation
@@ -232,6 +231,15 @@ public:
      */
     const Block::Coordinate& positionInBlocks() const;
 
+    /**
+     * @brief Finds a neighboring block located in the indicated direction
+     * @param blockPos Position of the block for which the neighbor is sought
+     * @param direction Direction from the block for which the neighbor is sought
+     * @return Block if it exists, or nullopt if no such block exists.
+     */
+    std::optional<Block> neighbourBlockInGivenDirection(const Block::Coordinate& blockPos,
+                                                        const Direction& direction);
+
 private:
     Chunk(std::shared_ptr<ChunkBlocks> chunkBlocks, Block::Coordinate blockPosition,
           const TexturePack& texturePack, ChunkContainer& parent, ChunkManager& manager);
@@ -241,10 +249,6 @@ private:
      */
     void generateChunkTerrain();
 
-    /**
-     * Rebuilds other chunks inside the same container around this chunk.
-     */
-    void rebuildChunksAround();
 
     /**
      * It checks whether a given coordinateInGivenDirection face has an "air" or other transparent
@@ -277,6 +281,31 @@ private:
      * be created
      */
     void createBlockMesh(const Block::Coordinate& pos);
+
+    /**
+     * @brief Checks whether a block can be overwritten depending on the list of blocks that can be
+     * overwritten and the identifier of the block that is trying to be overwritten.
+     * @param blocksThatMightBeOverplaced List of blocks that can be overwritten
+     * @param idOfTheBlockToOverplace The identifier of the block trying to overwrite
+     * @return True if it can be overwritten, false otherwise.
+     */
+    bool canGivenBlockBeOverplaced(std::vector<BlockId>& blocksThatMightBeOverplaced,
+                                   const BlockId& idOfTheBlockToOverplace) const;
+
+    /**
+     * @brief He is trying to put a block in the indicated local coordinates. A block is placed if
+     * the overwritten block is included in the list of blocks that can be overwritten.
+     * @param blockId The identifier of the block trying to insert in the given place.
+     * @param localCoordinates Local coordinates of the chunk in place of which trying to insert a
+     * block.
+     * @param blocksThatMightBeOverplaced List of blocks that can be overwritten.
+     * @param rebuildOperation Optional rebuilding operation that should happen after inserting the
+     * block.
+     */
+    void tryToPlaceBlockInsideThisChunk(const BlockId& blockId,
+                                        const Block::Coordinate& localCoordinates,
+                                        std::vector<BlockId>& blocksThatMightBeOverplaced,
+                                        const RebuildOperation& rebuildOperation);
 
 
 private:

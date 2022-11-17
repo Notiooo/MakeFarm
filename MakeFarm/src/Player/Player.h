@@ -190,9 +190,9 @@ private:
     void handleKeyboardEvents(const sf::Event& event);
 
     /**
-     * @brief TODO: THIS
-     * @param coordinates TODO: THIS
-     * @return TODO: THIS
+     * @brief Checks if the player collides with the indicated block
+     * @param coordinates Global block coordinates
+     * @return True if player collides with block, false otherwise
      */
     bool doesPlayerCollideWithBlock(const Block::Coordinate& coordinates) const;
 

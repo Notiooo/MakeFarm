@@ -10,6 +10,9 @@ enum class BlockId
     Sand        = 4,
     Log         = 5,
     Leaves      = 6,
-    Water       = 7
+    Water       = 7,
+
+    Counter,
+    AllBlocks
 };
 // clang-format on

@@ -1,6 +1,7 @@
 #include "Chunk.h"
 #include "pch.h"
 
+#include <optional>
 #include <utility>
 
 #include "Resources/TexturePack.h"
@@ -36,9 +37,6 @@ Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack,
     , mTerrainGenerator(std::make_unique<TerrainGenerator>())
 {
     generateChunkTerrain();
-
-    // rebuildChunksAround();
-    // rebuildSlow();
 }
 
 Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack)
@@ -210,22 +208,6 @@ void Chunk::rebuildMesh()
     prepareMesh();
 }
 
-void Chunk::rebuildChunksAround()
-{
-    if (mParentContainer)
-    {
-        for (auto direction = static_cast<int>(Direction::None) + 1;
-             direction < static_cast<int>(Direction::Counter); ++direction)
-        {
-            if (const auto chunk =
-                    mParentContainer->chunkNearby(*this, static_cast<Direction>(direction)))
-            {
-                chunk->rebuildSlow();
-            }
-        }
-    }
-}
-
 void Chunk::removeLocalBlock(const Block::Coordinate& localCoordinates)
 {
     std::unique_lock guard(mChunkAccessMutex);
@@ -336,22 +318,8 @@ bool Chunk::doesBlockFaceHasTransparentNeighbor(const Block::Face& blockFace,
 {
     auto isBlockTransparent = [&blockPos, this](const Direction& face)
     {
-        const auto blockNeighborPosition = localNearbyBlockPosition(blockPos, face);
-        if (areLocalCoordinatesInsideChunk(blockNeighborPosition))
-        {
-            return (localBlock(blockNeighborPosition).isTransparent());
-        }
-
-        if (belongsToAnyChunkContainer())
-        {
-            if (const auto& neighborBlock =
-                    mParentContainer->worldBlock(localToGlobalCoordinates(blockNeighborPosition)))
-            {
-                return neighborBlock->isTransparent();
-            }
-        }
-
-        return true;
+        auto neighbour = neighbourBlockInGivenDirection(blockPos, face);
+        return (neighbour.has_value() && neighbour.value().isTransparent());
     };
 
     switch (blockFace)
@@ -372,22 +340,8 @@ bool Chunk::doesBlockFaceHasGivenBlockNeighbour(const Block::Face& blockFace,
 {
     auto isBlockOfGivenId = [&blockPos, &blockId, this](const Direction& face)
     {
-        const auto blockNeighborPosition = localNearbyBlockPosition(blockPos, face);
-        if (areLocalCoordinatesInsideChunk(blockNeighborPosition))
-        {
-            return (localBlock(blockNeighborPosition).blockId() == blockId);
-        }
-
-        if (belongsToAnyChunkContainer())
-        {
-            if (const auto& neighborBlock =
-                    mParentContainer->worldBlock(localToGlobalCoordinates(blockNeighborPosition)))
-            {
-                return neighborBlock->blockId() == blockId;
-            }
-        }
-
-        return true;
+        auto neighbour = neighbourBlockInGivenDirection(blockPos, face);
+        return (neighbour.has_value() && neighbour.value().blockId() == blockId);
     };
 
     switch (blockFace)
@@ -402,7 +356,28 @@ bool Chunk::doesBlockFaceHasGivenBlockNeighbour(const Block::Face& blockFace,
     }
 }
 
-bool Chunk::belongsToAnyChunkContainer() const
+std::optional<Block> Chunk::neighbourBlockInGivenDirection(const Block::Coordinate& blockPos,
+                                                           const Direction& direction)
+{
+    const auto blockNeighborPosition = localNearbyBlockPosition(blockPos, direction);
+    if (areLocalCoordinatesInsideChunk(blockNeighborPosition))
+    {
+        return (localBlock(blockNeighborPosition).blockId());
+    }
+
+    if (thisChunkBelongsToAnyChunkContainer())
+    {
+        if (const auto& neighborBlock =
+                mParentContainer->worldBlock(localToGlobalCoordinates(blockNeighborPosition)))
+        {
+            return neighborBlock->blockId();
+        }
+    }
+
+    return std::nullopt;
+}
+
+bool Chunk::thisChunkBelongsToAnyChunkContainer() const
 {
     return (mParentContainer != nullptr);
 }
@@ -439,43 +414,53 @@ const Block::Coordinate& Chunk::positionInBlocks() const
     return mChunkPosition;
 }
 
-void Chunk::placeBlockWithoutRebuild(const BlockId& blockId,
-                                     const Block::Coordinate& localCoordinates)
+void Chunk::tryToPlaceBlock(const BlockId& blockId, const Block::Coordinate& localCoordinates,
+                            std::vector<BlockId> blocksThatMightBeOverplaced,
+                            const RebuildOperation& rebuildOperation)
 {
     if (areLocalCoordinatesInsideChunk(localCoordinates))
     {
-        std::unique_lock guard(mChunkAccessMutex);
-        (*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z]->setBlockType(
-            blockId);
-        guard.unlock();
+        tryToPlaceBlockInsideThisChunk(blockId, localCoordinates, blocksThatMightBeOverplaced,
+                                       rebuildOperation);
     }
-    else if (belongsToAnyChunkContainer())
+    else if (thisChunkBelongsToAnyChunkContainer())
     {
         auto globalCoordinates = localToGlobalCoordinates(localCoordinates);
-        mParentContainer->placeBlockWithoutRebuild(blockId, globalCoordinates);
+        mParentContainer->tryToPlaceBlock(blockId, globalCoordinates, blocksThatMightBeOverplaced,
+                                          rebuildOperation);
     }
 }
 
-void Chunk::tryToPlaceBlockWithoutRebuild(const BlockId& blockId,
-                                          const Block::Coordinate& localCoordinates,
-                                          std::initializer_list<BlockId> blockThatMightBeOverplaced)
+void Chunk::tryToPlaceBlockInsideThisChunk(const BlockId& blockId,
+                                           const Block::Coordinate& localCoordinates,
+                                           std::vector<BlockId>& blocksThatMightBeOverplaced,
+                                           const Chunk::RebuildOperation& rebuildOperation)
 {
-    if (areLocalCoordinatesInsideChunk(localCoordinates))
+    std::unique_lock guard(mChunkAccessMutex);
+    auto& block = (*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z];
+    auto idOfTheBlockToOverplace = block->blockId();
+
+    if (canGivenBlockBeOverplaced(blocksThatMightBeOverplaced, idOfTheBlockToOverplace))
     {
-        std::unique_lock guard(mChunkAccessMutex);
-        auto& block = (*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z];
-        if (std::find(blockThatMightBeOverplaced.begin(), blockThatMightBeOverplaced.end(),
-                      block->blockId()) != blockThatMightBeOverplaced.end())
+        block->setBlockType(blockId);
+        switch (rebuildOperation)
         {
-            block->setBlockType(blockId);
+            case RebuildOperation::Fast: rebuildFast(); break;
+            case RebuildOperation::Slow: rebuildSlow(); break;
         }
-        guard.unlock();
     }
-    else if (belongsToAnyChunkContainer())
-    {
-        auto globalCoordinates = localToGlobalCoordinates(localCoordinates);
-        mParentContainer->tryToPlaceBlockWithoutRebuild(blockId, globalCoordinates, {BlockId::Air});
-    }
+    guard.unlock();
+}
+
+bool Chunk::canGivenBlockBeOverplaced(std::vector<BlockId>& blocksThatMightBeOverplaced,
+                                      const BlockId& idOfTheBlockToOverplace) const
+{
+    return std::any_of(blocksThatMightBeOverplaced.begin(), blocksThatMightBeOverplaced.end(),
+                       [&idOfTheBlockToOverplace](const auto& blockThatMightBeOverplaced)
+                       {
+                           return (blockThatMightBeOverplaced == idOfTheBlockToOverplace) ||
+                                  (blockThatMightBeOverplaced == BlockId::AllBlocks);
+                       });
 }
 
 Chunk::~Chunk() = default;

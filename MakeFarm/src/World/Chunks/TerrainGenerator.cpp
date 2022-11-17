@@ -116,7 +116,8 @@ void TerrainGenerator::placeBottomPartOfTreeTopMadeOfLeaves(Chunk& chunk,
         CoordinatesAroundOriginGetter coordinatesAround(treeTop);
         for (int i = 0; i < 24; ++i)
         {
-            chunk.tryToPlaceBlockWithoutRebuild(BlockId::Leaves, coordinatesAround.nextValue());
+            chunk.tryToPlaceBlock(BlockId::Leaves, coordinatesAround.nextValue(), {BlockId::Air},
+                                  Chunk::RebuildOperation::None);
         }
     }
 }
@@ -126,17 +127,17 @@ void TerrainGenerator::placeTopPartOfTreeTopMadeOfLeaves(Chunk& chunk,
                                                          int treeLength) const
 {
     auto treeTop = sf::Vector3i(block.x, block.y + treeLength, block.z);
-    chunk.tryToPlaceBlockWithoutRebuild(BlockId::Leaves, {treeTop.x, treeTop.y, treeTop.z});
+    chunk.tryToPlaceBlock(BlockId::Leaves, {treeTop.x, treeTop.y, treeTop.z});
     for (int i = -1; i < 1; ++i)
     {
-        chunk.tryToPlaceBlockWithoutRebuild(BlockId::Leaves,
-                                            {treeTop.x + 1, treeTop.y + i, treeTop.z});
-        chunk.tryToPlaceBlockWithoutRebuild(BlockId::Leaves,
-                                            {treeTop.x - 1, treeTop.y + i, treeTop.z});
-        chunk.tryToPlaceBlockWithoutRebuild(BlockId::Leaves,
-                                            {treeTop.x, treeTop.y + i, treeTop.z + 1});
-        chunk.tryToPlaceBlockWithoutRebuild(BlockId::Leaves,
-                                            {treeTop.x, treeTop.y + i, treeTop.z - 1});
+        chunk.tryToPlaceBlock(BlockId::Leaves, {treeTop.x + 1, treeTop.y + i, treeTop.z},
+                              {BlockId::Air}, Chunk::RebuildOperation::None);
+        chunk.tryToPlaceBlock(BlockId::Leaves, {treeTop.x - 1, treeTop.y + i, treeTop.z},
+                              {BlockId::Air}, Chunk::RebuildOperation::None);
+        chunk.tryToPlaceBlock(BlockId::Leaves, {treeTop.x, treeTop.y + i, treeTop.z + 1},
+                              {BlockId::Air}, Chunk::RebuildOperation::None);
+        chunk.tryToPlaceBlock(BlockId::Leaves, {treeTop.x, treeTop.y + i, treeTop.z - 1},
+                              {BlockId::Air}, Chunk::RebuildOperation::None);
     }
 }
 
@@ -145,6 +146,7 @@ void TerrainGenerator::placeLogOfTheTree(Chunk& chunk, const Block::Coordinate& 
 {
     for (int i = 0; i < treeLength; ++i)
     {
-        chunk.placeBlockWithoutRebuild(BlockId::Log, {block.x, block.y + i, block.z});
+        chunk.tryToPlaceBlock(BlockId::Log, {block.x, block.y + i, block.z}, {BlockId::AllBlocks},
+                              Chunk::RebuildOperation::None);
     }
 }

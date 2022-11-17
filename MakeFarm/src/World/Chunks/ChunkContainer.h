@@ -203,34 +203,16 @@ public:
     bool isPresent(const ChunkContainer::Coordinate& chunkPosition) const;
 
     /**
-     * @brief It insert a block in a chunk without rebuilding the chunk. If there was another
-     * coordinateInGivenDirection then it is overwritten.
-     * @param id Block identifier
-     * @param worldCoordinate World coordinates of the coordinateInGivenDirection to place
-     */
-    void placeBlockWithoutRebuild(const BlockId& id, Block::Coordinate worldCoordinate);
-
-    /**
      * @brief It insert a block in a chunk with rebuilding the chunk. If there was another
      * coordinateInGivenDirection then it is overwritten.
      * @param id Block identifier
      * @param worldCoordinate World coordinates of the coordinateInGivenDirection to place
+     * @param postPlaceRebuild Optional rebuilding operation that should happen after inserting the
+     * block.
      */
     void tryToPlaceBlock(const BlockId& id, Block::Coordinate worldCoordinate,
-                         std::initializer_list<BlockId> blocksThatMightBeOverplaced);
-
-    /**
-     * @brief It tries to insert a coordinateInGivenDirection in a chunk without rebuilding the
-     * chunk. If there is blocksThatMightBeOverplaced specified, and there is such a block from this
-     * list a particular location, it inserts a new coordinateInGivenDirection. Otherwise, it does
-     * nothing.
-     * @param id Block identifier
-     * @param worldCoordinate World coordinates of the coordinateInGivenDirection to place
-     * @param blocksThatMightBeOverplaced Blocks that can be replaced. Other blocks are not
-     * overwritten.
-     */
-    void tryToPlaceBlockWithoutRebuild(const BlockId& id, Block::Coordinate worldCoordinate,
-                                       std::initializer_list<BlockId> blocksThatMightBeOverplaced);
+                         std::vector<BlockId> blocksThatMightBeOverplaced,
+                         Chunk::RebuildOperation postPlaceRebuild);
 
     /**
      * @brief Checks if a given collision box collides with a coordinateInGivenDirection in any
@@ -256,16 +238,6 @@ private:
      */
     [[nodiscard]] std::shared_ptr<const Chunk> blockPositionToChunk(
         const Block::Coordinate& worldBlockCoordinates) const;
-
-    /**
-     * @brief It checks if a new chunk appeared that has queued blocks to be inserted.
-     */
-    void placeScheduledBlocksForNewAppearingChunks();
-
-    /**
-     * @brief It checks if a new chunk appeared that has queued blocks to be inserted.
-     */
-    void placeScheduledBlocksForPresentChunks();
 
     /**
      * @brief It checks if a new chunk appeared that has queued blocks to be inserted instead of air
@@ -302,29 +274,12 @@ private:
      */
     struct BlockToBePlaced
     {
-        enum class Rebuild
-        {
-            Fast,
-            Slow,
-            None
-        };
-
         ChunkContainer::Coordinate chunkCoordinates;
         BlockId blockid;
         Block::Coordinate worldBlockCoordinates;
-        Rebuild rebuild;
+        Chunk::RebuildOperation rebuild;
+        std::vector<BlockId> blocksThatMightBeOverplaced;
     };
-
-    /**
-     * @brief Mutex making sure too many processes don't use the coordinateInGivenDirection queue to
-     * insert new blocks into a future chunk
-     */
-    mutable std::recursive_mutex mBlockToBePlacedAccessMutex;
-
-    /**
-     * @brief A queue of blocks that will be inserted into a chunk that has not yet been created.
-     */
-    std::list<BlockToBePlaced> mBlockToBePlacedInFutureChunks;
 
     /**
      * @brief Mutex making sure too many processes don't use the coordinateInGivenDirection queue to
