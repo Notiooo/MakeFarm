@@ -30,7 +30,7 @@
  *
  *  StateStack allows states at the top to cover states below.
  *  Thus, for example, a "Game State" can be covered by a "Pause State",
- *  which will coordinateInGivenDirection it from updating game logic and displaying itself.
+ *  which will block it from updating game logic and displaying itself.
  *  Of course, the pop() operation will remove the "Pause State" and
  *  restore the covered "Game State" perfectly from when it was covered.
  *  States, however, have the option of marking individual functions as
@@ -59,7 +59,7 @@ public:
      *
      * \tparam State The state (class) to be created in a future call.
      * \tparam Args Arguments to be passed to the constructor of the specified class.
-     * \param stateID The identifier that will be used to create the class object.
+     * \param stateID The id that will be used to create the class object.
      *
      * A factory that allows to create any state that Identifier is passed to this function.
      * This allows to not create all states at once and thanks to this avoid unnecesserily
@@ -97,8 +97,7 @@ public:
     /**
      * \brief Draws the states in the stack to the given target with given states.
      * \param target where drawable object should be drawn to.
-     * \param states provides information about rendering process (coordinateInGivenDirection,
-     * shader, blend mode)
+     * \param states provides information about rendering process (transform, shader, blend mode)
      *
      * Draws the states at the top of the stack. If the state is transparent (returns true)
      * then it also draw the state below it. The state below it is also checked for
@@ -123,11 +122,11 @@ public:
     // ==== Designed for states to use ==== //
 
     /**
-     * \brief Pushes a state with a given identifier onto the stack
-     * \param stateID The identifier to which the assigned state will be pushed onto the stack.
+     * \brief Pushes a state with a given id onto the stack
+     * \param stateID The id to which the assigned state will be pushed onto the stack.
      *
-     * Previously, the StateStack must have saved the specified identifier via the saveState
-     * function. This function just uses the identifier to create an object of the given state class
+     * Previously, the StateStack must have saved the specified id via the saveState
+     * function. This function just uses the id to create an object of the given state class
      * using a factory.
      */
     void push(State_ID stateID);
@@ -172,11 +171,11 @@ private:
 
 
     /**
-     * \brief Creates a state with the given identifier
+     * \brief Creates a state with the given id
      * \param stateID Identifier previously assigned to a specific state
      * \return A pointer to a newly created state from the factory.
      *
-     * It checks if a state with the given identifier has been saved,
+     * It checks if a state with the given id has been saved,
      * then uses the factory to generate it and returns a pointer to the newly created object.
      */
     auto createState(const State_ID& stateID);

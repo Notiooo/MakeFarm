@@ -16,7 +16,7 @@ ChunkManager::ChunkManager(const TexturePack& texturePack)
 
 void ChunkManager::draw(const Renderer3D& renderer3D, const sf::Shader& worldRendererShader) const
 {
-    mTexturePack.bind();
+    mTexturePack.bind(TexturePack::Spritesheet::Blocks);
     mChunkContainer.drawTerrain(renderer3D, worldRendererShader);
     mChunkContainer.drawLiquids(renderer3D, worldRendererShader);
     mChunkContainer.drawFlorals(renderer3D, worldRendererShader);

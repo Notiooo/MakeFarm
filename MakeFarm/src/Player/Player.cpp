@@ -1,11 +1,12 @@
 #include "Player.h"
+#include "Player/GUI/Hotbar.h"
 #include "World/Chunks/ChunkContainer.h"
 #include "pch.h"
 #include "utils/utils.h"
 #include <SFML/Graphics/Shader.hpp>
 
 Player::Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf::Shader& shader,
-               ChunkManager& chunkManager)
+               ChunkManager& chunkManager, const GameResources& gameResources)
     : mCamera(target, shader)
     , mPosition({position.x, position.y, position.z})
     , mAABB({Block::BLOCK_SIZE * 0.5f, Block::BLOCK_SIZE * 1.8f, Block::BLOCK_SIZE * 0.5f})
@@ -14,6 +15,7 @@ Player::Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf:
     , mChunkManager(chunkManager)
     , mCrosshairTexture()
     , mCrosshair()
+    , mInventory(sf::Vector2i(target.getSize()), gameResources)
 {
     mCrosshairTexture.loadFromFile("resources/textures/crosshair.png");
     mCrosshair.setTexture(mCrosshairTexture);
@@ -33,6 +35,7 @@ void Player::update(const float& deltaTime)
     mCamera.update(deltaTime);
     mCamera.updateViewProjection(mWireframeShader);
     mSelectedBlock.update(deltaTime, mCamera, mChunkManager);
+    mInventory.update(deltaTime);
 }
 
 void Player::fixedUpdate(const float& deltaTime, const ChunkContainer& chunkContainer)
@@ -75,7 +78,7 @@ bool Player::doesItCollideWithGivenNonAirBlock(const AABB& aabb,
     return std::find_if(nonAirBlocksPlayerTouched.cbegin(), nonAirBlocksPlayerTouched.cend(),
                         [&blockId](const auto& block)
                         {
-                            return block.blockId() == blockId;
+                            return block.id() == blockId;
                         }) != nonAirBlocksPlayerTouched.cend();
 }
 
@@ -152,6 +155,8 @@ void Player::handleMovementKeyboardInputs(const float& deltaTime)
 
 void Player::handleEvent(const sf::Event& event)
 {
+    mInventory.handleEvent(event);
+
     switch (event.type)
     {
         case sf::Event::KeyPressed: handleKeyboardEvents(event); break;
@@ -195,7 +200,13 @@ void Player::tryDestroyBlock()
 {
     if (mSelectedBlock.isAnyBlockHighlighted())
     {
+        auto itemItDrops =
+            mChunkManager.chunks().worldBlock(mSelectedBlock.blockPosition())->itemItDrops();
         mChunkManager.chunks().removeWorldBlock(mSelectedBlock.blockPosition());
+        if (itemItDrops.has_value())
+        {
+            mInventory.tryAddItem(itemItDrops.value());
+        }
     }
 }
 
@@ -212,9 +223,14 @@ void Player::tryPlaceBlock()
 
         if (!doesPlayerCollideWithBlock(coordinatesOfBlockToBePlaced))
         {
-            mChunkManager.chunks().tryToPlaceBlock(
-                BlockId::Dirt, coordinatesOfBlockToBePlaced,
-                {HighlightedBlock::BLOCKS_THAT_MIGHT_BE_OVERPLACED}, Chunk::RebuildOperation::Fast);
+            auto removedItem = mInventory.hotbar().tryRemoveItemInHand(1);
+            if (removedItem.has_value())
+            {
+                mChunkManager.chunks().tryToPlaceBlock(
+                    static_cast<BlockId>(removedItem.value()), coordinatesOfBlockToBePlaced,
+                    {HighlightedBlock::BLOCKS_THAT_MIGHT_BE_OVERPLACED},
+                    Chunk::RebuildOperation::Fast);
+            }
         }
     }
 }
@@ -310,4 +326,5 @@ void Player::draw(const Renderer3D& renderer3D, sf::RenderTarget& target,
 
     mSelectedBlock.draw(renderer3D, mWireframeShader);
     SfmlDraw(mCrosshair, target, states);
+    mInventory.draw(target, states);
 }

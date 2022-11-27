@@ -4,6 +4,17 @@
 #include "BlockMap.h"
 #include "Renderer3D/BufferLayout.h"
 
+
+Block::Block()
+    : mBlockType(&BlockMap::blockMap().blockType(BlockId::Air))
+{
+}
+
+Block::Block(const BlockId& blockId)
+    : mBlockType(&BlockMap::blockMap().blockType(blockId))
+{
+}
+
 Block::Coordinate Block::Coordinate::coordinateInGivenDirection(Direction direction) const
 {
     switch (direction)
@@ -25,16 +36,6 @@ sf::Vector3<Block::SizeType> Block::Coordinate::nonBlockMetric() const
                                  static_cast<SizeType>(z) * BLOCK_SIZE);
 }
 
-Block::Block()
-    : mBlockType(&BlockMap::blockMap().blockType(BlockId::Air))
-{
-}
-
-Block::Block(const BlockId& blockId)
-    : mBlockType(&BlockMap::blockMap().blockType(blockId))
-{
-}
-
 void Block::setBlockType(const BlockId& blockId)
 {
     mBlockType = &BlockMap::blockMap().blockType(blockId);
@@ -46,9 +47,9 @@ Block::TextureId Block::blockTextureId(const Block::Face& blockFace) const
     return mBlockType->textureId.at(blockFace);
 }
 
-BlockId Block::blockId() const
+BlockId Block::id() const
 {
-    return mBlockType->blockId;
+    return mBlockType->id;
 }
 
 bool Block::isTransparent() const
@@ -58,7 +59,7 @@ bool Block::isTransparent() const
 
 bool Block::isFloral() const
 {
-    switch (blockId())
+    switch (id())
     {
         case BlockId::Leaves: return true;
         default: return false;
@@ -81,4 +82,9 @@ Direction Block::directionOfFace(Block::Face face)
         case Face::Back: return Direction::Behind;
         default: throw std::runtime_error("Unsupported block face type");
     }
+}
+
+std::optional<ItemId> Block::itemItDrops()
+{
+    return mBlockType->dropItemId;
 }

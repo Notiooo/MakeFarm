@@ -3,6 +3,8 @@
 #include "BlockId.h"
 #include "Utils/CoordinateBase.h"
 #include "Utils/Direction.h"
+#include "World/Item/ItemId.h"
+#include <optional>
 
 class BlockType;
 class TexturePack;
@@ -14,12 +16,12 @@ public:
     Block(const BlockId& blockId);
 
     /**
-     * \brief The type of variable that is used to define the side of the coordinateInGivenDirection
+     * \brief The type of variable that is used to define the side of the block
      */
     using SizeType = int;
 
     /**
-     * \brief Length of side in the space the coordinateInGivenDirection has
+     * \brief Length of side in the space the block has
      */
     static constexpr SizeType BLOCK_SIZE = 1;
 
@@ -28,7 +30,7 @@ public:
      *
      * If you expand the texture file linearly and size from left to
      * right starting from zero, the position of the texture will
-     * correspond to its identifier.
+     * correspond to its id.
      *
      * An example:
      * Each '#' is an example texture
@@ -37,7 +39,7 @@ public:
      * #####
      * #####
      *    ^
-     *	This texture has an identifier of 14
+     *	This texture has an id of 14
      *
      */
     using TextureId = unsigned int;
@@ -46,11 +48,10 @@ public:
     /**
      * \brief A spatial unit measured in blocks.
      *
-     * For example when I want to get the fourth coordinateInGivenDirection from the bottom
-     * it would be {0, 4, 0}.
+     * For example when I want to get the fourth block from the bottom it would be {0, 4, 0}.
      *
      * It is useful to distinguish this unit from the usual spatial unit
-     * where the coordinateInGivenDirection is at position {0, 4 * Block::BLOCK_SIZE, 0}.
+     * where the block is at position {0, 4 * Block::BLOCK_SIZE, 0}.
      */
     struct Coordinate : public CoordinateBase
     {
@@ -66,14 +67,13 @@ public:
         [[nodiscard]] Coordinate coordinateInGivenDirection(Direction direction) const;
 
         /**
-         * \brief Converts the current position of a coordinateInGivenDirection to its positional
-         * equivalent in space.
+         * \brief Converts the current position of a block to its positional equivalent in space.
          *
-         * For example, if a coordinateInGivenDirection has dimension 16x16 and is at block
+         * For example, if a block has dimension 16x16 and is at block
          * coordinates x: 0, y: 4, z: 0 then its position in space is:
          * { x: 0, y: 64, z: 0 }
          *
-         * \return Positions in non-coordinateInGivenDirection-grid space
+         * \return Positions in non-block-grid space
          */
         [[nodiscard]] sf::Vector3<Block::SizeType> nonBlockMetric() const;
 
@@ -97,9 +97,9 @@ public:
     };
 
     /**
-     * Defines the face of the coordinateInGivenDirection.
-     * Each coordinateInGivenDirection consists of 6 faces. Often there is no need to draw more
-     * faces, so this allows to be more precise about which face referring to
+     * Defines the face of the block.
+     * Each block consists of 6 faces. Often there is no need to draw more faces, so this allows to
+     * be more precise about which face referring to
      */
     enum class Face
     {
@@ -121,36 +121,33 @@ public:
     [[nodiscard]] static Direction directionOfFace(Block::Face face);
 
     /**
-     * Sets the coordinateInGivenDirection's settings to match those in the cfg files of the
-     * resources/blocks folder
-     * @param blockId The identifier of the coordinateInGivenDirection
+     * Sets the block's settings to match those in the cfg files of the resources/blocks folder
+     * @param blockId The id of the block
      */
     void setBlockType(const BlockId& blockId);
 
     /**
-     * Retrieves the ID of the texture that is on the given coordinateInGivenDirection face
-     * @param blockFace Selected coordinateInGivenDirection face from which texture will be read
+     * Retrieves the ID of the texture that is on the given block face
+     * @param blockFace Selected block face from which texture will be read
      * @return ID of the corresponding texture face
      */
     [[nodiscard]] TextureId blockTextureId(const Block::Face& blockFace) const;
 
     /**
-     * Returns a coordinateInGivenDirection identifier
-     * @return Identifier of the coordinateInGivenDirection
+     * Returns a block id
+     * @return Identifier of the block
      */
-    [[nodiscard]] BlockId blockId() const;
+    [[nodiscard]] BlockId id() const;
 
     /**
-     * Returns information about whether the coordinateInGivenDirection is transparent. For example,
-     * it can be glass.
-     * @return True if the coordinateInGivenDirection is transparent, false otherwise
+     * Returns information about whether the block is transparent. For example, it can be glass.
+     * @return True if the block is transparent, false otherwise
      */
     [[nodiscard]] bool isTransparent() const;
 
     /**
-     * Returns information about whether the coordinateInGivenDirection is collidable. For example,
-     * it can be water/air.
-     * @return True if the coordinateInGivenDirection is collidable, false otherwise
+     * Returns information about whether the block is collidable. For example, it can be water/air.
+     * @return True if the block is collidable, false otherwise
      */
     [[nodiscard]] bool isCollidable() const;
 
@@ -160,6 +157,13 @@ public:
      * behind them should be visible.
      */
     [[nodiscard]] bool isFloral() const;
+
+    /**
+     * @brief Item that fall out when this block is destroyed
+     * @return An optional structure that is empty if the block does not eject anything, or contains
+     * the ID of the ejected object
+     */
+    std::optional<ItemId> itemItDrops();
 
 
 private:

@@ -45,7 +45,7 @@ Game::Game()
     }
 
     // Setup all application-flow states
-    mAppStack.saveState<GameState>(State_ID::GameState, *mGameWindow);
+    mAppStack.saveState<GameState>(State_ID::GameState, *mGameWindow, mGameResources);
 
     // Initial state of the statestack is TitleState
     mAppStack.push(State_ID::GameState);
@@ -152,5 +152,19 @@ void Game::render()
 
 void Game::loadResources()
 {
-    mFonts.storeResource(Fonts_ID::ArialNarrow, "resources/fonts/arial_narrow.ttf");
+    // Loading Fonts
+    mGameResources.fontManager.storeResource(FontId::ArialNarrow,
+                                             "resources/fonts/arial_narrow.ttf");
+
+    // Loading Spritesheet
+    std::string guiTexturesFolder = "resources/textures/gui/";
+    mGameResources.textureManager.storeResource(TextureManagerId::GUI_Inventory,
+                                                guiTexturesFolder + "inventory.png");
+    mGameResources.textureManager.storeResource(TextureManagerId::GUI_Inventory_Selected_Block,
+                                                guiTexturesFolder + "hotbar/selected_block.png");
+    mGameResources.textureManager.storeResource(TextureManagerId::GUI_Inventory_Unselected_Block,
+                                                guiTexturesFolder + "hotbar/unselected_block.png");
+
+    // Loading texture pack
+    mGameResources.texturePack.loadTexturePack("defaultTextures");
 }

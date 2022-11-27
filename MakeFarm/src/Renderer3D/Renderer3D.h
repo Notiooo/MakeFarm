@@ -30,8 +30,7 @@
  *
  * @param drawable Object that can be drawn to a render target.
  * @param target where it should be drawn to
- * @param states  provides information about rendering process (coordinateInGivenDirection, shader,
- * blend mode)
+ * @param states provides information about rendering process (transform, shader, blend mode)
  */
 void SfmlDraw(const sf::Drawable& drawable, sf::RenderTarget& target,
               const sf::RenderStates states);

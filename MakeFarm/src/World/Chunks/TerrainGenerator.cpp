@@ -74,6 +74,12 @@ void TerrainGenerator::generateColumnOfBlocks(Chunk::ChunkBlocks& chunkBlocks, i
         else if (y < SEA_LEVEL + 1 && y < surfaceLevel + 2)
         {
             chunkBlocks[x][y][z] = std::make_unique<Block>(BlockId::Sand);
+
+            // TODO: Change it to more sophisticated system
+            if (chunkBlocks[x][y - 1][z]->id() == BlockId::Grass)
+            {
+                chunkBlocks[x][y - 1][z]->setBlockType(BlockId::Sand);
+            }
         }
         else if (y < SEA_LEVEL)
         {

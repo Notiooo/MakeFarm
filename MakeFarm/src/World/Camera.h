@@ -40,8 +40,7 @@ public:
     /**
      * \brief Draws the camera to the passed target
      * \param target where it should be drawn to
-     * \param states provides information about rendering process (coordinateInGivenDirection,
-     * shader, blend mode)
+     * \param states provides information about rendering process (transform, shader, blend mode)
      */
     void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) const;
 

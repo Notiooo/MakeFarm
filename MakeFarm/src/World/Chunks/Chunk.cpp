@@ -83,7 +83,7 @@ void Chunk::createBlockMesh(const Block::Coordinate& pos)
     {
         if (doesBlockFaceHasTransparentNeighbor(static_cast<Block::Face>(i), pos))
         {
-            if (block.blockId() == BlockId::Water)
+            if (block.id() == BlockId::Water)
             {
                 if (!doesBlockFaceHasGivenBlockNeighbour(static_cast<Block::Face>(i), pos,
                                                          BlockId::Water))
@@ -121,7 +121,7 @@ void Chunk::prepareMesh()
         {
             for (auto z = 0; z < BLOCKS_PER_Z_DIMENSION; ++z)
             {
-                if (localBlock({x, y, z}).blockId() == BlockId::Air)
+                if (localBlock({x, y, z}).id() == BlockId::Air)
                 {
                     continue;
                 }
@@ -341,7 +341,7 @@ bool Chunk::doesBlockFaceHasGivenBlockNeighbour(const Block::Face& blockFace,
     auto isBlockOfGivenId = [&blockPos, &blockId, this](const Direction& face)
     {
         auto neighbour = neighbourBlockInGivenDirection(blockPos, face);
-        return (neighbour.has_value() && neighbour.value().blockId() == blockId);
+        return (neighbour.has_value() && neighbour.value().id() == blockId);
     };
 
     switch (blockFace)
@@ -362,7 +362,7 @@ std::optional<Block> Chunk::neighbourBlockInGivenDirection(const Block::Coordina
     const auto blockNeighborPosition = localNearbyBlockPosition(blockPos, direction);
     if (areLocalCoordinatesInsideChunk(blockNeighborPosition))
     {
-        return (localBlock(blockNeighborPosition).blockId());
+        return (localBlock(blockNeighborPosition).id());
     }
 
     if (thisChunkBelongsToAnyChunkContainer())
@@ -370,7 +370,7 @@ std::optional<Block> Chunk::neighbourBlockInGivenDirection(const Block::Coordina
         if (const auto& neighborBlock =
                 mParentContainer->worldBlock(localToGlobalCoordinates(blockNeighborPosition)))
         {
-            return neighborBlock->blockId();
+            return neighborBlock->id();
         }
     }
 
@@ -438,7 +438,7 @@ void Chunk::tryToPlaceBlockInsideThisChunk(const BlockId& blockId,
 {
     std::unique_lock guard(mChunkAccessMutex);
     auto& block = (*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z];
-    auto idOfTheBlockToOverplace = block->blockId();
+    auto idOfTheBlockToOverplace = block->id();
 
     if (canGivenBlockBeOverplaced(blocksThatMightBeOverplaced, idOfTheBlockToOverplace))
     {

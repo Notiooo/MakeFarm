@@ -2,6 +2,7 @@
 #include "pch.h"
 
 
+#include "World/Item/ItemMap.h"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <filesystem>
 #include <iomanip>
@@ -12,13 +13,13 @@
 #include "Utils/Settings.h"
 #include "World/Block/BlockMap.h"
 
-GameState::GameState(StateStack& stack, sf::RenderWindow& window)
+GameState::GameState(StateStack& stack, sf::RenderWindow& window, GameResources& gameResources)
     : State(stack)
     , mGameWindow(window)
-    , mChunkManager(mTexturePack)
-    , mPlayer({0.f, 150.f, 0.f}, mGameWindow, m3DWorldRendererShader, mChunkManager)
+    , mGameResources(gameResources)
+    , mChunkManager(mGameResources.texturePack)
+    , mPlayer({0.f, 150.f, 0.f}, mGameWindow, m3DWorldRendererShader, mChunkManager, mGameResources)
     , mGameSettings("settings.cfg")
-    , mTexturePack("defaultTextures")
 {
     Mouse::lockMouseAtCenter(mGameWindow);
     m3DWorldRendererShader.loadFromFile("resources/shaders/3DWorldRenderer/VertexShader.shader",
@@ -30,6 +31,7 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window)
     GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     auto test = BlockMap::blockMap();
+    auto test2 = ItemMap::itemMap();
 }
 
 
@@ -100,7 +102,7 @@ void GameState::updateDebugMenu()
                         auto texturePackFolder = texturePackDir.path().filename().string();
                         if (ImGui::MenuItem(texturePackFolder.c_str()))
                         {
-                            mTexturePack.loadTexturePack(texturePackFolder);
+                            mGameResources.texturePack.loadTexturePack(texturePackFolder);
                         }
                     }
                 }

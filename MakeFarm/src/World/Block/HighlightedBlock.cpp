@@ -57,7 +57,7 @@ bool HighlightedBlock::tryHighlightBlock(const sf::Vector3<float>& positionAtThe
 
 bool HighlightedBlock::isBlockHighlightable(const Block& block)
 {
-    switch (block.blockId())
+    switch (block.id())
     {
         case BlockId::Air:
         case BlockId::Water://
@@ -194,8 +194,7 @@ Block::Coordinate HighlightedBlock::blockPosition() const
      */
     if (!isAnyBlockHighlighted())
     {
-        throw std::runtime_error(
-            "No block is selected. Can not return position of selected coordinateInGivenDirection");
+        throw std::runtime_error("No block is selected. Can not return position of selected block");
     }
 
     return mSelectedBlock->position;
@@ -210,8 +209,7 @@ Block::Face HighlightedBlock::blockFace() const
      */
     if (!isAnyBlockHighlighted())
     {
-        throw std::runtime_error(
-            "No block is selected. Can not return face of selected coordinateInGivenDirection");
+        throw std::runtime_error("No block is selected. Can not return face of selected block");
     }
 
     return mSelectedBlock->face;

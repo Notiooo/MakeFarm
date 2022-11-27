@@ -118,7 +118,7 @@ struct AsyncProcessedObjects
     /**
      * @brief This function expects a lambda that can execute something on each thread getting an
      * iterator.
-     * @tparam MutexType The type of mutex that should coordinateInGivenDirection this foor loop.
+     * @tparam MutexType The type of mutex that should block this for loop.
      * @param func A function that is called on each iterator of the thread object processing the
      * processed objects.
      */

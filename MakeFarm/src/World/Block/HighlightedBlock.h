@@ -10,8 +10,7 @@ class ChunkContainer;
 
 
 /**
- * \brief Creates a coordinateInGivenDirection pointed to by the current camera inside the specified
- * ChunkContainer
+ * \brief Creates a block pointed to by the current camera inside the specified ChunkContainer
  */
 class HighlightedBlock
 {
@@ -21,14 +20,14 @@ public:
     constexpr static auto BLOCKS_THAT_MIGHT_BE_OVERPLACED = {BlockId::Air, BlockId::Water};
 
     /**
-     * Indicates whether any coordinateInGivenDirection is currently highlighted
+     * Indicates whether any block is currently highlighted
      * @return True if yes, false otherwise
      */
     [[nodiscard]] bool isAnyBlockHighlighted() const;
 
     /**
-     * Returns the position of the highlighted coordinateInGivenDirection
-     * @return Position of the highlighted coordinateInGivenDirection
+     * Returns the position of the highlighted block
+     * @return Position of the highlighted block
      * @warning If no block is highlighted it throws a runtime_error.
      */
     Block::Coordinate blockPosition() const;
@@ -47,7 +46,7 @@ public:
     void update(const float& deltaTime, Camera& camera, ChunkManager& chunkManager);
 
     /**
-     * Draws this coordinateInGivenDirection to the game screen
+     * Draws this block to the game screen
      * @param renderer3d Renderer drawing the 3D game world onto the 2D screen
      * @param wireframeShader Shader with the help of which the object should be drawn
      */
@@ -60,12 +59,10 @@ private:
     static constexpr float MAX_RAY_SIZE = 6 * Block::BLOCK_SIZE;
 
     /**
-     * Highlights the coordinateInGivenDirection that the indicated camera is looking at and that is
-     * inside the indicated ChunkContainer.
-     * @param camera The camera on the basis of which we are looking for the
-     * coordinateInGivenDirection to which it points
-     * @param chunkManager ChunkContainter, which contains the chunk with the
-     * coordinateInGivenDirection we are looking at
+     * Highlights the block that the indicated camera is looking at and that is inside the indicated
+     * ChunkContainer.
+     * @param camera The camera on the basis of which are looking for the block to which it points
+     * @param chunkManager ChunkContainer, which contains the chunk with the block we are looking at
      */
     void markFacedBlock(const Camera& camera, const ChunkManager& chunkManager);
 
@@ -141,7 +138,6 @@ private:
     [[nodiscard]] static bool isBlockHighlightable(const Block& block);
 
 private:
-
     /**
      * @brief The structure describes the highlighted block selected by the player.
      */

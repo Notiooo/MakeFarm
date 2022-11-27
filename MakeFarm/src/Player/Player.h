@@ -1,5 +1,6 @@
 #pragma once
 #include "Physics/AABB.h"
+#include "Player/GUI/Inventory.h"
 #include "World/Block/HighlightedBlock.h"
 #include "World/Camera.h"
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -10,7 +11,7 @@ class Player
 {
 public:
     Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf::Shader& shader,
-           ChunkManager& chunkManager);
+           ChunkManager& chunkManager, const GameResources& gameResources);
 
     static constexpr float PLAYER_MAX_FALLING_SPEED = 20.f;
     static constexpr float PLAYER_WALKING_SPEED = 5.f;
@@ -24,8 +25,7 @@ public:
     /**
      * \brief Draws player to the passed target
      * \param target where it should be drawn to
-     * \param states provides information about rendering process (coordinateInGivenDirection,
-     * shader, blend mode)
+     * \param states provides information about rendering process (transform, shader, blend mode)
      */
     void draw(const Renderer3D& renderer3D, sf::RenderTarget& target,
               sf::RenderStates states) const;
@@ -145,12 +145,10 @@ private:
     AABB aabbHeadAboveEyes() const;
 
     /**
-     * @brief Checks if a given collision box collides with a coordinateInGivenDirection with the
-     * given id
+     * @brief Checks if a given collision box collides with a block with the given id
      * @param aabb The collision box, the collision of which should be checked
      * @param chunkContainer Container storing chunks
-     * @param blockId Identifier of the coordinateInGivenDirection with which the collision should
-     * be checked
+     * @param blockId Identifier of the block with which the collision should be checked
      * @return True if the collision occurred, false otherwise
      */
     bool doesItCollideWithGivenNonAirBlock(const AABB& aabb, const ChunkContainer& chunkContainer,
@@ -201,6 +199,7 @@ private:
     HighlightedBlock mSelectedBlock;
     ChunkManager& mChunkManager;
     sf::Shader mWireframeShader;
+    Inventory mInventory;
 
     bool mIsPlayerOnGround = false;
     bool mIsPlayerInWater = false;

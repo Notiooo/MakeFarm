@@ -12,25 +12,25 @@ class ResourceManager
 {
 public:
     /**
-     * \brief Checks an individual identifier and returns the resource assigned to it
+     * \brief Checks an individual id and returns the resource assigned to it
      * \param id Identifier identifying a previously saved resource
-     * \return the resource stored for the given identifier.
+     * \return the resource stored for the given id.
      *
      * Returns reference to Resource inside ResourceMap corresponding to given Identifier
      */
     Resource& getResourceReference(Identifier id);
 
     /**
-     * \brief Checks an individual identifier and returns the resource assigned to it
+     * \brief Checks an individual id and returns the resource assigned to it
      * \param id Identifier identifying a previously saved resource
-     * \return the resource stored for the given identifier.
+     * \return the resource stored for the given id.
      *
      * Returns reference to Resource inside ResourceMap corresponding to given Identifier
      */
     const Resource& getResourceReference(Identifier id) const;
 
     /**
-     * \brief Assigns a given identifier to a specific resource retrieved from the specified file
+     * \brief Assigns a given id to a specific resource retrieved from the specified file
      * \param id Identifier to which the resource is to be assigned
      * \param path_to_file File path specifying the resource
      *
@@ -39,7 +39,7 @@ public:
     void storeResource(Identifier id, const std::string& path_to_file);
 
     /**
-     * \brief Assigns a given identifier to a specific resource retrieved from the specified file
+     * \brief Assigns a given id to a specific resource retrieved from the specified file
      * \tparam Additional_Parameter Type of additional parameter (for example sf::Shared::Type)
      * \param id Identifier to which the resource is to be assigned
      * \param path_to_file File path specifying the resource
@@ -59,7 +59,7 @@ public:
 
 private:
     /**
-     * \brief Map of identifier to given resource.
+     * \brief Map of id to given resource.
      *
      * Some object are really heavy, so it is better to store them just once
      * and to not load it multiple times.

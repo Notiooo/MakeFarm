@@ -2,6 +2,9 @@ set(PROJECT_SOURCES
         Game.cpp
         pch.cpp
         Player/Player.cpp
+        Player/GUI/Inventory.cpp
+        Player/GUI/InventorySlot.cpp
+        Player/GUI/Hotbar.cpp
         Physics/AABB.cpp
         Renderer3D/Buffer.cpp
         Renderer3D/BufferElement.cpp
@@ -27,6 +30,9 @@ set(PROJECT_SOURCES
         World/Block/BlockType.cpp
         World/Block/HighlightedBlock.cpp
         World/Block/WireframeBlock.cpp
+        World/Item/Item.cpp
+        World/Item/ItemMap.cpp
+        World/Item/ItemType.cpp
         World/Camera.cpp
         World/Chunks/Chunk.cpp
         World/Chunks/ChunkContainer.cpp

@@ -178,8 +178,7 @@ void ChunkContainer::removeWorldBlock(const Block::Coordinate& worldBlockCoordin
          * When removing a block, you may find that it is in contact with an adjacent chunk.
          * Rebuilding one chunk doesn't help, because the neighboring chunk remains in the form
          * where it assumes the block is there. This leads to a hole in the chunk. For this reason,
-         * you must rebuild all chunks that are in contact with the coordinateInGivenDirection being
-         * removed.
+         * must rebuild all chunks that are in contact with the block being removed.
          */
         const auto directions =
             chunk->directionOfBlockFacesInContactWithOtherChunk(localCoordinates);
@@ -385,8 +384,8 @@ std::vector<Block> ChunkContainer::nonAirBlocksItTouches(const AABB& aabb) const
                 auto blockCoordinates =
                     Block::Coordinate::nonBlockToBlockMetric(sf::Vector3f(x, y, z));
                 auto block = worldBlock(blockCoordinates);
-                
-                if (block && block->blockId() != BlockId::Air)
+
+                if (block && block->id() != BlockId::Air)
                 {
                     auto blockAABB =
                         AABB({Block::BLOCK_SIZE, Block::BLOCK_SIZE, Block::BLOCK_SIZE});
@@ -397,7 +396,7 @@ std::vector<Block> ChunkContainer::nonAirBlocksItTouches(const AABB& aabb) const
 
                     if (aabb.intersect(blockAABB))
                     {
-                        blocksThatCollide.emplace_back(block->blockId());
+                        blocksThatCollide.emplace_back(block->id());
                     }
                 }
             }

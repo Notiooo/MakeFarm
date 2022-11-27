@@ -122,6 +122,11 @@ private:
     FontManager mFonts;
 
     /**
+     * @brief Any game assets from textures or fonts
+     */
+    GameResources mGameResources;
+
+    /**
      * \brief Stores and manages in-game states.
      *
      * This allows you to create some application flow between application states.

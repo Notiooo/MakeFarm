@@ -5,28 +5,32 @@
 #include <SFML/Graphics/Texture.hpp>
 
 #include "Resources/ResourceManager.h"
+#include "TexturePack.h"
 
-// ====== Textures ======= //
+// ====== Spritesheet ======= //
 
 /**
  * \brief Texture IDs under which individual textures can be saved and read.
  */
-enum class Textures_Id
+enum class TextureManagerId
 {
-    // No Textures yet
+    // GUI
+    GUI_Inventory,
+    GUI_Inventory_Selected_Block,
+    GUI_Inventory_Unselected_Block
 };
 
 /**
  * \brief Object storing textures of the game
  */
-using TextureManager = ResourceManager<sf::Texture, Textures_Id>;
+using TextureManager = ResourceManager<sf::Texture, TextureManagerId>;
 
 // ====== Fonts ======= //
 
 /**
  * \brief Fonts IDs under which individual font can be saved and read.
  */
-enum class Fonts_ID
+enum class FontId
 {
     ArialNarrow,
 };
@@ -34,6 +38,16 @@ enum class Fonts_ID
 /**
  * \brief Object storing fonts of the game
  */
-using FontManager = ResourceManager<sf::Font, Fonts_ID>;
+using FontManager = ResourceManager<sf::Font, FontId>;
+
+/**
+ * @brief Any game assets from textures or fonts
+ */
+struct GameResources
+{
+    TexturePack texturePack;
+    TextureManager textureManager;
+    FontManager fontManager;
+};
 
 #endif

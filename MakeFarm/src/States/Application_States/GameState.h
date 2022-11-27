@@ -22,13 +22,12 @@ class StateStack;
 class GameState : public State
 {
 public:
-    GameState(StateStack& stack, sf::RenderWindow& window);
+    GameState(StateStack& stack, sf::RenderWindow& window, GameResources& gameResources);
 
     /**
      * \brief Draws only this state to the passed target
      * \param target where it should be drawn to
-     * \param states provides information about rendering process (coordinateInGivenDirection,
-     * shader, blend mode)
+     * \param states provides information about rendering process (transform, shader, blend mode)
      */
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
@@ -62,7 +61,7 @@ private:
     Renderer3D mGameRenderer;
 
     /** Settings */
-    TexturePack mTexturePack;
+    GameResources& mGameResources;
     Settings mGameSettings;
 
     /** Utils */
