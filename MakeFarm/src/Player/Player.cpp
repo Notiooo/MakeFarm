@@ -16,6 +16,7 @@ Player::Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf:
     , mCrosshairTexture()
     , mCrosshair()
     , mInventory(sf::Vector2i(target.getSize()), gameResources)
+    , mHealthbar(gameResources.textureManager, mInventory.hotbar().position())
 {
     mCrosshairTexture.loadFromFile("resources/textures/crosshair.png");
     mCrosshair.setTexture(mCrosshairTexture);
@@ -36,6 +37,29 @@ void Player::update(const float& deltaTime)
     mCamera.updateViewProjection(mWireframeShader);
     mSelectedBlock.update(deltaTime, mCamera, mChunkManager);
     mInventory.update(deltaTime);
+    checkFallingDamage();
+}
+
+void Player::checkFallingDamage()
+{
+    if (mIsPlayerOnGround && !mWasPlayerOnGroundBefore)
+    {
+        auto takenDamage = fallingVelocityToDamage(mFallingVelocityBeforeHittingGround);
+        if (takenDamage.atLeastHalfHeart())
+        {
+            mPlayerHealth -= takenDamage;
+            mHealthbar.hearts(mPlayerHealth);
+        }
+    }
+    mWasPlayerOnGroundBefore = mIsPlayerOnGround;
+}
+
+Hearts Player::fallingVelocityToDamage(float fallingVelocity)
+{
+    auto takenDamage = std::abs(fallingVelocity);
+    takenDamage *= 10;
+    takenDamage -= 1.5f;
+    return takenDamage;
 }
 
 void Player::fixedUpdate(const float& deltaTime, const ChunkContainer& chunkContainer)
@@ -45,6 +69,7 @@ void Player::fixedUpdate(const float& deltaTime, const ChunkContainer& chunkCont
 
     mCamera.cameraPosition({mPosition.x, mPosition.y + PLAYER_HEIGHT, mPosition.z});
 }
+
 void Player::updatePhysics(const ChunkContainer& chunkContainer)
 {
     updatePositionCheckingPhysicalCollisions(chunkContainer);
@@ -64,6 +89,7 @@ void Player::updateInformationIfPlayerIsInWater(const ChunkContainer& chunkConta
         mArePlayerEyesInWater = false;
     }
 }
+
 void Player::updateInformationIfPlayersEyesAreInWater(const ChunkContainer& chunkContainer)
 {
     mArePlayerEyesInWater =
@@ -104,8 +130,17 @@ void Player::updatePositionCheckingPhysicalCollisions(const ChunkContainer& chun
 {
     tryUpdatePositionByApplyingVelocityIfCollisionAllows(chunkContainer, mPosition.x, mVelocity.x);
 
-    mIsPlayerOnGround = tryUpdatePositionByApplyingVelocityIfCollisionAllows(
-        chunkContainer, mPosition.y, mVelocity.y);
+    float fallingVelocity = mVelocity.y;
+    if (tryUpdatePositionByApplyingVelocityIfCollisionAllows(chunkContainer, mPosition.y,
+                                                             mVelocity.y))
+    {
+        mIsPlayerOnGround = false;
+    }
+    else
+    {
+        mIsPlayerOnGround = true;
+        mFallingVelocityBeforeHittingGround = fallingVelocity;
+    }
 
     tryUpdatePositionByApplyingVelocityIfCollisionAllows(chunkContainer, mPosition.z, mVelocity.z);
 }
@@ -119,10 +154,10 @@ bool Player::tryUpdatePositionByApplyingVelocityIfCollisionAllows(
     {
         position -= velocity;
         velocity = 0;
-        return true;
+        return false;
     }
     mAABB.updatePosition(mPosition, AABB::RelativeTo::BottomCenter);
-    return false;
+    return true;
 }
 
 void Player::handleMovementKeyboardInputs(const float& deltaTime)
@@ -226,6 +261,8 @@ void Player::tryPlaceBlock()
             auto removedItem = mInventory.hotbar().tryRemoveItemInHand(1);
             if (removedItem.has_value())
             {
+                // TODO: Check if block was placed first so it can be decided later to remove item
+                // from inventory
                 mChunkManager.chunks().tryToPlaceBlock(
                     static_cast<BlockId>(removedItem.value()), coordinatesOfBlockToBePlaced,
                     {HighlightedBlock::BLOCKS_THAT_MIGHT_BE_OVERPLACED},
@@ -327,4 +364,5 @@ void Player::draw(const Renderer3D& renderer3D, sf::RenderTarget& target,
     mSelectedBlock.draw(renderer3D, mWireframeShader);
     SfmlDraw(mCrosshair, target, states);
     mInventory.draw(target, states);
+    mHealthbar.draw(target, states);
 }

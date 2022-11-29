@@ -152,19 +152,35 @@ void Game::render()
 
 void Game::loadResources()
 {
-    // Loading Fonts
-    mGameResources.fontManager.storeResource(FontId::ArialNarrow,
-                                             "resources/fonts/arial_narrow.ttf");
+    auto& fonts = mGameResources.fontManager;
+    auto& texturePack = mGameResources.texturePack;
 
-    // Loading Spritesheet
+    fonts.storeResource(FontId::ArialNarrow, "resources/fonts/arial_narrow.ttf");
+
     std::string guiTexturesFolder = "resources/textures/gui/";
-    mGameResources.textureManager.storeResource(TextureManagerId::GUI_Inventory,
-                                                guiTexturesFolder + "inventory.png");
-    mGameResources.textureManager.storeResource(TextureManagerId::GUI_Inventory_Selected_Block,
-                                                guiTexturesFolder + "hotbar/selected_block.png");
-    mGameResources.textureManager.storeResource(TextureManagerId::GUI_Inventory_Unselected_Block,
-                                                guiTexturesFolder + "hotbar/unselected_block.png");
+    loadInventoryTextures(guiTexturesFolder);
+    loadHealthbarTextures(guiTexturesFolder);
 
-    // Loading texture pack
-    mGameResources.texturePack.loadTexturePack("defaultTextures");
+    texturePack.loadTexturePack("defaultTextures");
+}
+
+void Game::loadHealthbarTextures(const std::string& guiTexturesFolder)
+{
+    auto& textures = mGameResources.textureManager;
+    textures.storeResource(TextureManagerId::GUI_Healthbar_EmptyHeart,
+                           guiTexturesFolder + "healthbar/empty_heart.png");
+    textures.storeResource(TextureManagerId::GUI_Healthbar_FullHeart,
+                           guiTexturesFolder + "healthbar/full_heart.png");
+    textures.storeResource(TextureManagerId::GUI_Healthbar_HalfHeart,
+                           guiTexturesFolder + "healthbar/half_heart.png");
+}
+
+void Game::loadInventoryTextures(const std::string& guiTexturesFolder)
+{
+    auto& textures = mGameResources.textureManager;
+    textures.storeResource(TextureManagerId::GUI_Inventory, guiTexturesFolder + "inventory.png");
+    textures.storeResource(TextureManagerId::GUI_Inventory_Selected_Block,
+                           guiTexturesFolder + "hotbar/selected_block.png");
+    textures.storeResource(TextureManagerId::GUI_Inventory_Unselected_Block,
+                           guiTexturesFolder + "hotbar/unselected_block.png");
 }

@@ -227,3 +227,8 @@ sf::Vector2f Hotbar::positionOfGivenSlot(int slotIndex) const
         sf::Vector2f(mRenderPosition.x + slotIndex * slotTextureSize.x, mRenderPosition.y);
     return positionOfCurrentSlot;
 }
+
+sf::Vector2f Hotbar::position() const
+{
+    return mRenderPosition;
+}

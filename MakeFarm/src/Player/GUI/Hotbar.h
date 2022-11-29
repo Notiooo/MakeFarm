@@ -52,6 +52,12 @@ public:
      */
     std::optional<ItemId> tryRemoveItemInHand(int amount = 1);
 
+    /**
+     * @brief Returns the position of the upper left hotbar point.
+     * @return Position of the upper left hotbar point.
+     */
+    sf::Vector2f position() const;
+
 private:
     /**
      * @brief Updates text information about the block currently being held

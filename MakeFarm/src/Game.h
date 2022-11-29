@@ -88,6 +88,18 @@ private:
     void loadResources();
 
     /**
+     * @brief Loads the textures needed for the inventory displaying.
+     * @param guiTexturesFolder Folder that stores textures for the GUI
+     */
+    void loadInventoryTextures(const std::string& guiTexturesFolder);
+
+    /**
+     * @brief Loads the textures needed for the healthbar displaying.
+     * @param guiTexturesFolder Folder that stores textures for the GUI
+     */
+    void loadHealthbarTextures(const std::string& guiTexturesFolder);
+
+    /**
      * @brief The time it takes for one game frame to be generated.
      */
     static const sf::Time TIME_PER_FRAME;

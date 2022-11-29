@@ -1,5 +1,6 @@
 #pragma once
 #include "Physics/AABB.h"
+#include "Player/GUI/Healthbar.h"
 #include "Player/GUI/Inventory.h"
 #include "World/Block/HighlightedBlock.h"
 #include "World/Camera.h"
@@ -194,16 +195,32 @@ private:
      */
     bool doesPlayerCollideWithBlock(const Block::Coordinate& coordinates) const;
 
+    /**
+     * @brief Checks and handles the case in which the player should get the damage of falling from
+     * a height.
+     */
+    void checkFallingDamage();
+
+    /**
+     * @brief Converts the fall speed from altitude to the received damage given in hearts.
+     * @param fallingVelocity The speed at which the player falls.
+     * @return Damage dealt to player given in hearts
+     */
+    Hearts fallingVelocityToDamage(float fallingVelocity);
+
     Camera mCamera;
     AABB mAABB;
     HighlightedBlock mSelectedBlock;
     ChunkManager& mChunkManager;
     sf::Shader mWireframeShader;
     Inventory mInventory;
+    Healthbar mHealthbar;
 
     bool mIsPlayerOnGround = false;
+    bool mWasPlayerOnGroundBefore = true;
     bool mIsPlayerInWater = false;
     bool mArePlayerEyesInWater = false;
+    Hearts mPlayerHealth = 10;
 
     sf::RectangleShape mWaterInWaterEffect;
     sf::Sprite mCrosshair;
@@ -213,4 +230,5 @@ private:
     glm::vec3 mPlayerMovementVelocity = glm::vec3(0.f, 0.f, 0.f);
     glm::vec3 mFallingVelocity = glm::vec3(0.f, 0.f, 0.f);
     glm::vec3 mVelocity = glm::vec3(0.f, 0.f, 0.f);
+    float mFallingVelocityBeforeHittingGround = 0.f;
 };
