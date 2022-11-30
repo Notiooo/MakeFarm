@@ -177,16 +177,22 @@ private:
     void tryJump();
 
     /**
-     * @brief Supports mouse-related player events.
+     * @brief Handles mouse-related player events.
      * @param event user input
      */
     void handleMouseEvents(const sf::Event& event);
 
     /**
-     * @brief Supports keyboarfd-related player events.
+     * @brief Handles keyboard-related player events.
      * @param event user input
      */
     void handleKeyboardEvents(const sf::Event& event);
+
+    /**
+     * @brief Handles the inputs responsible for flying.
+     * @param deltaTime the time that has passed since the game was last updated.
+     */
+    void handleFlyingKeyboardInputs(const float& deltaTime);
 
     /**
      * @brief Checks if the player collides with the indicated block
@@ -208,6 +214,12 @@ private:
      */
     Hearts fallingVelocityToDamage(float fallingVelocity);
 
+    /**
+     * @brief Deals damage to the player
+     * @param takenDamage The number of hearts a player should lose.
+     */
+    void takeDamage(const Hearts& takenDamage);
+
     Camera mCamera;
     AABB mAABB;
     HighlightedBlock mSelectedBlock;
@@ -220,6 +232,7 @@ private:
     bool mWasPlayerOnGroundBefore = true;
     bool mIsPlayerInWater = false;
     bool mArePlayerEyesInWater = false;
+    bool mIsFlying = false;
     Hearts mPlayerHealth = 10;
 
     sf::RectangleShape mWaterInWaterEffect;

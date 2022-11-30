@@ -42,16 +42,21 @@ void Player::update(const float& deltaTime)
 
 void Player::checkFallingDamage()
 {
-    if (mIsPlayerOnGround && !mWasPlayerOnGroundBefore)
+    if (mIsPlayerOnGround && !mWasPlayerOnGroundBefore && !mIsPlayerInWater)
     {
         auto takenDamage = fallingVelocityToDamage(mFallingVelocityBeforeHittingGround);
         if (takenDamage.atLeastHalfHeart())
         {
-            mPlayerHealth -= takenDamage;
-            mHealthbar.hearts(mPlayerHealth);
+            takeDamage(takenDamage);
         }
     }
     mWasPlayerOnGroundBefore = mIsPlayerOnGround;
+}
+
+void Player::takeDamage(const Hearts& takenDamage)
+{
+    mPlayerHealth -= takenDamage;
+    mHealthbar.hearts(mPlayerHealth);
 }
 
 Hearts Player::fallingVelocityToDamage(float fallingVelocity)
@@ -186,6 +191,18 @@ void Player::handleMovementKeyboardInputs(const float& deltaTime)
     {
         mVelocity += (finalSpeed * 0.5f * mCamera.upwardDirection());
     }
+    handleFlyingKeyboardInputs(deltaTime);
+}
+
+void Player::handleFlyingKeyboardInputs(const float& deltaTime)
+{
+    if (mIsFlying)
+    {
+        const auto& horizontalSpeed = PLAYER_WALKING_SPEED * deltaTime;
+        auto upVelocity = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) ? horizontalSpeed : 0;
+        auto downVelocity = sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ? -horizontalSpeed : 0;
+        mVelocity.y = upVelocity + downVelocity;
+    }
 }
 
 void Player::handleEvent(const sf::Event& event)
@@ -200,9 +217,13 @@ void Player::handleEvent(const sf::Event& event)
 }
 void Player::handleKeyboardEvents(const sf::Event& event)
 {
-    if (event.key.code == sf::Keyboard::Space)
+    switch (event.key.code)
     {
-        tryJump();
+        case sf::Keyboard::Space: tryJump(); break;
+#ifdef _DEBUG
+        case sf::Keyboard::F1: takeDamage(0.5); break;
+        case sf::Keyboard::F2: mIsFlying = !mIsFlying; break;
+#endif
     }
 }
 
@@ -225,7 +246,7 @@ void Player::handleMouseEvents(const sf::Event& event)
 
 void Player::tryJump()
 {
-    if (mIsPlayerOnGround && !mIsPlayerInWater)
+    if (mIsPlayerOnGround && !mIsPlayerInWater && !mIsFlying)
     {
         mVelocity.y = PLAYER_JUMP_FORCE * 0.1f;
     }
@@ -299,6 +320,11 @@ void Player::decelerateVelocity(const float& deltaTime)
 
 void Player::manageVerticalVelocity(const float& deltaTime)
 {
+    if (mIsFlying)
+    {
+        return;
+    }
+
     if (mIsPlayerInWater)
     {
         mVelocity.y -= 0.004f * deltaTime;
