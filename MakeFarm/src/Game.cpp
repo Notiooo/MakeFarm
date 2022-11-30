@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "pch.h"
 
+#include "States/Application_States/DeathState.h"
 #include "States/Application_States/GameState.h"
 #include "States/States.h"
 #include "Utils/Mouse.h"
@@ -46,6 +47,7 @@ Game::Game()
 
     // Setup all application-flow states
     mAppStack.saveState<GameState>(State_ID::GameState, *mGameWindow, mGameResources);
+    mAppStack.saveState<DeathState>(State_ID::DeathState, *mGameWindow, mGameResources);
 
     // Initial state of the statestack is TitleState
     mAppStack.push(State_ID::GameState);

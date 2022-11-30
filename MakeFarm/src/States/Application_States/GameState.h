@@ -54,6 +54,13 @@ public:
      */
     bool handleEvent(const sf::Event& event) override;
 
+    /**
+     * @brief It checks whether the player is still alive and switches to the death screen if player
+     * is dead.
+     * @param deltaTime the time that has passed since the game was last updated.
+     */
+    void checkIfPlayerIsDead(const float& deltaTime);
+
 private:
     /** Rendering */
     sf::RenderWindow& mGameWindow;//!< Window to which this status is displayed

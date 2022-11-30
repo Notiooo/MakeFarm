@@ -209,3 +209,13 @@ glm::vec3 Camera::directionWithoutPitch() const
 {
     return mCameraFrontWithoutPitch;
 }
+
+void Camera::rotate(float angle)
+{
+    // TODO: This rotate do not work properly yet. Probably should change
+    // camera system to quaternions
+
+    mRoll = angle;
+    auto rollMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(mRoll), mCameraFront);
+    mCameraUp = glm::mat3(rollMatrix) * mCameraUp;
+}

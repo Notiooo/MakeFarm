@@ -392,3 +392,8 @@ void Player::draw(const Renderer3D& renderer3D, sf::RenderTarget& target,
     mInventory.draw(target, states);
     mHealthbar.draw(target, states);
 }
+
+bool Player::isDead() const
+{
+    return mPlayerHealth == 0;
+}

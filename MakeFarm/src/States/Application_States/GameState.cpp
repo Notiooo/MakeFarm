@@ -131,10 +131,20 @@ bool GameState::update(const float& deltaTime)
     mChunkManager.update(deltaTime, mPlayer.camera());
     mChunkManager.generateChunksAround(mPlayer.position());
     mChunkManager.clearFarAwayChunks(mPlayer.position());
-
     updateDebugMenu();
+    checkIfPlayerIsDead(deltaTime);
 
     return true;
+}
+
+void GameState::checkIfPlayerIsDead(const float& deltaTime)
+{
+    if (mPlayer.isDead())
+    {
+        mPlayer.camera().rotate(45);
+        mPlayer.camera().update(deltaTime);
+        requestPush(State_ID::DeathState);
+    }
 }
 
 void GameState::draw(sf::RenderTarget& target, sf::RenderStates states) const

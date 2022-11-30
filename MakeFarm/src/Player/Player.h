@@ -74,6 +74,12 @@ public:
      */
     Camera& camera();
 
+    /**
+     * @brief Checks if the player is dead
+     * @return True if the player is dead, false if alive
+     */
+    bool isDead() const;
+
 private:
     /**
      * @brief Updates the player's velocity.

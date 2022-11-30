@@ -19,6 +19,7 @@ set(PROJECT_SOURCES
         Renderer3D/VertexBuffer.cpp
         Resources/TexturePack.cpp
         States/Application_States/GameState.cpp
+        States/Application_States/DeathState.cpp
         States/State.cpp
         States/StateStack.cpp
         Utils/CoordinateBase.cpp

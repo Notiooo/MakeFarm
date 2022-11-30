@@ -117,6 +117,14 @@ public:
      */
     glm::vec3 upwardDirection() const;
 
+    /**
+     * @brief The function rotates the camera (roll).
+     * @param angle The angle by which the camera is rotated (rolled).
+     * @warning The function does not work properly as long as the camera is not rewritten to
+     * quaternions, or some better trick is not used.
+     */
+    void rotate(float angle);
+
 private:
     /**
      * \brief Updates the status/logic of the ImGui Debug Menu
@@ -181,6 +189,7 @@ private:
 
     float mYaw = -90.f;
     float mPitch = 0.f;
+    float mRoll = 0.f;
 
     float mCameraSpeed = 5.f;
     float mCameraSensitivity = 4.f;
