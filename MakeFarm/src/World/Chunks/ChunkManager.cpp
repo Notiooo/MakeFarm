@@ -4,8 +4,9 @@
 #include "World/Chunks/CoordinatesAroundOriginGetter.h"
 #include "pch.h"
 
-ChunkManager::ChunkManager(const TexturePack& texturePack)
+ChunkManager::ChunkManager(const TexturePack& texturePack, const std::string& savedWorldPath)
     : mTexturePack(texturePack)
+    , mSavedWorldPath(savedWorldPath)
 {
 #if DRAW_DEBUG_COLLISIONS
     mWireframeShader.loadFromFile("resources/shaders/WireframeRenderer/VertexShader.shader",
@@ -221,7 +222,7 @@ void ChunkManager::clearChunks(std::vector<ChunkContainer::Coordinate>&& coordin
 void ChunkManager::generateChunk(ChunkContainer::Coordinate chunkPosition)
 {
     auto newChunk = std::make_shared<Chunk>(sf::Vector3i(chunkPosition.nonChunkMetric()),
-                                            mTexturePack, mChunkContainer, *this);
+                                            mTexturePack, mChunkContainer, *this, mSavedWorldPath);
     auto chunkCoordinates =
         ChunkContainer::Coordinate::blockToChunkMetric(newChunk->positionInBlocks());
 
@@ -362,4 +363,13 @@ ChunkManager::Chunks ChunkManager::rebuildNotProcessedChunks(
         rebuildChunkAtLeastOnce(chunk, rebuildSpeed);
     }
     return chunks;
+}
+
+void ChunkManager::forceFinishingAllProcesses()
+{
+    while (mChunkToRebuildFast.isAnyProcessRunning() && mChunkToRebuildSlow.isAnyProcessRunning() &&
+           mCurrentlyProcessedChunks.isAnyProcessRunning())
+    {
+        processFinishedThreadsGeneratingNewChunks();
+    }
 }

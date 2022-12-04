@@ -15,7 +15,8 @@ public:
     static constexpr auto NUMBER_OF_COLUMNS = 9;
     static constexpr auto NUMBER_OF_ROWS = 4;
 
-    Inventory(sf::Vector2i windowSize, const GameResources& gameResources);
+    Inventory(sf::Vector2i windowSize, const GameResources& gameResources,
+              const std::string& saveWorldPath);
     ~Inventory();
 
     /**
@@ -60,6 +61,7 @@ public:
      */
     [[nodiscard]] const Hotbar& hotbar() const;
 
+private:
     /**
      * @brief Finds a slot with a given item that could hold the indicated number of items.
      * @param item The item to look for
@@ -77,8 +79,64 @@ public:
     template<typename... Ts>
     bool tryEmplaceFirstEmptySlot(Ts&&... args);
 
+    /**
+     * @brief File path to which the inventory is saved
+     * @return The path to the file in the form of a string
+     */
+    std::string inventorySaveFilePath();
+
+    /**
+     * @brief Saves the inventory to a file
+     */
+    void saveInventoryToFile();
+
+    /**
+     * @brief The equipment milled to a serialized form, that is, in bytes
+     * @return Vector of bytes
+     */
+    std::vector<unsigned char> serializedInventory();
+
+    /**
+     * @brief Reads from a file of serialized/byte-stored inventory.
+     * @param file File from which the status of the inventory is read
+     */
+    void readSerializedInventory(std::ifstream& file);
+
+    /**
+     * @brief This is another form of recording the status of an inventory slot, which is easier to
+     * serialize and save to a file.
+     */
+    struct SerializableInventorySlot
+    {
+        template<typename Archive, typename Self>
+        static void serialize(Archive& archive, Self& self)
+        {
+            archive(self.amount, self.item);
+        }
+
+        int amount = 0;
+        ItemId item;
+    };
+
+    using SerializableInventory =
+        std::array<SerializableInventorySlot, NUMBER_OF_ROWS * NUMBER_OF_COLUMNS>;
+
+    /**
+     * @brief It prepares a version of the inventory that can be serialized and saved to a file.
+     * @return A form of inventory storage that can be serialized.
+     */
+    SerializableInventory serializableInventory();
+
+    /**
+     * @brief Overwrites the current inventory with the transferred serializable inventory.
+     * @param inventory Serialized inventory, which should overwrite the current inventory.
+     */
+    void overwriteInventory(const SerializableInventory& inventory);
+
+
 private:
     std::array<std::optional<InventorySlot>, NUMBER_OF_ROWS * NUMBER_OF_COLUMNS> mItems;
     std::unique_ptr<Hotbar> mHotbar;
+    const std::string& mSaveWorldFilePath;
     const TexturePack& mTexturePack;
 };

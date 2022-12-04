@@ -11,17 +11,29 @@ include(CMakeLists_Sources.txt)
 add_library(MakeFarmSrc STATIC ${PROJECT_SOURCES})
 target_precompile_headers(MakeFarmSrc PUBLIC pch.h)
 
+set(CUSTOM_INCLUDES_DIR ${CMAKE_CURRENT_BINARY_DIR}/custom_includes)
+file(MAKE_DIRECTORY ${CUSTOM_INCLUDES_DIR})
+
+add_custom_command(TARGET MakeFarmSrc PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${FETCHCONTENT_BASE_DIR}/serializer-src/serializer.h
+        ${CUSTOM_INCLUDES_DIR}
+        )
+
 target_include_directories(MakeFarmSrc PUBLIC
         ${FETCHCONTENT_BASE_DIR}/glew-src/include
         ${glm_SOURCE_DIR}
         ${FETCHCONTENT_BASE_DIR}/fastnoiselite-src/Cpp
+        ${CUSTOM_INCLUDES_DIR}
         )
+
 target_link_libraries(MakeFarmSrc
         PUBLIC
         sfml-graphics
         ImGui-SFML::ImGui-SFML
         glew_s
         glm
+        tgui
         )
 
 # Copy libraries
@@ -32,6 +44,7 @@ add_custom_command(TARGET MakeFarmSrc POST_BUILD
         $<TARGET_FILE:sfml-graphics>
         $<TARGET_FILE:sfml-window>
         $<TARGET_FILE:sfml-system>
+        $<TARGET_FILE:tgui>
         $<TARGET_FILE_DIR:MakeFarmSrc>
         )
 

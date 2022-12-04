@@ -1,6 +1,7 @@
 #include "Chunk.h"
 #include "pch.h"
 
+#include <filesystem>
 #include <optional>
 #include <utility>
 
@@ -11,49 +12,40 @@
 #include "World/Chunks/ChunkManager.h"
 #include "World/Chunks/MeshBuilder.h"
 #include "World/Chunks/TerrainGenerator.h"
-
+#include <serializer.h>
 
 Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent,
-             ChunkManager& manager)
-    : Chunk(Block::Coordinate::nonBlockToBlockMetric(pixelPosition), texturePack, parent, manager)
-{
-}
-
-Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack)
-    : Chunk(Block::Coordinate::nonBlockToBlockMetric(pixelPosition), texturePack)
+             ChunkManager& manager, const std::string& savedWorldPath)
+    : Chunk(Block::Coordinate::nonBlockToBlockMetric(pixelPosition), texturePack, parent, manager,
+            savedWorldPath)
 {
 }
 
 Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack,
-             ChunkContainer& parent, ChunkManager& manager)
+             ChunkContainer& parent, ChunkManager& manager, const std::string& savedWorldPath)
     : mChunkPosition(std::move(blockPosition))
     , mTexturePack(texturePack)
-    , mParentContainer(&parent)
+    , mParentContainer(parent)
     , mTerrainMeshBuilder(mChunkPosition)
     , mFluidMeshBuilder(mChunkPosition)
     , mFloralMeshBuilder(mChunkPosition)
     , mChunkOfBlocks(std::make_shared<ChunkBlocks>())
-    , mChunkManager(&manager)
+    , mChunkManager(manager)
     , mTerrainGenerator(std::make_unique<TerrainGenerator>())
+    , mSavedWorldPath(savedWorldPath)
 {
-    generateChunkTerrain();
-}
+    auto chunkCoordinate = ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition);
 
-Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack)
-    : mChunkPosition(std::move(blockPosition))
-    , mTexturePack(texturePack)
-    , mParentContainer(nullptr)
-    , mTerrainMeshBuilder(mChunkPosition)
-    , mFluidMeshBuilder(mChunkPosition)
-    , mFloralMeshBuilder(mChunkPosition)
-    , mChunkOfBlocks(std::make_shared<ChunkBlocks>())
-    , mChunkManager(nullptr)
-    , mTerrainGenerator(std::make_unique<TerrainGenerator>())
-{
-    generateChunkTerrain();
-
-    prepareMesh();
-    updateMesh();
+    std::ifstream file(chunkSaveFilePath(), std::ios::binary);
+    if (file.is_open())
+    {
+        auto serializedChunk = readSerializedChunk(file);
+        overwriteChunk(serializedChunk);
+    }
+    else
+    {
+        generateChunkTerrain();
+    }
 }
 
 Chunk::Chunk(Chunk&& rhs) noexcept
@@ -68,6 +60,34 @@ Chunk::Chunk(Chunk&& rhs) noexcept
     , mChunkManager(rhs.mChunkManager)
     , mTerrainGenerator(std::move(rhs.mTerrainGenerator))
 {
+}
+
+void Chunk::overwriteChunk(const Chunk::ChunkArray1D& chunk) const
+{
+    for (auto x = 0; x < BLOCKS_PER_X_DIMENSION; ++x)
+    {
+        for (auto y = 0; y < BLOCKS_PER_Y_DIMENSION; ++y)
+        {
+            for (auto z = 0; z < BLOCKS_PER_Z_DIMENSION; ++z)
+            {
+                (*mChunkOfBlocks)[x][y][z] = std::make_unique<Block>(
+                    chunk[x + BLOCKS_PER_X_DIMENSION * (y + BLOCKS_PER_Y_DIMENSION * z)]);
+            }
+        }
+    }
+}
+
+Chunk::ChunkArray1D Chunk::readSerializedChunk(std::ifstream& file) const
+{
+    // TODO: This thing is actually repeated in three places. Would be got to extract it
+    std::istreambuf_iterator<char> iter(file);
+    std::vector<char> vec(iter, std::istreambuf_iterator<char>{});
+    std::vector<unsigned char> data(vec.begin(), vec.end());
+    zpp::serializer::memory_input_archive in(data);
+    // ==========
+    ChunkArray1D chunkToRead;
+    in(chunkToRead);
+    return chunkToRead;
 }
 
 void Chunk::generateChunkTerrain()
@@ -184,20 +204,15 @@ bool Chunk::isLocalCoordinateOnChunkEdge(const Block::Coordinate& localCoordinat
 
 void Chunk::rebuildSlow()
 {
-    if (mChunkManager && mParentContainer)
-    {
-        auto thisChunk = mParentContainer->findChunk(*this);
-        mChunkManager->rebuildSlow(thisChunk);
-    }
+    auto thisChunk = mParentContainer.findChunk(*this);
+    mChunkManager.rebuildSlow(thisChunk);
 }
 
 void Chunk::rebuildFast()
 {
-    if (mChunkManager && mParentContainer)
-    {
-        auto thisChunk = mParentContainer->findChunk(*this);
-        mChunkManager->rebuildFast(thisChunk);
-    }
+
+    auto thisChunk = mParentContainer.findChunk(*this);
+    mChunkManager.rebuildFast(thisChunk);
 }
 
 void Chunk::rebuildMesh()
@@ -265,12 +280,12 @@ Chunk::Chunk(std::shared_ptr<ChunkBlocks> chunkBlocks, Block::Coordinate blockPo
              const TexturePack& texturePack, ChunkContainer& parent, ChunkManager& manager)
     : mChunkPosition(std::move(blockPosition))
     , mTexturePack(texturePack)
-    , mParentContainer(&parent)
+    , mParentContainer(parent)
     , mTerrainMeshBuilder(mChunkPosition)
     , mFluidMeshBuilder(mChunkPosition)
     , mFloralMeshBuilder(mChunkPosition)
     , mChunkOfBlocks(std::move(chunkBlocks))
-    , mChunkManager(&manager)
+    , mChunkManager(manager)
 {
     prepareMesh();
 }
@@ -365,21 +380,13 @@ std::optional<Block> Chunk::neighbourBlockInGivenDirection(const Block::Coordina
         return (localBlock(blockNeighborPosition).id());
     }
 
-    if (thisChunkBelongsToAnyChunkContainer())
+    if (const auto& neighborBlock =
+            mParentContainer.worldBlock(localToGlobalCoordinates(blockNeighborPosition)))
     {
-        if (const auto& neighborBlock =
-                mParentContainer->worldBlock(localToGlobalCoordinates(blockNeighborPosition)))
-        {
-            return neighborBlock->id();
-        }
+        return neighborBlock->id();
     }
 
     return std::nullopt;
-}
-
-bool Chunk::thisChunkBelongsToAnyChunkContainer() const
-{
-    return (mParentContainer != nullptr);
 }
 
 void Chunk::drawTerrain(const Renderer3D& renderer3d, const sf::Shader& shader) const
@@ -423,11 +430,11 @@ void Chunk::tryToPlaceBlock(const BlockId& blockId, const Block::Coordinate& loc
         tryToPlaceBlockInsideThisChunk(blockId, localCoordinates, blocksThatMightBeOverplaced,
                                        rebuildOperation);
     }
-    else if (thisChunkBelongsToAnyChunkContainer())
+    else
     {
         auto globalCoordinates = localToGlobalCoordinates(localCoordinates);
-        mParentContainer->tryToPlaceBlock(blockId, globalCoordinates, blocksThatMightBeOverplaced,
-                                          rebuildOperation);
+        mParentContainer.tryToPlaceBlock(blockId, globalCoordinates, blocksThatMightBeOverplaced,
+                                         rebuildOperation);
     }
 }
 
@@ -463,4 +470,53 @@ bool Chunk::canGivenBlockBeOverplaced(std::vector<BlockId>& blocksThatMightBeOve
                        });
 }
 
-Chunk::~Chunk() = default;
+void Chunk::saveChunkToFile()
+{
+    std::vector<unsigned char> serializedData = serializedChunk();
+
+    std::filesystem::create_directories(mSavedWorldPath);
+    std::ofstream outfile(chunkSaveFilePath(), std::ios::out | std::ios::binary);
+    outfile.write(reinterpret_cast<const char*>(serializedData.data()),
+                  serializedData.size() * sizeof(char));
+    outfile.close();
+}
+
+std::vector<unsigned char> Chunk::serializedChunk()
+{
+    auto chunkCoordinate = ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition);
+    auto chunk = oneDimensionalChunkRepresentation();
+    std::vector<unsigned char> serializedData;
+    zpp::serializer::memory_output_archive out(serializedData);
+    out(chunk);
+    return serializedData;
+}
+
+std::string Chunk::chunkSaveFilePath()
+{
+    auto chunkCoordinate = ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition);
+    return mSavedWorldPath + "/chunk_" + std::to_string(chunkCoordinate.x) + "_" +
+           std::to_string(chunkCoordinate.y) + "_" + std::to_string(chunkCoordinate.z) + ".bin";
+}
+
+Chunk::ChunkArray1D Chunk::oneDimensionalChunkRepresentation()
+{
+    auto chunkCoordinate = ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition);
+    ChunkArray1D chunk;
+    for (auto x = 0; x < BLOCKS_PER_X_DIMENSION; ++x)
+    {
+        for (auto y = 0; y < BLOCKS_PER_Y_DIMENSION; ++y)
+        {
+            for (auto z = 0; z < BLOCKS_PER_Z_DIMENSION; ++z)
+            {
+                chunk[x + BLOCKS_PER_X_DIMENSION * (y + BLOCKS_PER_Y_DIMENSION * z)] =
+                    localBlock({x, y, z}).id();
+            }
+        }
+    }
+    return chunk;
+}
+
+Chunk::~Chunk()
+{
+    saveChunkToFile();
+}

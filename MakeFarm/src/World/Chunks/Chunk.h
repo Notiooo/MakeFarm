@@ -27,14 +27,11 @@ class Chunk
 {
 public:
     Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent,
-          ChunkManager& manager);
-
-    Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack);
+          ChunkManager& manager, const std::string& savedWorldPath);
 
     Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack, ChunkContainer& parent,
-          ChunkManager& manager);
+          ChunkManager& manager, const std::string& savedWorldPath);
 
-    Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack);
     Chunk(Chunk&& rhs) noexcept;
     ~Chunk();
 
@@ -159,12 +156,6 @@ public:
     [[nodiscard]] bool isLocalCoordinateOnChunkEdge(const Block::Coordinate& localCoordinates);
 
     /**
-     * \brief Checks whether the chunk is inside any chunk container
-     * \return True if the chunk is inside any chunk container, false otherwise
-     */
-    [[nodiscard]] bool thisChunkBelongsToAnyChunkContainer() const;
-
-    /**
      * It is rebuilding this mesh fresh. Very expensive operation
      */
     void rebuildMesh();
@@ -235,6 +226,8 @@ public:
                                                         const Direction& direction);
 
 private:
+    using ChunkArray1D = std::array<BlockId, Chunk::BLOCKS_IN_CHUNK>;
+
     Chunk(std::shared_ptr<ChunkBlocks> chunkBlocks, Block::Coordinate blockPosition,
           const TexturePack& texturePack, ChunkContainer& parent, ChunkManager& manager);
 
@@ -299,6 +292,44 @@ private:
                                         std::vector<BlockId>& blocksThatMightBeOverplaced,
                                         const RebuildOperation& rebuildOperation);
 
+    /**
+     * @brief Creates a chunk representation in the form of a one-dimensional array
+     * @return 1D array representation of the chunk.
+     */
+    ChunkArray1D oneDimensionalChunkRepresentation();
+
+    /**
+     * @brief Path to the file where the chunk status is saved
+     * @return Character string representing the chunk's path to the file
+     */
+    std::string chunkSaveFilePath();
+
+    /**
+     * @brief Saves the state of the chunk to a file
+     */
+    void saveChunkToFile();
+
+    /**
+     * @brief Serializes the chunk and returns its byte representation
+     * @return Chunk in serialized byte form
+     */
+    std::vector<unsigned char> serializedChunk();
+
+    /**
+     * @brief Reads from a file of a serialized chunk
+     * @param file The file from which the state of the chunk should be read in the form of a
+     * serialized one
+     * @return Chunk presented as a one-dimensional array
+     */
+    ChunkArray1D readSerializedChunk(std::ifstream& file) const;
+
+    /**
+     * @brief Overwrites the actual chunk with data from a one-dimensional array representing the
+     * chunk
+     * @param chunk One-dimensional array that is a representation of a chunk
+     */
+    void overwriteChunk(const ChunkArray1D& chunk) const;
+
 
 private:
     mutable std::recursive_mutex mChunkAccessMutex;
@@ -308,8 +339,8 @@ private:
     Block::Coordinate mChunkPosition;
     const TexturePack& mTexturePack;
 
-    ChunkContainer* const mParentContainer;
-    ChunkManager* const mChunkManager;
+    ChunkContainer& mParentContainer;
+    ChunkManager& mChunkManager;
 
 
     // TODO: This system should be changed to a better one. Consider distance.
@@ -322,4 +353,5 @@ private:
     std::unique_ptr<Model3D> mFloralModel;
 
     std::shared_ptr<ChunkBlocks> mChunkOfBlocks;
+    std::string mSavedWorldPath;
 };

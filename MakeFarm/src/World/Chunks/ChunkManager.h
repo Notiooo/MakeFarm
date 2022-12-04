@@ -38,7 +38,7 @@ public:
 
     using Chunks = std::list<std::shared_ptr<Chunk>>;
 
-    ChunkManager(const TexturePack& texturePack);
+    ChunkManager(const TexturePack& texturePack, const std::string& savedWorldPath);
 
     /**
      * Draws this chunk container to the game screen
@@ -87,6 +87,11 @@ public:
      * @return Container of chunks.
      */
     ChunkContainer& chunks();
+
+    /**
+     * @brief TODO: THIS
+     */
+    void forceFinishingAllProcesses();
 
 private:
     /**
@@ -249,6 +254,7 @@ private:
 
     /** == Members == */
     const TexturePack& mTexturePack;
+    const std::string& mSavedWorldPath;
 
     /** Chunks */
     ChunkContainer mChunkContainer;

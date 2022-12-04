@@ -139,6 +139,11 @@ private:
     GameResources mGameResources;
 
     /**
+     * @brief Structure hold information about the current game session
+     */
+    GameSession mGameSession;
+
+    /**
      * \brief Stores and manages in-game states.
      *
      * This allows you to create some application flow between application states.

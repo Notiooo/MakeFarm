@@ -22,7 +22,10 @@ class StateStack;
 class GameState : public State
 {
 public:
-    GameState(StateStack& stack, sf::RenderWindow& window, GameResources& gameResources);
+    GameState(StateStack& stack, sf::RenderWindow& window, GameResources& gameResources,
+              GameSession& gameSession);
+
+    ~GameState();
 
     /**
      * \brief Draws only this state to the passed target

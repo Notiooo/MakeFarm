@@ -9,11 +9,12 @@ TexturePack::TexturePack(const std::string& texturePackFolder)
 
 void TexturePack::loadTexturePack(const std::string& texturePackFolder)
 {
-    mTexturePackSettings.openFile("resources/textures/" + texturePackFolder + "/config.cfg");
+    mTexturePackSettings.openFile("resources/textures/texturePacks/" + texturePackFolder +
+                                  "/config.cfg");
     mTexturePackName = mTexturePackSettings.get<std::string>("Name");
     mTextureSize = mTexturePackSettings.get<int>("TextureSize");
-    mBlocks.loadFromFile("resources/textures/" + texturePackFolder + "/blocks.png");
-    mItems.loadFromFile("resources/textures/" + texturePackFolder + "/items.png");
+    mBlocks.loadFromFile("resources/textures/texturePacks/" + texturePackFolder + "/blocks.png");
+    mItems.loadFromFile("resources/textures/texturePacks/" + texturePackFolder + "/items.png");
     mTexturePackSettings.closeFile();
 
     if ((mBlocks.getSize().x % mTextureSize) && (mBlocks.getSize().y % mTextureSize))

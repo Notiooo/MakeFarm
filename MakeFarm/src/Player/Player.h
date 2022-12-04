@@ -12,7 +12,10 @@ class Player
 {
 public:
     Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf::Shader& shader,
-           ChunkManager& chunkManager, const GameResources& gameResources);
+           ChunkManager& chunkManager, const GameResources& gameResources,
+           const std::string& savedWorldPath);
+
+    ~Player();
 
     static constexpr float PLAYER_MAX_FALLING_SPEED = 20.f;
     static constexpr float PLAYER_WALKING_SPEED = 5.f;
@@ -226,6 +229,24 @@ private:
      */
     void takeDamage(const Hearts& takenDamage);
 
+    /**
+     * @brief Returns the player's serialized data stored in byte form
+     * @return Byte record of player's most important settings
+     */
+    std::vector<unsigned char> serializedPlayer();
+
+    /**
+     * @brief The path to the file that should contain the saved information about the player
+     * @return Character string, which is a path to the player settings file
+     */
+    std::string playerSaveFilePath();
+
+    /**
+     * @brief Reads the player's state from the file based on the serialized data
+     * @param ifstream File from which data is read
+     */
+    void readSerializedPlayer(std::ifstream& ifstream);
+
     Camera mCamera;
     AABB mAABB;
     HighlightedBlock mSelectedBlock;
@@ -240,6 +261,7 @@ private:
     bool mArePlayerEyesInWater = false;
     bool mIsFlying = false;
     Hearts mPlayerHealth = 10;
+    const std::string& mSavedWorldPath;
 
     sf::RectangleShape mWaterInWaterEffect;
     sf::Sprite mCrosshair;

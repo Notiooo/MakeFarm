@@ -20,6 +20,7 @@ set(PROJECT_SOURCES
         Resources/TexturePack.cpp
         States/Application_States/GameState.cpp
         States/Application_States/DeathState.cpp
+        States/Application_States/MainMenuState.cpp
         States/State.cpp
         States/StateStack.cpp
         Utils/CoordinateBase.cpp

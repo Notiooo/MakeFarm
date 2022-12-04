@@ -13,12 +13,14 @@
 #include "Utils/Settings.h"
 #include "World/Block/BlockMap.h"
 
-GameState::GameState(StateStack& stack, sf::RenderWindow& window, GameResources& gameResources)
+GameState::GameState(StateStack& stack, sf::RenderWindow& window, GameResources& gameResources,
+                     GameSession& gameSession)
     : State(stack)
     , mGameWindow(window)
     , mGameResources(gameResources)
-    , mChunkManager(mGameResources.texturePack)
-    , mPlayer({0.f, 150.f, 0.f}, mGameWindow, m3DWorldRendererShader, mChunkManager, mGameResources)
+    , mChunkManager(mGameResources.texturePack, gameSession.currentlyPlayedWorld.value())
+    , mPlayer({0.f, 150.f, 0.f}, mGameWindow, m3DWorldRendererShader, mChunkManager, mGameResources,
+              gameSession.currentlyPlayedWorld.value())
     , mGameSettings("settings.cfg")
 {
     Mouse::lockMouseAtCenter(mGameWindow);
@@ -29,9 +31,6 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window, GameResources&
     GLCall(glEnable(GL_DEPTH_TEST));
     GLCall(glEnable(GL_BLEND));
     GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
-    auto test = BlockMap::blockMap();
-    auto test2 = ItemMap::itemMap();
 }
 
 
@@ -39,6 +38,11 @@ bool GameState::handleEvent(const sf::Event& event)
 {
     Mouse::handleFirstPersonBehaviour(event, mGameWindow);
     mPlayer.handleEvent(event);
+
+    switch (event.key.code)
+    {
+        case sf::Keyboard::F3: requestClear(); break;
+    }
 
     /*
      * Set this state to transparent -- in other words
@@ -95,7 +99,7 @@ void GameState::updateDebugMenu()
             if (ImGui::BeginMenu("Texture Packs"))
             {
                 for (auto const& texturePackDir:
-                     std::filesystem::directory_iterator{"resources/textures"})
+                     std::filesystem::directory_iterator{"resources/textures/texturePacks"})
                 {
                     if (texturePackDir.is_directory())
                     {
@@ -151,4 +155,9 @@ void GameState::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     mChunkManager.draw(mGameRenderer, m3DWorldRendererShader);
     mPlayer.draw(mGameRenderer, target, states);
+}
+
+GameState::~GameState()
+{
+    mChunkManager.forceFinishingAllProcesses();
 }

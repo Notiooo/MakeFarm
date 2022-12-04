@@ -1,8 +1,10 @@
 #include "Game.h"
 #include "pch.h"
+#include <States/Application_States/MainMenuState.h>
 
 #include "States/Application_States/DeathState.h"
 #include "States/Application_States/GameState.h"
+#include "States/Application_States/MainMenuState.h"
 #include "States/States.h"
 #include "Utils/Mouse.h"
 
@@ -13,7 +15,6 @@ const sf::Time Game::MINIMAL_TIME_PER_FIXED_UPDATE =
     sf::seconds(1.f / MINIMAL_FIXED_UPDATES_PER_FRAME);
 const int Game::SCREEN_WIDTH = 1280;
 const int Game::SCREEN_HEIGHT = 720;
-
 
 Game::Game()
 {
@@ -31,7 +32,7 @@ Game::Game()
     mGameWindow->setFramerateLimit(FRAMES_PER_SECOND);
     mGameWindow->setActive(true);
     loadResources();
-// clang-format off
+    // clang-format off
     // ImGui setup
     #ifdef _DEBUG
     ImGui::SFML::Init(*mGameWindow);
@@ -46,11 +47,40 @@ Game::Game()
     }
 
     // Setup all application-flow states
-    mAppStack.saveState<GameState>(State_ID::GameState, *mGameWindow, mGameResources);
+    mAppStack.saveState<GameState>(State_ID::GameState, *mGameWindow, mGameResources, mGameSession);
     mAppStack.saveState<DeathState>(State_ID::DeathState, *mGameWindow, mGameResources);
+    mAppStack.saveState<MainMenuState>(State_ID::MainMenuState, *mGameWindow, mGameResources,
+                                       mGameSession);
 
     // Initial state of the statestack is TitleState
-    mAppStack.push(State_ID::GameState);
+    mAppStack.push(State_ID::MainMenuState);
+
+    /*    auto [data, out] = zpp::bits::data_out<char>();
+        Testero a1 = {{{5, 8, 2}, {8, 3, 1}, {5, 3, 9}}};
+        out(a1).or_throw();
+
+        std::ofstream outfile("testfile.bin", std::ios::out | std::ios::binary);
+        outfile.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(char));
+        outfile.close();
+
+        // open the file:
+        std::ifstream file("testfile.bin", std::ios::in | std::ios::binary);
+        std::istreambuf_iterator<char> iter(file);
+        std::vector<char> vec(iter, std::istreambuf_iterator<char>{});
+        auto [data2, in] = zpp::bits::data_in<char>();
+        data2 = vec;
+
+        Testero a2;
+        in(a2).or_throw();
+
+        for (auto& arr1: a2)
+        {
+            for (auto& arr2: arr1)
+            {
+                std::cout << arr2 << " ";
+            }
+            std::cout << std::endl;
+        }*/
 }
 
 void Game::run()
@@ -65,7 +95,7 @@ void Game::run()
     while (isGameRunning)
     {
         frameTimeElapsed = clock.restart();
-// clang-format off
+        // clang-format off
         #ifdef _DEBUG
         ImGui::SFML::Update(*mGameWindow, frameTimeElapsed);
         #endif
@@ -107,7 +137,7 @@ void Game::processEvents()
         {
             isGameRunning = false;
         }
-// clang-format off
+        // clang-format off
         #ifdef _DEBUG
         ImGui::SFML::ProcessEvent(event);
         #endif
@@ -139,7 +169,7 @@ void Game::render()
     // draw the application
     mAppStack.draw(*mGameWindow, sf::Transform::Identity);
 
-// clang-format off
+    // clang-format off
     #ifdef _DEBUG
     mGameWindow->pushGLStates();
     ImGui::SFML::Render(*mGameWindow);

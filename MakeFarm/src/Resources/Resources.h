@@ -7,7 +7,10 @@
 #include "Resources/ResourceManager.h"
 #include "TexturePack.h"
 
-// ====== Spritesheet ======= //
+namespace Resources
+{
+static const inline std::string SAVE_DIRECTORY_FOLDER = "saves";
+}
 
 /**
  * \brief Texture IDs under which individual textures can be saved and read.
@@ -51,6 +54,14 @@ struct GameResources
     TexturePack texturePack;
     TextureManager textureManager;
     FontManager fontManager;
+};
+
+/**
+ * @brief Stores information about the game session
+ */
+struct GameSession
+{
+    std::optional<std::string> currentlyPlayedWorld;
 };
 
 #endif
