@@ -6,7 +6,7 @@
 class TerrainGenerator
 {
 public:
-    TerrainGenerator();
+    TerrainGenerator(int seed = 1337);
 
     static constexpr auto SEA_LEVEL = 60;
     static constexpr auto MINIMAL_TERRAIN_LEVEL = 20;
@@ -18,6 +18,11 @@ public:
      */
     void generateTerrain(Chunk& chunk, Chunk::ChunkBlocks& chunkBlocks);
 
+    /**
+     * @brief Returns a random seed that can be used to generate terrain
+     * @return Random int value
+     */
+    static int randomSeed();
 
 private:
     /**

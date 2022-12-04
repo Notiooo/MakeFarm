@@ -34,11 +34,7 @@ Player::Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf:
     auto waterColor = sf::Color(49, 103, 189, 120);
     mWaterInWaterEffect.setFillColor(waterColor);
 
-    std::ifstream file(playerSaveFilePath(), std::ios::binary);
-    if (file.is_open())
-    {
-        readSerializedPlayer(file);
-    }
+    loadSavedPlayerData();
 }
 
 void Player::update(const float& deltaTime)
@@ -408,41 +404,32 @@ bool Player::isDead() const
     return mPlayerHealth == 0;
 }
 
-std::vector<unsigned char> Player::serializedPlayer()
-{
-    auto playerPosition = position();
-    std::vector<unsigned char> serializedData;
-    zpp::serializer::memory_output_archive out(serializedData);
-    out(playerPosition.x, playerPosition.y, playerPosition.z, static_cast<float>(mPlayerHealth));
-    return serializedData;
-}
-
-Player::~Player()
-{
-    std::vector<unsigned char> serializedData = serializedPlayer();
-
-    std::filesystem::create_directories(mSavedWorldPath);
-    std::ofstream outfile(playerSaveFilePath(), std::ios::out | std::ios::binary);
-    outfile.write(reinterpret_cast<const char*>(serializedData.data()),
-                  serializedData.size() * sizeof(char));
-    outfile.close();
-}
-
 std::string Player::playerSaveFilePath()
 {
     return mSavedWorldPath + "/player.bin";
 }
 
-void Player::readSerializedPlayer(std::ifstream& file)
+void Player::savePlayerDataToFile()
 {
-    // TODO: This thing is actually repeated in three places. Would be got to extract it
-    std::istreambuf_iterator<char> iter(file);
-    std::vector<char> vec(iter, std::istreambuf_iterator<char>{});
-    std::vector<unsigned char> data(vec.begin(), vec.end());
-    zpp::serializer::memory_input_archive in(data);
-    // ==========
-    auto playerHealth = 0.f;
-    in(mPosition.x, mPosition.y, mPosition.z, playerHealth);
-    mPlayerHealth = playerHealth;
-    mHealthbar.hearts(mPlayerHealth);
+    auto playerPosition = position();
+    mSerializer.serialize(playerPosition.x, playerPosition.y, playerPosition.z,
+                          static_cast<float>(mPlayerHealth));
+    mSerializer.saveToFile(playerSaveFilePath());
+}
+
+void Player::loadSavedPlayerData()
+{
+    std::ifstream file(playerSaveFilePath(), std::ios::binary);
+    if (file.is_open())
+    {
+        auto playerHealth = 0.f;
+        mSerializer.readSerialized(file, mPosition.x, mPosition.y, mPosition.z, playerHealth);
+        mPlayerHealth = playerHealth;
+        mHealthbar.hearts(mPlayerHealth);
+    }
+}
+
+Player::~Player()
+{
+    savePlayerDataToFile();
 }

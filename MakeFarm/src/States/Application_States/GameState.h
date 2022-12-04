@@ -8,6 +8,7 @@
 #include "Resources/Resources.h"
 #include "Resources/TexturePack.h"
 #include "States/State.h"
+#include "Utils/Serializer.h"
 #include "Utils/Settings.h"
 #include "World/Block/HighlightedBlock.h"
 #include "World/Chunks/Chunk.h"
@@ -57,12 +58,30 @@ public:
      */
     bool handleEvent(const sf::Event& event) override;
 
+private:
     /**
      * @brief It checks whether the player is still alive and switches to the death screen if player
      * is dead.
      * @param deltaTime the time that has passed since the game was last updated.
      */
     void checkIfPlayerIsDead(const float& deltaTime);
+
+    /**
+     * @brief Path to the file where the game data status is saved
+     * @return Character string representing the game data path to the file
+     */
+    std::string gameDataSaveFilePath() const;
+
+    /**
+     * @brief Saves the state of the game data to a file
+     */
+    void saveGameDataToFile();
+
+    /**
+     * @brief Reads the saved state of the gamestate from the file
+     * @warning Nothing happens when the save file is not there
+     */
+    void loadSavedGameData();
 
 private:
     /** Rendering */
@@ -73,6 +92,9 @@ private:
     /** Settings */
     GameResources& mGameResources;
     Settings mGameSettings;
+    Serializer mSerializer;
+    int mWorldSeed;
+    const std::string& mSavedWorldName;
 
     /** Utils */
     ChunkManager mChunkManager;

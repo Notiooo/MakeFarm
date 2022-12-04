@@ -1,7 +1,8 @@
 #pragma once
 #include "Player/GUI/InventorySlot.h"
+#include "Resources/Resources.h"
+#include "Utils/Serializer.h"
 #include "World/Item/Item.h"
-#include <Resources/Resources.h>
 #include <optional>
 
 class Hotbar;
@@ -86,23 +87,6 @@ private:
     std::string inventorySaveFilePath();
 
     /**
-     * @brief Saves the inventory to a file
-     */
-    void saveInventoryToFile();
-
-    /**
-     * @brief The equipment milled to a serialized form, that is, in bytes
-     * @return Vector of bytes
-     */
-    std::vector<unsigned char> serializedInventory();
-
-    /**
-     * @brief Reads from a file of serialized/byte-stored inventory.
-     * @param file File from which the status of the inventory is read
-     */
-    void readSerializedInventory(std::ifstream& file);
-
-    /**
      * @brief This is another form of recording the status of an inventory slot, which is easier to
      * serialize and save to a file.
      */
@@ -133,10 +117,21 @@ private:
      */
     void overwriteInventory(const SerializableInventory& inventory);
 
+    /**
+     * @brief Saves the state of the inventory data to a file
+     */
+    void saveInventoryDataToFile();
+
+    /**
+     * @brief Reads the saved state of the inventory from the file
+     * @warning Nothing happens when the save file is not there
+     */
+    void loadSavedInventoryData();
 
 private:
     std::array<std::optional<InventorySlot>, NUMBER_OF_ROWS * NUMBER_OF_COLUMNS> mItems;
     std::unique_ptr<Hotbar> mHotbar;
     const std::string& mSaveWorldFilePath;
     const TexturePack& mTexturePack;
+    Serializer mSerializer;
 };

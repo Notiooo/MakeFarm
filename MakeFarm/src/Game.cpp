@@ -54,33 +54,6 @@ Game::Game()
 
     // Initial state of the statestack is TitleState
     mAppStack.push(State_ID::MainMenuState);
-
-    /*    auto [data, out] = zpp::bits::data_out<char>();
-        Testero a1 = {{{5, 8, 2}, {8, 3, 1}, {5, 3, 9}}};
-        out(a1).or_throw();
-
-        std::ofstream outfile("testfile.bin", std::ios::out | std::ios::binary);
-        outfile.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(char));
-        outfile.close();
-
-        // open the file:
-        std::ifstream file("testfile.bin", std::ios::in | std::ios::binary);
-        std::istreambuf_iterator<char> iter(file);
-        std::vector<char> vec(iter, std::istreambuf_iterator<char>{});
-        auto [data2, in] = zpp::bits::data_in<char>();
-        data2 = vec;
-
-        Testero a2;
-        in(a2).or_throw();
-
-        for (auto& arr1: a2)
-        {
-            for (auto& arr2: arr1)
-            {
-                std::cout << arr2 << " ";
-            }
-            std::cout << std::endl;
-        }*/
 }
 
 void Game::run()

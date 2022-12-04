@@ -25,6 +25,7 @@ set(PROJECT_SOURCES
         States/StateStack.cpp
         Utils/CoordinateBase.cpp
         Utils/Mouse.cpp
+        Utils/Serializer.cpp
         Utils/Settings.cpp
         Utils/utils.cpp
         Utils/Direction.cpp

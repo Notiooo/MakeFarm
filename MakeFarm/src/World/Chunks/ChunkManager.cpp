@@ -4,9 +4,11 @@
 #include "World/Chunks/CoordinatesAroundOriginGetter.h"
 #include "pch.h"
 
-ChunkManager::ChunkManager(const TexturePack& texturePack, const std::string& savedWorldPath)
+ChunkManager::ChunkManager(const TexturePack& texturePack, const std::string& savedWorldPath,
+                           const int& worldSeed)
     : mTexturePack(texturePack)
     , mSavedWorldPath(savedWorldPath)
+    , mWorldSeed(worldSeed)
 {
 #if DRAW_DEBUG_COLLISIONS
     mWireframeShader.loadFromFile("resources/shaders/WireframeRenderer/VertexShader.shader",
@@ -221,8 +223,9 @@ void ChunkManager::clearChunks(std::vector<ChunkContainer::Coordinate>&& coordin
 
 void ChunkManager::generateChunk(ChunkContainer::Coordinate chunkPosition)
 {
-    auto newChunk = std::make_shared<Chunk>(sf::Vector3i(chunkPosition.nonChunkMetric()),
-                                            mTexturePack, mChunkContainer, *this, mSavedWorldPath);
+    auto newChunk =
+        std::make_shared<Chunk>(sf::Vector3i(chunkPosition.nonChunkMetric()), mTexturePack,
+                                mChunkContainer, *this, mSavedWorldPath, mWorldSeed);
     auto chunkCoordinates =
         ChunkContainer::Coordinate::blockToChunkMetric(newChunk->positionInBlocks());
 

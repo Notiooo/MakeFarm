@@ -2,6 +2,7 @@
 #include "Physics/AABB.h"
 #include "Player/GUI/Healthbar.h"
 #include "Player/GUI/Inventory.h"
+#include "Utils/Serializer.h"
 #include "World/Block/HighlightedBlock.h"
 #include "World/Camera.h"
 #include <SFML/Graphics/RectangleShape.hpp>
@@ -230,22 +231,21 @@ private:
     void takeDamage(const Hearts& takenDamage);
 
     /**
-     * @brief Returns the player's serialized data stored in byte form
-     * @return Byte record of player's most important settings
-     */
-    std::vector<unsigned char> serializedPlayer();
-
-    /**
      * @brief The path to the file that should contain the saved information about the player
      * @return Character string, which is a path to the player settings file
      */
     std::string playerSaveFilePath();
 
     /**
-     * @brief Reads the player's state from the file based on the serialized data
-     * @param ifstream File from which data is read
+     * @brief Saves the state of the player data to a file
      */
-    void readSerializedPlayer(std::ifstream& ifstream);
+    void savePlayerDataToFile();
+
+    /**
+     * @brief Reads the saved state of the player from the file
+     * @warning Nothing happens when the save file is not there
+     */
+    void loadSavedPlayerData();
 
     Camera mCamera;
     AABB mAABB;
@@ -254,6 +254,7 @@ private:
     sf::Shader mWireframeShader;
     Inventory mInventory;
     Healthbar mHealthbar;
+    Serializer mSerializer;
 
     bool mIsPlayerOnGround = false;
     bool mWasPlayerOnGroundBefore = true;

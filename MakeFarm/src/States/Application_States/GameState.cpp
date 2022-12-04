@@ -12,20 +12,27 @@
 #include "Utils/Mouse.h"
 #include "Utils/Settings.h"
 #include "World/Block/BlockMap.h"
+#include "World/Chunks/TerrainGenerator.h"
 
 GameState::GameState(StateStack& stack, sf::RenderWindow& window, GameResources& gameResources,
                      GameSession& gameSession)
     : State(stack)
     , mGameWindow(window)
     , mGameResources(gameResources)
-    , mChunkManager(mGameResources.texturePack, gameSession.currentlyPlayedWorld.value())
+    , mWorldSeed(TerrainGenerator::randomSeed())
+    , mSavedWorldName(gameSession.currentlyPlayedWorld.value())
+    , mChunkManager(mGameResources.texturePack, mSavedWorldName, mWorldSeed)
     , mPlayer({0.f, 150.f, 0.f}, mGameWindow, m3DWorldRendererShader, mChunkManager, mGameResources,
-              gameSession.currentlyPlayedWorld.value())
+              mSavedWorldName)
     , mGameSettings("settings.cfg")
 {
     Mouse::lockMouseAtCenter(mGameWindow);
     m3DWorldRendererShader.loadFromFile("resources/shaders/3DWorldRenderer/VertexShader.shader",
                                         "resources/shaders/3DWorldRenderer/FragmentShader.shader");
+
+    // TODO: This stuff works just because seed is passed to ChunkManager by reference!
+    // Maybe chunk manager costruction should be delayed using unique_ptr?
+    loadSavedGameData();
 
     GLCall(glEnable(GL_CULL_FACE));
     GLCall(glEnable(GL_DEPTH_TEST));
@@ -33,6 +40,14 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window, GameResources&
     GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 }
 
+void GameState::loadSavedGameData()
+{
+    std::ifstream file(gameDataSaveFilePath(), std::ios::binary);
+    if (file.is_open())
+    {
+        mSerializer.readSerialized(file, mWorldSeed);
+    }
+}
 
 bool GameState::handleEvent(const sf::Event& event)
 {
@@ -157,7 +172,20 @@ void GameState::draw(sf::RenderTarget& target, sf::RenderStates states) const
     mPlayer.draw(mGameRenderer, target, states);
 }
 
+
+std::string GameState::gameDataSaveFilePath() const
+{
+    return mSavedWorldName + "/game.bin";
+}
+
+void GameState::saveGameDataToFile()
+{
+    mSerializer.serialize(mWorldSeed);
+    mSerializer.saveToFile(gameDataSaveFilePath());
+}
+
 GameState::~GameState()
 {
     mChunkManager.forceFinishingAllProcesses();
+    saveGameDataToFile();
 }

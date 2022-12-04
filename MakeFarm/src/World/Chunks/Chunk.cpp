@@ -15,14 +15,15 @@
 #include <serializer.h>
 
 Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent,
-             ChunkManager& manager, const std::string& savedWorldPath)
+             ChunkManager& manager, const std::string& savedWorldPath, const int& worldSeed)
     : Chunk(Block::Coordinate::nonBlockToBlockMetric(pixelPosition), texturePack, parent, manager,
-            savedWorldPath)
+            savedWorldPath, worldSeed)
 {
 }
 
 Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack,
-             ChunkContainer& parent, ChunkManager& manager, const std::string& savedWorldPath)
+             ChunkContainer& parent, ChunkManager& manager, const std::string& savedWorldPath,
+             const int& worldSeed)
     : mChunkPosition(std::move(blockPosition))
     , mTexturePack(texturePack)
     , mParentContainer(parent)
@@ -31,16 +32,14 @@ Chunk::Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack,
     , mFloralMeshBuilder(mChunkPosition)
     , mChunkOfBlocks(std::make_shared<ChunkBlocks>())
     , mChunkManager(manager)
-    , mTerrainGenerator(std::make_unique<TerrainGenerator>())
+    , mTerrainGenerator(std::make_unique<TerrainGenerator>(worldSeed))
     , mSavedWorldPath(savedWorldPath)
 {
     auto chunkCoordinate = ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition);
 
-    std::ifstream file(chunkSaveFilePath(), std::ios::binary);
-    if (file.is_open())
+    if (doesChunkHaveSavedFile())
     {
-        auto serializedChunk = readSerializedChunk(file);
-        overwriteChunk(serializedChunk);
+        loadSavedChunkData();
     }
     else
     {
@@ -75,19 +74,6 @@ void Chunk::overwriteChunk(const Chunk::ChunkArray1D& chunk) const
             }
         }
     }
-}
-
-Chunk::ChunkArray1D Chunk::readSerializedChunk(std::ifstream& file) const
-{
-    // TODO: This thing is actually repeated in three places. Would be got to extract it
-    std::istreambuf_iterator<char> iter(file);
-    std::vector<char> vec(iter, std::istreambuf_iterator<char>{});
-    std::vector<unsigned char> data(vec.begin(), vec.end());
-    zpp::serializer::memory_input_archive in(data);
-    // ==========
-    ChunkArray1D chunkToRead;
-    in(chunkToRead);
-    return chunkToRead;
 }
 
 void Chunk::generateChunkTerrain()
@@ -470,17 +456,6 @@ bool Chunk::canGivenBlockBeOverplaced(std::vector<BlockId>& blocksThatMightBeOve
                        });
 }
 
-void Chunk::saveChunkToFile()
-{
-    std::vector<unsigned char> serializedData = serializedChunk();
-
-    std::filesystem::create_directories(mSavedWorldPath);
-    std::ofstream outfile(chunkSaveFilePath(), std::ios::out | std::ios::binary);
-    outfile.write(reinterpret_cast<const char*>(serializedData.data()),
-                  serializedData.size() * sizeof(char));
-    outfile.close();
-}
-
 std::vector<unsigned char> Chunk::serializedChunk()
 {
     auto chunkCoordinate = ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition);
@@ -491,7 +466,7 @@ std::vector<unsigned char> Chunk::serializedChunk()
     return serializedData;
 }
 
-std::string Chunk::chunkSaveFilePath()
+std::string Chunk::chunkSaveFilePath() const
 {
     auto chunkCoordinate = ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition);
     return mSavedWorldPath + "/chunk_" + std::to_string(chunkCoordinate.x) + "_" +
@@ -516,7 +491,31 @@ Chunk::ChunkArray1D Chunk::oneDimensionalChunkRepresentation()
     return chunk;
 }
 
+void Chunk::saveChunkDataToFile()
+{
+    auto chunk = oneDimensionalChunkRepresentation();
+    mSerializer.serialize(chunk);
+    mSerializer.saveToFile(chunkSaveFilePath());
+}
+
+void Chunk::loadSavedChunkData()
+{
+    std::ifstream file(chunkSaveFilePath(), std::ios::binary);
+    if (file.is_open())
+    {
+        ChunkArray1D chunkToRead;
+        mSerializer.readSerialized(file, chunkToRead);
+        overwriteChunk(chunkToRead);
+    }
+}
+
+bool Chunk::doesChunkHaveSavedFile() const
+{
+    return std::filesystem::exists(chunkSaveFilePath());
+}
+
+
 Chunk::~Chunk()
 {
-    saveChunkToFile();
+    saveChunkDataToFile();
 }

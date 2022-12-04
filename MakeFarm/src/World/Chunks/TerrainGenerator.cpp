@@ -4,7 +4,7 @@
 #include "World/Chunks/CoordinatesAroundOriginGetter.h"
 #include "pch.h"
 
-TerrainGenerator::TerrainGenerator()
+TerrainGenerator::TerrainGenerator(int seed)
     : mBasicTerrain()
     , mHillsAndValleys()
     , rd()
@@ -15,10 +15,12 @@ TerrainGenerator::TerrainGenerator()
     mBasicTerrain.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
     mBasicTerrain.SetFrequency(0.04);
     mBasicTerrain.SetFractalOctaves(3);
+    mBasicTerrain.SetSeed(seed);
 
     mHillsAndValleys.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
     mHillsAndValleys.SetFrequency(0.01);
     mHillsAndValleys.SetFractalOctaves(3);
+    mHillsAndValleys.SetSeed(seed);
 }
 
 void TerrainGenerator::generateTerrain(Chunk& chunk, Chunk::ChunkBlocks& chunkBlocks)
@@ -33,6 +35,7 @@ void TerrainGenerator::generateTerrain(Chunk& chunk, Chunk::ChunkBlocks& chunkBl
     }
     placeTrees(chunk);
 }
+
 int TerrainGenerator::surfaceLevelAtGivenPosition(const Chunk& chunk, int x, int z)
 {
     auto globalCoordinate = chunk.localToGlobalCoordinates({x, 0, z});
@@ -155,4 +158,13 @@ void TerrainGenerator::placeLogOfTheTree(Chunk& chunk, const Block::Coordinate& 
         chunk.tryToPlaceBlock(BlockId::Log, {block.x, block.y + i, block.z}, {BlockId::AllBlocks},
                               Chunk::RebuildOperation::None);
     }
+}
+
+int TerrainGenerator::randomSeed()
+{
+    static std::random_device r;
+    static std::default_random_engine e1(r());
+
+    std::uniform_int_distribution<int> uniformDist(INT_MIN, INT_MAX);
+    return uniformDist(e1);
 }

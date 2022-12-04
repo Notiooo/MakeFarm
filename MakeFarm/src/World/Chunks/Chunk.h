@@ -11,6 +11,7 @@
 #include "Renderer3D/Renderer3D.h"
 #include "Utils/Direction.h"
 #include "Utils/MultiDimensionalArray.h"
+#include "Utils/Serializer.h"
 #include "World/Block/Block.h"
 #include "World/Block/BlockId.h"
 
@@ -27,10 +28,10 @@ class Chunk
 {
 public:
     Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent,
-          ChunkManager& manager, const std::string& savedWorldPath);
+          ChunkManager& manager, const std::string& savedWorldPath, const int& worldSeed);
 
     Chunk(Block::Coordinate blockPosition, const TexturePack& texturePack, ChunkContainer& parent,
-          ChunkManager& manager, const std::string& savedWorldPath);
+          ChunkManager& manager, const std::string& savedWorldPath, const int& worldSeed);
 
     Chunk(Chunk&& rhs) noexcept;
     ~Chunk();
@@ -302,12 +303,7 @@ private:
      * @brief Path to the file where the chunk status is saved
      * @return Character string representing the chunk's path to the file
      */
-    std::string chunkSaveFilePath();
-
-    /**
-     * @brief Saves the state of the chunk to a file
-     */
-    void saveChunkToFile();
+    std::string chunkSaveFilePath() const;
 
     /**
      * @brief Serializes the chunk and returns its byte representation
@@ -316,19 +312,28 @@ private:
     std::vector<unsigned char> serializedChunk();
 
     /**
-     * @brief Reads from a file of a serialized chunk
-     * @param file The file from which the state of the chunk should be read in the form of a
-     * serialized one
-     * @return Chunk presented as a one-dimensional array
-     */
-    ChunkArray1D readSerializedChunk(std::ifstream& file) const;
-
-    /**
      * @brief Overwrites the actual chunk with data from a one-dimensional array representing the
      * chunk
      * @param chunk One-dimensional array that is a representation of a chunk
      */
     void overwriteChunk(const ChunkArray1D& chunk) const;
+
+    /**
+     * @brief Saves the state of the chunk data to a file
+     */
+    void saveChunkDataToFile();
+
+    /**
+     * @brief Reads chunk data from a file
+     * @warning Nothing happens when the save file is not there
+     */
+    void loadSavedChunkData();
+
+    /**
+     * @brief Checks if the chunk has a save file from which its state can be read
+     * @return True if the chunk has a save file, false otherwise
+     */
+    bool doesChunkHaveSavedFile() const;
 
 
 private:
@@ -338,6 +343,7 @@ private:
     std::unique_ptr<TerrainGenerator> mTerrainGenerator;
     Block::Coordinate mChunkPosition;
     const TexturePack& mTexturePack;
+    Serializer mSerializer;
 
     ChunkContainer& mParentContainer;
     ChunkManager& mChunkManager;

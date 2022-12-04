@@ -14,12 +14,7 @@ Inventory::Inventory(sf::Vector2i windowSize, const GameResources& gameResources
         reinterpret_cast<std::array<std::optional<InventorySlot>, NUMBER_OF_COLUMNS>&>(mItems),
         gameResources, windowSize);
 
-    std::ifstream file(inventorySaveFilePath(), std::ios::binary);
-    if (file.is_open())
-    {
-        readSerializedInventory(file);
-        hotbar().updateHotbarState();
-    }
+    loadSavedInventoryData();
 }
 
 bool Inventory::tryAddItem(const ItemId& itemToInsert, int amount)
@@ -107,25 +102,6 @@ std::string Inventory::inventorySaveFilePath()
     return mSaveWorldFilePath + "/inventory.bin";
 }
 
-void Inventory::saveInventoryToFile()
-{
-    std::vector<unsigned char> serializedData = serializedInventory();
-
-    std::filesystem::create_directories(mSaveWorldFilePath);
-    std::ofstream outfile(inventorySaveFilePath(), std::ios::out | std::ios::binary);
-    outfile.write(reinterpret_cast<const char*>(serializedData.data()),
-                  serializedData.size() * sizeof(char));
-    outfile.close();
-}
-
-std::vector<unsigned char> Inventory::serializedInventory()
-{
-    std::vector<unsigned char> serializedData;
-    zpp::serializer::memory_output_archive out(serializedData);
-    out(serializableInventory());
-    return serializedData;
-}
-
 Inventory::SerializableInventory Inventory::serializableInventory()
 {
     SerializableInventory inventoryToSave;
@@ -142,19 +118,6 @@ Inventory::SerializableInventory Inventory::serializableInventory()
     return inventoryToSave;
 }
 
-void Inventory::readSerializedInventory(std::ifstream& file)
-{
-    // TODO: This thing is actually repeated in three places. Would be got to extract it
-    std::istreambuf_iterator<char> iter(file);
-    std::vector<char> vec(iter, std::istreambuf_iterator<char>{});
-    std::vector<unsigned char> data(vec.begin(), vec.end());
-    zpp::serializer::memory_input_archive in(data);
-    // ==========
-    SerializableInventory inventoryToLoad;
-    in(inventoryToLoad);
-    overwriteInventory(inventoryToLoad);
-}
-
 void Inventory::overwriteInventory(const Inventory::SerializableInventory& inventory)
 {
     for (auto slotId = 0; slotId < mItems.size(); ++slotId)
@@ -167,8 +130,25 @@ void Inventory::overwriteInventory(const Inventory::SerializableInventory& inven
     }
 }
 
+void Inventory::saveInventoryDataToFile()
+{
+    mSerializer.serialize(serializableInventory());
+    mSerializer.saveToFile(inventorySaveFilePath());
+}
+
+void Inventory::loadSavedInventoryData()
+{
+    std::ifstream file(inventorySaveFilePath(), std::ios::binary);
+    if (file.is_open())
+    {
+        SerializableInventory inventoryToLoad;
+        mSerializer.readSerialized(file, inventoryToLoad);
+        overwriteInventory(inventoryToLoad);
+        hotbar().updateHotbarState();
+    }
+}
 
 Inventory::~Inventory()
 {
-    saveInventoryToFile();
+    saveInventoryDataToFile();
 }
