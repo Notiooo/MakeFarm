@@ -77,7 +77,6 @@ private:
      */
     void render();
 
-
     /**
      * \brief Loads the resources needed by the processes inside the game.
      *

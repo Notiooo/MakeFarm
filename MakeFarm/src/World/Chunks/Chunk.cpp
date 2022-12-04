@@ -456,16 +456,6 @@ bool Chunk::canGivenBlockBeOverplaced(std::vector<BlockId>& blocksThatMightBeOve
                        });
 }
 
-std::vector<unsigned char> Chunk::serializedChunk()
-{
-    auto chunkCoordinate = ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition);
-    auto chunk = oneDimensionalChunkRepresentation();
-    std::vector<unsigned char> serializedData;
-    zpp::serializer::memory_output_archive out(serializedData);
-    out(chunk);
-    return serializedData;
-}
-
 std::string Chunk::chunkSaveFilePath() const
 {
     auto chunkCoordinate = ChunkContainer::Coordinate::blockToChunkMetric(mChunkPosition);

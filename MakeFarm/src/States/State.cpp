@@ -8,6 +8,20 @@ State::State(StateStack& stack)
 {
 }
 
+void State::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+}
+
+bool State::handleEvent(const sf::Event& event)
+{
+    /*
+     * Set this state to transparent -- in other words
+     * allow States below in stack to be handle events.
+     */
+    return true;
+}
+
+
 bool State::fixedUpdate(const float& deltaTime)
 {
     /*

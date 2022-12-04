@@ -54,9 +54,14 @@ bool GameState::handleEvent(const sf::Event& event)
     Mouse::handleFirstPersonBehaviour(event, mGameWindow);
     mPlayer.handleEvent(event);
 
-    switch (event.key.code)
+    if (event.type == sf::Event::KeyPressed)
     {
-        case sf::Keyboard::F3: requestClear(); break;
+        switch (event.key.code)
+        {
+            case sf::Keyboard::Escape: requestPush(State_ID::PauseState); break;
+            case sf::Keyboard::F1: Mouse::unlockMouse(mGameWindow); break;
+            case sf::Keyboard::F4: requestClear(); break;
+        }
     }
 
     /*

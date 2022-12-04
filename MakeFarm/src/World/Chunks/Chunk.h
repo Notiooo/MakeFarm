@@ -306,12 +306,6 @@ private:
     std::string chunkSaveFilePath() const;
 
     /**
-     * @brief Serializes the chunk and returns its byte representation
-     * @return Chunk in serialized byte form
-     */
-    std::vector<unsigned char> serializedChunk();
-
-    /**
      * @brief Overwrites the actual chunk with data from a one-dimensional array representing the
      * chunk
      * @param chunk One-dimensional array that is a representation of a chunk

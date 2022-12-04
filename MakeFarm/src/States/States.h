@@ -10,7 +10,10 @@ enum class State_ID
     None,
     GameState,
     DeathState,
-    MainMenuState
+    MainMenuState,
+    PauseState,
+
+    ExitGameState,
 };
 
 

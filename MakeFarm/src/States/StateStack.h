@@ -105,7 +105,6 @@ public:
      */
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
-
     /**
      * \brief It takes input (event) from the user and sends it to the states on the stack.
      * \param event user input
@@ -131,7 +130,6 @@ public:
      */
     void push(State_ID stateID);
 
-
     /**
      * \brief Removes the state at the top of the stack.
      *
@@ -139,18 +137,22 @@ public:
      */
     void pop();
 
-
     /**
      * \brief Clears the stack by removing all the states in it.
      */
     void clear();
-
 
     /**
      * \brief Checks that there are no states on the stack.
      * \return True if the stack is empty, false if there is a state on it.
      */
     [[nodiscard]] bool empty() const noexcept;
+
+    /**
+     * @brief Reads the state ID that is currently on top of the stack.
+     * @return State ID that is currently on top of the stack.
+     */
+    [[nodiscard]] State_ID top() const;
 
 private:
     /**
@@ -169,6 +171,14 @@ private:
         State_ID stateID; //!< Identifier of the state that should be pushed on the stack
     };
 
+    /**
+     * @brief A state entry that stores both a pointer to the state and its identifier.
+     */
+    struct StateEntry
+    {
+        State_ID id;
+        std::unique_ptr<State> state;
+    };
 
     /**
      * \brief Creates a state with the given id
@@ -194,13 +204,12 @@ private:
      * Its implementation is a vector, since the implementation of
      * "transparent" states requires the ability to iterate over states.
      */
-    std::vector<std::unique_ptr<State>> mStack;
+    std::vector<StateEntry> mStack;
 
     /**
      * \brief A FIFO queue that holds pending operations for execution on the stack.
      */
     std::vector<Change> mChangesQueue;
-
 
     /**
      * \brief A factory that creates states objects with the given identifiers.

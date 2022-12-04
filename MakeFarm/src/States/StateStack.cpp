@@ -19,7 +19,9 @@ void StateStack::applyChanges()
     {
         switch (change.operation)
         {
-            case Perform::Push: mStack.push_back(createState(change.stateID)); break;
+            case Perform::Push:
+                mStack.push_back({change.stateID, createState(change.stateID)});
+                break;
 
             case Perform::Pop: mStack.pop_back(); break;
 
@@ -41,7 +43,7 @@ void StateStack::fixedUpdate(const float& deltaTime)
 
         // This allow some states to pause states under it.
         // Like pause for example
-        if (!(*beg)->fixedUpdate(deltaTime))
+        if (!(*beg).state->fixedUpdate(deltaTime))
         {
             return;
         }
@@ -60,7 +62,7 @@ void StateStack::update(const float& deltaTime)
 
         // This allow some states to pause states under it.
         // Like pause for example
-        if (!(*beg)->update(deltaTime))
+        if (!(*beg).state->update(deltaTime))
         {
             return;
         }
@@ -70,9 +72,9 @@ void StateStack::update(const float& deltaTime)
 void StateStack::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     // Drawing starts from the lowest state to the highest state
-    for (const auto& state: mStack)
+    for (const auto& entry: mStack)
     {
-        state->draw(target, states);
+        entry.state->draw(target, states);
     }
 }
 
@@ -89,7 +91,7 @@ void StateStack::handleEvent(const sf::Event& event)
 
         // This allow some states to pause states under it.
         // Like pause for example
-        if (!(*beg)->handleEvent(event))
+        if (!(*beg).state->handleEvent(event))
         {
             return;
         }
@@ -114,5 +116,14 @@ void StateStack::clear()
 
 bool StateStack::empty() const noexcept
 {
-    return mChangesQueue.empty();
+    return mStack.empty();
+}
+
+State_ID StateStack::top() const
+{
+    if (empty())
+    {
+        return State_ID::None;
+    }
+    return mStack.front().id;
 }

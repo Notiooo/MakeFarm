@@ -30,9 +30,7 @@ public:
      * \param target where it should be drawn to
      * \param states provides information about rendering process (transform, shader, blend mode)
      */
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
-    {
-    }
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
     /**
      * \brief Updates the state logic at equal intervals independent of the frame rate.
@@ -50,7 +48,7 @@ public:
      * \brief It takes input (event) from the user and interprets it
      * \param event user input
      */
-    virtual bool handleEvent(const sf::Event& event) = 0;
+    virtual bool handleEvent(const sf::Event& event);
 
 protected:
     /**

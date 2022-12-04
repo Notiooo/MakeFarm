@@ -227,8 +227,8 @@ void Player::handleKeyboardEvents(const sf::Event& event)
     {
         case sf::Keyboard::Space: tryJump(); break;
 #ifdef _DEBUG
-        case sf::Keyboard::F1: takeDamage(0.5); break;
-        case sf::Keyboard::F2: mIsFlying = !mIsFlying; break;
+        case sf::Keyboard::F2: takeDamage(0.5); break;
+        case sf::Keyboard::F3: mIsFlying = !mIsFlying; break;
 #endif
     }
 }

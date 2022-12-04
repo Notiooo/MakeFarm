@@ -61,7 +61,8 @@ tgui::Button::Ptr MainMenuState::createQuitGameButton(const tgui::Layout2d& butt
     quitGameButton->onPress(
         [this]
         {
-            mGameWindow.close();
+            requestClear();
+            requestPush(State_ID::ExitGameState);
         });
     quitGameButton->showWithEffect(tgui::ShowAnimationType::Fade, 800);
     mGui.add(quitGameButton);
