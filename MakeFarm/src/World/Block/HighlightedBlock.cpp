@@ -1,11 +1,12 @@
 #include "HighlightedBlock.h"
 #include "pch.h"
 
+#include "Renderer3D/Meshes/Builders/MeshBuilder.h"
+#include "Renderer3D/Meshes/Builders/WireframeBlockMeshBuilder.h"
 #include "Renderer3D/Model3D.h"
 #include "Resources/TexturePack.h"
 #include "World/Camera.h"
 #include "World/Chunks/ChunkManager.h"
-#include "World/Chunks/MeshBuilder.h"
 
 HighlightedBlock::HighlightedBlock()
 {
@@ -171,9 +172,10 @@ BufferLayout HighlightedBlock::createBufferLayout() const
     return bufferLayout;
 }
 
-Mesh3D HighlightedBlock::createMeshOfHighlightedBlock(const Block::Coordinate& facedBlock) const
+std::unique_ptr<Mesh3D> HighlightedBlock::createMeshOfHighlightedBlock(
+    const Block::Coordinate& facedBlock) const
 {
-    MeshBuilder wireframeMeshBuilder;
+    WireframeBlockMeshBuilder wireframeMeshBuilder;
     auto facedBlockNonMetric = facedBlock.nonBlockMetric();
     auto wireframeBlock =
         WireframeBlock(static_cast<sf::Vector3f>(facedBlockNonMetric),

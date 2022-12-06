@@ -6,7 +6,7 @@
 #include <queue>
 #include <shared_mutex>
 
-#include "MeshBuilder.h"
+#include "Renderer3D/Meshes/Builders/BlockMeshBuilder.h"
 #include "Renderer3D/Model3D.h"
 #include "Renderer3D/Renderer3D.h"
 #include "Utils/Direction.h"
@@ -344,9 +344,9 @@ private:
 
 
     // TODO: This system should be changed to a better one. Consider distance.
-    MeshBuilder mTerrainMeshBuilder;
-    MeshBuilder mFluidMeshBuilder;
-    MeshBuilder mFloralMeshBuilder;
+    BlockMeshBuilder mTerrainMeshBuilder;
+    BlockMeshBuilder mFluidMeshBuilder;
+    BlockMeshBuilder mFloralMeshBuilder;
 
     std::unique_ptr<Model3D> mTerrainModel;
     std::unique_ptr<Model3D> mFluidModel;

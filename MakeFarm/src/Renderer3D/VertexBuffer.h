@@ -10,6 +10,9 @@ class VertexBuffer : public Buffer
 public:
     VertexBuffer(const void* data, unsigned int size);
 
+    template<typename T>
+    VertexBuffer(const std::vector<T>& vector);
+
     VertexBuffer(const VertexBuffer&) = delete;
     VertexBuffer(VertexBuffer&&) noexcept = default;
 
@@ -28,3 +31,9 @@ public:
      */
     void unbind() const override;
 };
+
+template<typename T>
+VertexBuffer::VertexBuffer(const std::vector<T>& vector)
+    : VertexBuffer(vector.data(), vector.size() * sizeof(vector[0]))
+{
+}

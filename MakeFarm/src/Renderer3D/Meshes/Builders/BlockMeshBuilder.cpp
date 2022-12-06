@@ -1,45 +1,69 @@
-#include "MeshBuilder.h"
+#include "BlockMeshBuilder.h"
 
-#include "pch.h"
-#include <utility>
-
-#include "Physics/AABB.h"
-#include "World/Chunks/Chunk.h"
-
-MeshBuilder::MeshBuilder(Block::Coordinate origin)
-    : mOrigin(std::move(origin))
+BlockMeshBuilder::BlockMeshBuilder()
+    : MeshBuilder()
+    , mMesh(std::make_unique<WorldBlockMesh>())
 {
 }
 
-MeshBuilder::MeshBuilder()
-    : mOrigin(Block::Coordinate{0, 0, 0})
+BlockMeshBuilder::BlockMeshBuilder(Block::Coordinate origin)
+    : MeshBuilder(origin)
+    , mMesh(std::make_unique<WorldBlockMesh>())
 {
 }
 
-void MeshBuilder::setFaceSize(const float& faceSize)
+void BlockMeshBuilder::setFaceSize(const float& faceSize)
 {
     mBlockFaceSize = faceSize;
 }
 
-void MeshBuilder::addQuad(const Block::Face& blockFace, const std::vector<GLfloat>& textureQuad,
-                          const Block::Coordinate& blockPosition)
+void BlockMeshBuilder::addQuad(const Block::Face& blockFace,
+                               const std::vector<GLfloat>& textureQuad,
+                               const Block::Coordinate& blockPosition)
 {
-    auto& vertices = mMesh.vertices;
-    auto& texCoords = mMesh.textureCoordinates;
-    auto& indices = mMesh.indices;
+    auto& vertices = mMesh->vertices;
+    auto& texCoords = mMesh->textureCoordinates;
+    auto& indices = mMesh->indices;
+    auto& lightning = mMesh->directionalLightning;
 
     texCoords.insert(texCoords.end(), textureQuad.begin(), textureQuad.end());
+    addBlockFaceFakeLightning(blockFace, lightning);
+    addBlockFaceVertices(blockFace, blockPosition, vertices);
+    addBlockFaceIndices(indices);
+}
 
-    auto face = faceVertices(blockFace);
-    const auto& originPos = mOrigin.nonBlockMetric();
-    const auto& blockPos = blockPosition.nonBlockMetric();
+void BlockMeshBuilder::addBlockFaceFakeLightning(const Block::Face& blockFace,
+                                                 std::vector<float>& lightning) const
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        switch (blockFace)
+        {
+            case Block::Face::Top: lightning.emplace_back(1.0f); break;
+            case Block::Face::Left: lightning.emplace_back(0.65f); break;
+            case Block::Face::Right: lightning.emplace_back(0.65f); break;
+            case Block::Face::Bottom: lightning.emplace_back(0.5f); break;
+            case Block::Face::Front: lightning.emplace_back(0.8f); break;
+            case Block::Face::Back: lightning.emplace_back(0.5f); break;
+            case Block::Face::Counter: break;
+        }
+    }
+}
 
+void BlockMeshBuilder::addBlockFaceVertices(const Block::Face& blockFace,
+                                            const Block::Coordinate& blockPosition,
+                                            std::vector<float>& vertices) const
+{
     /*
      * Some blocks are larger than others.
      * It would be good if they were not just longer in one plane,
      * but it was spread out among all of them -- increased relative to the center.
      */
     const auto blockSizeDifference = (mBlockFaceSize - Block::BLOCK_SIZE) / 2.f;
+
+    auto face = faceVertices(blockFace);
+    const auto& originPos = mOrigin.nonBlockMetric();
+    const auto& blockPos = blockPosition.nonBlockMetric();
 
     for (int i = 0; i < 3 * 4; i += 3)
     {
@@ -51,7 +75,10 @@ void MeshBuilder::addQuad(const Block::Face& blockFace, const std::vector<GLfloa
         vertices.emplace_back(face[i + 2] * mBlockFaceSize + originPos.z + blockPos.z -
                               blockSizeDifference);
     }
+}
 
+void BlockMeshBuilder::addBlockFaceIndices(std::vector<GLuint>& indices)
+{
     // clang-format off
     indices.insert(indices.end(),
                    {
@@ -67,22 +94,7 @@ void MeshBuilder::addQuad(const Block::Face& blockFace, const std::vector<GLfloa
     mIndex += 4;
 }
 
-void MeshBuilder::resetMesh()
-{
-    mMesh.indices.clear();
-    mMesh.textureCoordinates.clear();
-    mMesh.vertices.clear();
-    mIndex = 0;
-}
-
-Mesh3D MeshBuilder::mesh3D() const
-{
-    // std::lock_guard _(mRebuildMeshMutex);
-    return mMesh;
-}
-
-
-std::vector<GLfloat> MeshBuilder::faceVertices(const Block::Face& blockFace) const
+std::vector<GLfloat> BlockMeshBuilder::faceVertices(const Block::Face& blockFace) const
 {
     switch (blockFace)
     {
@@ -143,38 +155,13 @@ std::vector<GLfloat> MeshBuilder::faceVertices(const Block::Face& blockFace) con
     }
 }
 
-void MeshBuilder::addWireframeBlock(const WireframeBlock& wireframeBlock)
+void BlockMeshBuilder::resetMesh()
 {
-    for (int blockFace = 0; blockFace < static_cast<int>(Block::Face::Counter); ++blockFace)
-    {
-        auto& vertices = mMesh.vertices;
-        auto& indices = mMesh.indices;
+    mMesh = std::make_unique<WorldBlockMesh>();
+    mIndex = 0;
+}
 
-        auto face = faceVertices(static_cast<Block::Face>(blockFace));
-
-        auto collisionBoxSize = wireframeBlock.max - wireframeBlock.min;
-        const auto& originPos = wireframeBlock.min;
-
-        for (int i = 0; i < 3 * 4; i += 3)
-        {
-            // a row in given face (x,y,z)
-            vertices.emplace_back(face[i] * collisionBoxSize.x + originPos.x);
-            vertices.emplace_back(face[i + 1] * collisionBoxSize.y + originPos.y);
-            vertices.emplace_back(face[i + 2] * collisionBoxSize.z + originPos.z);
-        }
-
-        // clang-format off
-        indices.insert(indices.end(),
-                   {
-                    mIndex,
-                    mIndex + 1,
-                    mIndex + 2,
-
-                    mIndex + 2,
-                    mIndex + 3,
-                    mIndex
-                   });
-        // clang-format on
-        mIndex += 4;
-    }
+std::unique_ptr<Mesh3D> BlockMeshBuilder::mesh3D()
+{
+    return mMesh->clone();
 }

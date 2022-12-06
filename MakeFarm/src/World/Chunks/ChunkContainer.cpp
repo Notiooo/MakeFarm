@@ -36,17 +36,12 @@ void ChunkContainer::drawFlorals(const Renderer3D& renderer3D, const sf::Shader&
 void ChunkContainer::drawOccuredCollisions(const Renderer3D& renderer3D,
                                            const sf::Shader& wireframeShader) const
 {
-    MeshBuilder collisionsMeshBuilder;
+    WireframeBlockMeshBuilder collisionsMeshBuilder;
     for (auto collisionAABB: mOccuredCollisions)
     {
         collisionsMeshBuilder.addWireframeBlock(collisionAABB.collisionBox());
     }
     Model3D collisionModel;
-
-    BufferLayout bufferLayout;
-    bufferLayout.push<GLfloat>(3);
-
-    collisionModel.setLayout(bufferLayout);
     collisionModel.setMesh(collisionsMeshBuilder.mesh3D());
 
     glDisable(GL_DEPTH_TEST);

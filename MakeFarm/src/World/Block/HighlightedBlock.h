@@ -71,7 +71,8 @@ private:
      * @param facedBlock Coordinates of the highlighted block
      * @return 3D Mesh of the highlighted block on the given coordinates
      */
-    [[nodiscard]] Mesh3D createMeshOfHighlightedBlock(const Block::Coordinate& facedBlock) const;
+    [[nodiscard]] std::unique_ptr<Mesh3D> createMeshOfHighlightedBlock(
+        const Block::Coordinate& facedBlock) const;
 
     /**
      * @brief Creates a 3D model of the highlighted block at the indicated position.

@@ -1,8 +1,8 @@
 #pragma once
 #include "BufferLayout.h"
 #include "IndexBuffer.h"
-#include "Mesh3D.h"
 #include "Renderer3D.h"
+#include "Renderer3D/Meshes/Mesh3D.h"
 #include "VertexArray.h"
 #include "VertexBuffer.h"
 
@@ -21,13 +21,7 @@ public:
      * will be available through all Model3D existance
      * \param mesh Mesh to display
      */
-    void setMesh(const Mesh3D& mesh);
-
-    /**
-     * \brief This function stores data of the mesh
-     * \param mesh Mesh to display
-     */
-    void setMesh(Mesh3D&& mesh);
+    void setMesh(std::unique_ptr<Mesh3D> mesh);
 
     /**
      * Draws this 3D Model to the game screen

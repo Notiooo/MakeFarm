@@ -12,7 +12,12 @@ set(PROJECT_SOURCES
         Renderer3D/BufferElement.cpp
         Renderer3D/BufferLayout.cpp
         Renderer3D/IndexBuffer.cpp
-        Renderer3D/Mesh3D.cpp
+        Renderer3D/Meshes/Mesh3D.cpp
+        Renderer3D/Meshes/WireFrameBlockMesh.cpp
+        Renderer3D/Meshes/WorldBLockMesh.cpp
+        Renderer3D/Meshes/Builders/BlockMeshBuilder.cpp
+        Renderer3D/Meshes/Builders/MeshBuilder.cpp
+        Renderer3D/Meshes/Builders/WireframeBlockMeshBuilder.cpp
         Renderer3D/Model3D.cpp
         Renderer3D/Renderer3D.cpp
         Renderer3D/VertexArray.cpp
@@ -46,6 +51,5 @@ set(PROJECT_SOURCES
         World/Chunks/ChunkManager.cpp
         World/Chunks/AsyncProcessedObjects.cpp
         World/Chunks/CoordinatesAroundOriginGetter.cpp
-        World/Chunks/MeshBuilder.cpp
         World/Chunks/TerrainGenerator.cpp
         )

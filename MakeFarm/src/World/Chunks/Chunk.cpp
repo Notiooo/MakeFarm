@@ -5,12 +5,12 @@
 #include <optional>
 #include <utility>
 
+#include "Renderer3D/Meshes/Builders/MeshBuilder.h"
 #include "Resources/TexturePack.h"
 #include "Utils/Direction.h"
 #include "World/Block/BlockType.h"
 #include "World/Chunks/ChunkContainer.h"
 #include "World/Chunks/ChunkManager.h"
-#include "World/Chunks/MeshBuilder.h"
 #include "World/Chunks/TerrainGenerator.h"
 #include <serializer.h>
 
