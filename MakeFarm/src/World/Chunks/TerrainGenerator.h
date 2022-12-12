@@ -1,12 +1,17 @@
 #pragma once
+#include "World/Biomes/Biome.h"
+#include "World/Biomes/DesertBiome.h"
+#include "World/Biomes/ForestBiome.h"
+#include "World/Biomes/SnowyBiome.h"
+#include "World/Biomes/VeryDryForestBiome.h"
 #include "World/Block/Block.h"
 #include "World/Chunks/Chunk.h"
-#include <FastNoiseLite.h>
+#include <set>
 
 class TerrainGenerator
 {
 public:
-    TerrainGenerator(int seed = 1337);
+    explicit TerrainGenerator(int seed = 1337);
 
     static constexpr auto SEA_LEVEL = 60;
     static constexpr auto MINIMAL_TERRAIN_LEVEL = 20;
@@ -26,77 +31,147 @@ public:
 
 private:
     /**
-     * @brief This is the factor responsible for how compacted the basic terrain is in the game
-     * world. The lower it is, the less bumpy the terrain. The higher, the more bumpy the terrain.
+     * @brief This includes biomes at individual local chunk coordinates, where (0,0) means  the
+     * local position (-1, -1). This allows to know what biomes are one block away around the chunk.
      */
-    static constexpr auto BASIC_TERRAIN_SQUASHING_FACTOR = 0.25f;
+    using BiomesInsideChunkWithOneBlockAroundIt =
+        MultiDimensionalArray<Biome*, Chunk::BLOCKS_PER_X_DIMENSION + 2,
+                              Chunk::BLOCKS_PER_Z_DIMENSION + 2>;
 
     /**
-     * @brief Generates a whole row y of blocks in a given position with a certain level of
-     * terrain/grass.
-     * @param chunkBlocks A collection of blocks in chunk.
-     * @param surfaceLevel Ground level/grass level.
-     * @param x The x position on which the column of blocks should appear.
-     * @param z The z position on which the column of blocks should appear.
+     * @brief On the given global coordinates it determines what biome is located.
+     * @param x Global coordinate at x on which the biome is checked
+     * @param z Global coordinate at y on which the biome is checked
+     * @return Biome, which is in the indicated position.
      */
-    void generateColumnOfBlocks(Chunk::ChunkBlocks& chunkBlocks, int surfaceLevel, int x, int z);
+    Biome& deduceBiome(int globalCoordinateX, int globalCoordinateZ);
 
     /**
-     * @brief Determines the level of terrain/grass at given x and z positions inside the chunk
-     * @param chunk Chunk for which ground/grass level is determined
-     * @param x Position x in the space for which the grass/floor level is determined.
-     * @param z Position z in the space for which the grass/floor level is determined.
-     * @return The level of terrain/grass at a given position.
+     * @brief Returns what the humidity is at the indicated global coordinates.
+     * @param globalCoordinate Global coordinate on which humidity is to be checked.
+     * @return Humidity that is located at the indicated global coordinates.
      */
-    int surfaceLevelAtGivenPosition(const Chunk& chunk, int x, int z);
+    float humidityAtGivenCoordinates(const Block::Coordinate& globalCoordinate);
 
     /**
-     * @brief Places trees on the indicated chunk
-     * @param chunk Chunk on which trees should be placed
+     * @brief Returns what the temperature is at the indicated global coordinates.
+     * @param globalCoordinate Global coordinate on which humidity is to be checked.
+     * @return Humidity that is located at the indicated global coordinates.
      */
-    void placeTrees(Chunk& chunk);
+    float temperatureAtGivenCoordinates(const Block::Coordinate& globalCoordinate);
 
     /**
-     * @brief Places tree on the indicated chunk in indicated position
-     * @param chunk Chunk on which tree should be placed
-     * @param block Block on which a new tree should be built
+     * @brief Returns a collection of all biomes that are in the chunk and by 1 block away outside
+     * the chunk.
+     * @param biomesInChunkPerCoordinate A container with the dimensions of a chunk including the
+     * border around the chunk of 1 block.
+     * @return Collection of all biomes that are in the chunk and by 1 block away outside
+     * the chunk.
      */
-    void placeTree(Chunk& chunk, const Block::Coordinate& block);
+    std::set<Biome*> allBiomesInChunkAndOneBlockAroundIt(
+        BiomesInsideChunkWithOneBlockAroundIt biomesInChunkPerCoordinate);
 
     /**
-     * @brief Places the main root of the tree, i.e. the column of logs.
-     * @param chunk Chunk on which the main tree root is to be placed
-     * @param block Block on which the main tree root is to be placed
-     * @param treeLength The length the tree should be
+     * @brief Returns an array of all biomes that are in the chunk and by 1 block away outside
+     * the chunk where each coordinate corresponds to a biome that is located on a given chunk.
+     * @param chunk Chunk on which biomes are checked
+     * @return Array of all biomes that are in the chunk and by 1 block away outside  the chunk
+     * where each coordinate corresponds to a biome that is located on a given chunk.
      */
-    void placeLogOfTheTree(Chunk& chunk, const Block::Coordinate& block, int treeLength) const;
+    BiomesInsideChunkWithOneBlockAroundIt biomePerLocalCoordinate(const Chunk& chunk);
 
     /**
-     * @brief Stands the upper crown of the tree created from leaves. It is a crown consisting of
-     * four blocks in one y-plane.
-     * @param chunk Chunk on which the upper crown is to be placed
-     * @param block Block around which leaves are placed
-     * @param treeLength Length of tree
+     * @brief Checks if the chunk contains only one biome.
+     * @param biomesPerCoordinate Each coordinate corresponds to a biome that is located on a given
+     * chunk, where (0,0) means  the local position (-1, -1). This allows to know what biomes are
+     * one block away around the chunk.
+     * @return True if the chunk contains only one biome, false otherwise.
      */
-    void placeTopPartOfTreeTopMadeOfLeaves(Chunk& chunk, const Block::Coordinate& block,
-                                           int treeLength) const;
+    bool doesChunkContainOnlyOneBiome(
+        BiomesInsideChunkWithOneBlockAroundIt& biomesPerCoordinate) const;
+
+
+    // TODO: It is possible that the following structures and related functions should be moved
+    // outside this class.
+
     /**
-     * @brief Stands the bottom part of crown of the tree created from leaves. It is a crown
-     * consisting of 24 blocks in one y-plane.
-     * @param chunk Chunk on which the bottom crown is to be placed
-     * @param block Block around which leaves are placed
-     * @param treeLength Length of tree
+     * @brief Structure defining the vertices of the rectangle
      */
-    void placeBottomPartOfTreeTopMadeOfLeaves(Chunk& chunk, const Block::Coordinate& block,
-                                              int treeLength) const;
+    struct RectangleCorners
+    {
+        int topLeft;
+        int topRight;
+        int bottomLeft;
+        int bottomRight;
+    };
 
-    FastNoiseLite mBasicTerrain;
-    FastNoiseLite mHillsAndValleys;
+    /**
+     * @brief Structure that defines a rectangle
+     */
+    struct Rectangle
+    {
+        int x;
+        int z;
+        int width;
+        int height;
+    };
 
-    std::random_device rd;
-    std::mt19937 gen;
-    std::bernoulli_distribution mTreeDecider;
-    std::uniform_int_distribution<int> mTreeLengthGenerator;
+    /**
+     * @brief Converts bilinear interpolations based on noise at the corners of the rectangle to
+     * create smoothed transitions between blocks by returning values at the individual coordinates
+     * x and z
+     * @param corners The corners of the rectangle defining the noise at the given positions.
+     * @param rectangle A rectangle that is a representation of the chunk for which the noise per
+     * coordinate is calculate.
+     * @param x Local chunk x coordinate at the positions of which the smoothed new noise is
+     * calculated.
+     * @param z Local chunk z coordinate at the positions of which the smoothed new noise is
+     * calculated.
+     * @return A smoothed value that is a bilinear interpolation of the four corners of a rectangle
+     * at a given x and z position.
+     */
+    int bilinearInterpolation(const RectangleCorners& corners, const Rectangle& rectangle, int x,
+                              int z);
 
-    std::vector<Block::Coordinate> mTreesToPlace;
+    /**
+     * @brief Generates terrain on the indicated chunk using the indicated biome.
+     * @param chunk Chunk on which the site is to be created.
+     * @param chunkBlocks Chunk blocks that are overwritten thus creating terrain.
+     * @param biome Biome to be used to create terrain.
+     */
+    void generateTerrainForChunkWithGivenBiome(const Chunk& chunk, Chunk::ChunkBlocks& chunkBlocks,
+                                               Biome& biome) const;
+
+    /**
+     * @brief Calculate the noise on the corners of the chunk in the form of corners of a rectangle.
+     * @param chunk Chunk for which corner noise is calculated.
+     * @param allBiomesInChunk 2D array structure that determines the biom per coordinate taking
+     * into account the outside of the chunk, that is, 1 block beyond the chunk inclusive.
+     * @return Noise at the corners of the rectangle
+     */
+    RectangleCorners calculateNoiseAtChunkCorners(
+        const Chunk& chunk, const BiomesInsideChunkWithOneBlockAroundIt& allBiomesInChunk) const;
+
+    /**
+     * @brief Generates terrain on the indicated chunk using the indicated biome.
+     * @param chunkBlocks Blocks of the chunk that are overwritten thus creating terrain.
+     * @param allBiomesInChunkPerCoordinate 2D array structure that determines the biom per
+     * coordinate taking into account the outside of the chunk, that is, 1 block beyond the chunk
+     * inclusive.
+     * @param cornerNoises Noise at the corners of the rectangle
+     */
+    void generateTerrainForChunkWithDifferentBiomes(
+        Chunk::ChunkBlocks& chunkBlocks,
+        const BiomesInsideChunkWithOneBlockAroundIt& allBiomesInChunkPerCoordinate,
+        const RectangleCorners& cornerNoises);
+
+
+private:
+    ForestBiome mForestBiome;
+    VeryDryForestBiome mVeryDryForestBiome;
+    DesertBiome mDesertBiome;
+    SnowyBiome mSnowyBiome;
+
+    FastNoiseLite mHumidity;
+    FastNoiseLite mTemperature;
 };

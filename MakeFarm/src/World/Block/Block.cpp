@@ -15,6 +15,11 @@ Block::Block(const BlockId& blockId)
 {
 }
 
+Block::Block(const Block& rhs)
+    : mBlockType(rhs.mBlockType)
+{
+}
+
 Block::Coordinate Block::Coordinate::coordinateInGivenDirection(Direction direction) const
 {
     switch (direction)
@@ -31,16 +36,15 @@ Block::Coordinate Block::Coordinate::coordinateInGivenDirection(Direction direct
 
 sf::Vector3<Block::SizeType> Block::Coordinate::nonBlockMetric() const
 {
-    return sf::Vector3<SizeType>(static_cast<SizeType>(x) * BLOCK_SIZE,
-                                 static_cast<SizeType>(y) * BLOCK_SIZE,
-                                 static_cast<SizeType>(z) * BLOCK_SIZE);
+    return {static_cast<SizeType>(x) * BLOCK_SIZE, static_cast<SizeType>(y) * BLOCK_SIZE,
+            static_cast<SizeType>(z) * BLOCK_SIZE};
 }
 
 void Block::setBlockType(const BlockId& blockId)
 {
+    std::scoped_lock guard(mBlockAccessMutex);
     mBlockType = &BlockMap::blockMap().blockType(blockId);
 }
-
 
 Block::TextureId Block::blockTextureId(const Block::Face& blockFace) const
 {
@@ -49,6 +53,10 @@ Block::TextureId Block::blockTextureId(const Block::Face& blockFace) const
 
 BlockId Block::id() const
 {
+    // TODO: Often crash here, mBlockType read memory failed (0 of 4 bytes read)
+    // Maybe chunk holding this was removed?
+    // I think there should be a queue for removing chunk at some points... I guess?
+    std::shared_lock guard(mBlockAccessMutex);
     return mBlockType->id;
 }
 
@@ -61,7 +69,8 @@ bool Block::isFloral() const
 {
     switch (id())
     {
-        case BlockId::Leaves: return true;
+        case BlockId::Leaves:
+        case BlockId::SnowyLeaves: return true;
         default: return false;
     }
 }

@@ -237,7 +237,7 @@ Block& Chunk::localNearbyBlock(const Block::Coordinate& position, const Directio
 
 const Block& Chunk::localBlock(const Block::Coordinate& localCoordinates) const
 {
-    std::unique_lock guard(mChunkAccessMutex);
+    std::scoped_lock guard(mChunkAccessMutex);
     return *(*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z];
 }
 
@@ -363,13 +363,13 @@ std::optional<Block> Chunk::neighbourBlockInGivenDirection(const Block::Coordina
     const auto blockNeighborPosition = localNearbyBlockPosition(blockPos, direction);
     if (areLocalCoordinatesInsideChunk(blockNeighborPosition))
     {
-        return (localBlock(blockNeighborPosition).id());
+        return std::optional<Block>(localBlock(blockNeighborPosition).id());
     }
 
     if (const auto& neighborBlock =
             mParentContainer.worldBlock(localToGlobalCoordinates(blockNeighborPosition)))
     {
-        return neighborBlock->id();
+        return std::optional<Block>(neighborBlock->id());
     }
 
     return std::nullopt;

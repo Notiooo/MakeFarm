@@ -5,6 +5,7 @@
 #include "Utils/Direction.h"
 #include "World/Item/ItemId.h"
 #include <optional>
+#include <shared_mutex>
 
 class BlockType;
 class TexturePack;
@@ -13,7 +14,8 @@ class Block
 {
 public:
     Block();
-    Block(const BlockId& blockId);
+    explicit Block(const BlockId& blockId);
+    Block(const Block& rhs);
 
     /**
      * \brief The type of variable that is used to define the side of the block
@@ -168,4 +170,5 @@ public:
 
 private:
     const BlockType* mBlockType;
+    mutable std::shared_mutex mBlockAccessMutex;
 };

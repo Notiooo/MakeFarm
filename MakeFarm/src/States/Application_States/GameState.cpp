@@ -191,6 +191,5 @@ void GameState::saveGameDataToFile()
 
 GameState::~GameState()
 {
-    mChunkManager.forceFinishingAllProcesses();
     saveGameDataToFile();
 }

@@ -23,15 +23,6 @@ public:
     static constexpr int MAX_NEW_GENERATED_CHUNK_AT_ONE_THREAD = WORLD_GENERATION_CHUNK_DISTANCE;
 
     /**
-     * \brief This is the maximum site height that can be generated.
-     *
-     * For example:
-     * Chunk::BLOCKS_PER_Y_DIMENSION - 10 means that the highest height
-     * that the highest mountain will reach is maximum chunk height - 10
-     */
-    static constexpr int MAX_HEIGHT_MAP = Chunk::BLOCKS_PER_Y_DIMENSION - 10;
-
-    /**
      * @brief Number of threads responsible for generating new chunks.
      */
     static constexpr int NUMBER_OF_THREADS_GENERATING_NEW_CHUNKS = 1;
@@ -40,6 +31,8 @@ public:
 
     ChunkManager(const TexturePack& texturePack, const std::string& savedWorldPath,
                  const int& worldSeed);
+
+    ~ChunkManager();
 
     /**
      * Draws this chunk container to the game screen

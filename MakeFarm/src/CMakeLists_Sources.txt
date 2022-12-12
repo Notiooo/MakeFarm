@@ -46,10 +46,15 @@ set(PROJECT_SOURCES
         World/Item/ItemMap.cpp
         World/Item/ItemType.cpp
         World/Camera.cpp
+        World/Chunks/AsyncProcessedObjects.cpp
+        World/Biomes/Biome.cpp
+        World/Biomes/DesertBiome.cpp
+        World/Biomes/ForestBiome.cpp
+        World/Biomes/SnowyBiome.cpp
+        World/Biomes/VeryDryForestBiome.cpp
         World/Chunks/Chunk.cpp
         World/Chunks/ChunkContainer.cpp
         World/Chunks/ChunkManager.cpp
-        World/Chunks/AsyncProcessedObjects.cpp
         World/Chunks/CoordinatesAroundOriginGetter.cpp
         World/Chunks/TerrainGenerator.cpp
         )

@@ -11,6 +11,13 @@ enum class BlockId
     Log         = 5,
     Leaves      = 6,
     Water       = 7,
+    Cactus      = 8,
+    DryGrass    = 9,
+    SnowyGrass  = 10,
+    SpruceLog   = 11,
+    SnowyLeaves = 12,
+    Ice         = 13,
+
 
     Counter,
     AllBlocks

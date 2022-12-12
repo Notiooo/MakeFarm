@@ -174,7 +174,14 @@ void ChunkManager::updateMeshForEveryChunkWhichIsNotDuringProcessing(
             mCurrentlyProcessedChunks.objectsToBeProcessed.emplace_back(chunkPosition);
             guard.unlock();
 
-            mChunkContainer.at(chunkPosition)->updateMesh();
+            // TODO: There is tiny chance that it may already disappear before calling updateMesh
+            // Baah, it may be even deleted during update
+            // Maybe some states per chunk like BUSY or FREE would be a good idea
+            // to eliminate those crashes from time to time
+            if (isChunkPresentInContainer(chunkPosition))
+            {
+                mChunkContainer.at(chunkPosition)->updateMesh();
+            }
             mCurrentlyProcessedChunks.removeObject(chunkPosition);
         }
     }
@@ -230,10 +237,9 @@ void ChunkManager::generateChunk(ChunkContainer::Coordinate chunkPosition)
         ChunkContainer::Coordinate::blockToChunkMetric(newChunk->positionInBlocks());
 
     auto& chunk = *newChunk;
+    chunk.rebuildMesh();
     mChunkContainer.emplace(chunkPosition, std::move(newChunk));
     mChunkContainer.rebuildChunksAround(chunkCoordinates);
-
-    chunk.rebuildMesh();
 }
 
 std::list<ChunkContainer::Coordinate> ChunkManager::generatesNewChunksAtAndAroundOrigin(
@@ -347,7 +353,6 @@ bool ChunkManager::tryToRebuildChunkIfNotProcessed(
 
         chunk->rebuildMesh();
         mCurrentlyProcessedChunks.removeObject(chunkCoordinates);
-        guard.lock();
         return true;
     }
     return false;
@@ -375,4 +380,9 @@ void ChunkManager::forceFinishingAllProcesses()
     {
         processFinishedThreadsGeneratingNewChunks();
     }
+}
+
+ChunkManager::~ChunkManager()
+{
+    forceFinishingAllProcesses();
 }
