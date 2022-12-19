@@ -23,7 +23,10 @@ enum class TextureManagerId
     GUI_Inventory_Unselected_Block,
     GUI_Healthbar_FullHeart,
     GUI_Healthbar_EmptyHeart,
-    GUI_Healthbar_HalfHeart
+    GUI_Healthbar_HalfHeart,
+    GUI_Oxygenbar_FullOxygen,
+    GUI_Oxygenbar_EmptyOxygen,
+    GUI_Oxygenbar_HalfOxygen
 };
 
 /**

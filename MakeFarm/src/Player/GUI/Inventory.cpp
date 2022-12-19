@@ -1,8 +1,7 @@
 #include "Inventory.h"
-#include "Player/GUI/Hotbar.h"
+#include "Player/GUI/Bars/Hotbar.h"
 #include "pch.h"
 #include <filesystem>
-#include <serializer.h>
 
 Inventory::Inventory(sf::Vector2i windowSize, const GameResources& gameResources,
                      const std::string& saveWorldPath)

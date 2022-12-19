@@ -1,6 +1,7 @@
 #pragma once
 #include "Physics/AABB.h"
-#include "Player/GUI/Healthbar.h"
+#include "Player/GUI/Bars/Healthbar.h"
+#include "Player/GUI/Bars/Oxygenbar.h"
 #include "Player/GUI/Inventory.h"
 #include "Utils/Serializer.h"
 #include "World/Block/HighlightedBlock.h"
@@ -218,17 +219,17 @@ private:
     void checkFallingDamage();
 
     /**
-     * @brief Converts the fall speed from altitude to the received damage given in hearts.
+     * @brief Converts the fall speed from altitude to the received damage given in value.
      * @param fallingVelocity The speed at which the player falls.
-     * @return Damage dealt to player given in hearts
+     * @return Damage dealt to player given in value
      */
-    Hearts fallingVelocityToDamage(float fallingVelocity);
+    DiscreteBarValue fallingVelocityToDamage(float fallingVelocity);
 
     /**
      * @brief Deals damage to the player
-     * @param takenDamage The number of hearts a player should lose.
+     * @param takenDamage The number of value a player should lose.
      */
-    void takeDamage(const Hearts& takenDamage);
+    void takeDamage(const DiscreteBarValue& takenDamage);
 
     /**
      * @brief The path to the file that should contain the saved information about the player
@@ -247,6 +248,11 @@ private:
      */
     void loadSavedPlayerData();
 
+    /**
+     * @brief Updates player status related to drowning in water
+     */
+    void updatePlayerDrowingState();
+
     Camera mCamera;
     AABB mAABB;
     HighlightedBlock mSelectedBlock;
@@ -254,6 +260,7 @@ private:
     sf::Shader mWireframeShader;
     Inventory mInventory;
     Healthbar mHealthbar;
+    Oxygenbar mOxygenbar;
     Serializer mSerializer;
 
     bool mIsPlayerOnGround = false;
@@ -261,8 +268,11 @@ private:
     bool mIsPlayerInWater = false;
     bool mArePlayerEyesInWater = false;
     bool mIsFlying = false;
-    Hearts mPlayerHealth = 10;
+    DiscreteBarValue mPlayerHealth = 10;
     const std::string& mSavedWorldPath;
+
+    sf::Clock mPlayerDrowingTimer;
+    DiscreteBarValue mPlayerOxygen = 10;
 
     sf::RectangleShape mWaterInWaterEffect;
     sf::Sprite mCrosshair;

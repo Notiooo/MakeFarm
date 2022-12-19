@@ -12,7 +12,6 @@
 #include "World/Chunks/ChunkContainer.h"
 #include "World/Chunks/ChunkManager.h"
 #include "World/Chunks/TerrainGenerator.h"
-#include <serializer.h>
 
 Chunk::Chunk(sf::Vector3i pixelPosition, const TexturePack& texturePack, ChunkContainer& parent,
              ChunkManager& manager, const std::string& savedWorldPath, const int& worldSeed)

@@ -174,8 +174,21 @@ void Game::loadResources()
     std::string guiTexturesFolder = "resources/textures/gui/";
     loadInventoryTextures(guiTexturesFolder);
     loadHealthbarTextures(guiTexturesFolder);
+    loadOxygenbarTextures(guiTexturesFolder);
 
     texturePack.loadTexturePack("defaultTextures");
+}
+
+void Game::loadOxygenbarTextures(const std::string& guiTexturesFolder)
+{
+    auto& textures = mGameResources.textureManager;
+    auto oxygenFolder = guiTexturesFolder + "oxygenbar/";
+    textures.storeResource(TextureManagerId::GUI_Oxygenbar_EmptyOxygen,
+                           oxygenFolder + "empty_oxygen.png");
+    textures.storeResource(TextureManagerId::GUI_Oxygenbar_FullOxygen,
+                           oxygenFolder + "full_oxygen.png");
+    textures.storeResource(TextureManagerId::GUI_Oxygenbar_HalfOxygen,
+                           oxygenFolder + "half_oxygen.png");
 }
 
 void Game::loadHealthbarTextures(const std::string& guiTexturesFolder)

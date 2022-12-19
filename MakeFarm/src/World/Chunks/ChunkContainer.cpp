@@ -1,8 +1,12 @@
 #include "ChunkContainer.h"
 #include "CoordinatesAroundOriginGetter.h"
+#include "Utils/IteratorRanges.h"
 #include "World/Block/BlockMap.h"
 #include "pch.h"
-#include <Utils/IteratorRanges.h>
+
+#ifdef DRAW_DEBUG_COLLISIONS
+    #include "Renderer3D/Meshes/Builders/WireframeBlockMeshBuilder.h"
+#endif
 
 
 void ChunkContainer::drawTerrain(const Renderer3D& renderer3D, const sf::Shader& shader) const

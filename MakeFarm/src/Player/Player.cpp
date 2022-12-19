@@ -1,11 +1,10 @@
 #include "Player.h"
-#include "Player/GUI/Hotbar.h"
+#include "Player/GUI/Bars/Hotbar.h"
 #include "World/Chunks/ChunkContainer.h"
 #include "pch.h"
 #include "utils/utils.h"
 #include <SFML/Graphics/Shader.hpp>
 #include <filesystem>
-#include <serializer.h>
 
 Player::Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf::Shader& shader,
                ChunkManager& chunkManager, const GameResources& gameResources,
@@ -20,8 +19,13 @@ Player::Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf:
     , mCrosshair()
     , mInventory(sf::Vector2i(target.getSize()), gameResources, savedWorldPath)
     , mHealthbar(gameResources.textureManager, mInventory.hotbar().position())
+    , mOxygenbar(gameResources.textureManager, {0, 0})
     , mSavedWorldPath(savedWorldPath)
 {
+    auto newOxygenPosition = mInventory.hotbar().position();
+    mOxygenbar.position(
+        {newOxygenPosition.x, newOxygenPosition.y - mOxygenbar.size().y + DiscreteBar::OFFSET_Y});
+
     mCrosshairTexture.loadFromFile("resources/textures/crosshair.png");
     mCrosshair.setTexture(mCrosshairTexture);
     centerOrigin(mCrosshair);
@@ -31,7 +35,7 @@ Player::Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf:
                                   "resources/shaders/WireframeRenderer/GeometryShader.shader",
                                   "resources/shaders/WireframeRenderer/FragmentShader.shader");
 
-    auto waterColor = sf::Color(49, 103, 189, 120);
+    auto waterColor = sf::Color(49, 103, 189, 150);
     mWaterInWaterEffect.setFillColor(waterColor);
 
     loadSavedPlayerData();
@@ -44,6 +48,31 @@ void Player::update(const float& deltaTime)
     mSelectedBlock.update(deltaTime, mCamera, mChunkManager);
     mInventory.update(deltaTime);
     checkFallingDamage();
+    updatePlayerDrowingState();
+}
+
+void Player::updatePlayerDrowingState()
+{
+    if (mArePlayerEyesInWater)
+    {
+        if (mPlayerDrowingTimer.getElapsedTime().asSeconds() > 0.5f)
+        {
+            if (mPlayerOxygen == 0)
+            {
+                takeDamage(0.5f);
+            }
+
+            mPlayerOxygen -= 0.5f;
+            mOxygenbar.oxygen(mPlayerOxygen);
+            mPlayerDrowingTimer.restart();
+        }
+    }
+    else
+    {
+        mPlayerOxygen = 10;
+        mOxygenbar.oxygen(mPlayerOxygen);
+        mPlayerDrowingTimer.restart();
+    }
 }
 
 void Player::checkFallingDamage()
@@ -51,7 +80,7 @@ void Player::checkFallingDamage()
     if (mIsPlayerOnGround && !mWasPlayerOnGroundBefore && !mIsPlayerInWater)
     {
         auto takenDamage = fallingVelocityToDamage(mFallingVelocityBeforeHittingGround);
-        if (takenDamage.atLeastHalfHeart())
+        if (takenDamage.atLeastHalf())
         {
             takeDamage(takenDamage);
         }
@@ -59,13 +88,13 @@ void Player::checkFallingDamage()
     mWasPlayerOnGroundBefore = mIsPlayerOnGround;
 }
 
-void Player::takeDamage(const Hearts& takenDamage)
+void Player::takeDamage(const DiscreteBarValue& takenDamage)
 {
     mPlayerHealth -= takenDamage;
     mHealthbar.hearts(mPlayerHealth);
 }
 
-Hearts Player::fallingVelocityToDamage(float fallingVelocity)
+DiscreteBarValue Player::fallingVelocityToDamage(float fallingVelocity)
 {
     auto takenDamage = std::abs(fallingVelocity);
     takenDamage *= 10;
@@ -397,6 +426,10 @@ void Player::draw(const Renderer3D& renderer3D, sf::RenderTarget& target,
     SfmlDraw(mCrosshair, target, states);
     mInventory.draw(target, states);
     mHealthbar.draw(target, states);
+    if (mArePlayerEyesInWater)
+    {
+        mOxygenbar.draw(target, states);
+    }
 }
 
 bool Player::isDead() const
