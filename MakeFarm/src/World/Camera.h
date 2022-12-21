@@ -118,12 +118,12 @@ public:
     glm::vec3 upwardDirection() const;
 
     /**
-     * @brief The function rotates the camera (roll).
+     * @brief The function sets rotation for the camera (roll).
      * @param angle The angle by which the camera is rotated (rolled).
      * @warning The function does not work properly as long as the camera is not rewritten to
      * quaternions, or some better trick is not used.
      */
-    void rotate(float angle);
+    void rotation(float angle);
 
 private:
     /**

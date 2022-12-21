@@ -386,3 +386,18 @@ ChunkManager::~ChunkManager()
 {
     forceFinishingAllProcesses();
 }
+
+sf::Vector3f ChunkManager::calculateSpawnPoint()
+{
+    const auto startupChunk = ChunkContainer::Coordinate(0, 0, 0);
+    auto startupPosition = Block::Coordinate(0, 0, 0);
+    if (!chunks().isPresent(startupChunk))
+    {
+        generateChunk(startupChunk);
+    }
+    startupPosition = chunks().at(startupChunk)->highestSetBlock(startupPosition);
+    startupPosition.y += 3;
+
+    return sf::Vector3f(startupPosition.nonBlockMetric()) +
+           sf::Vector3f(Block::BLOCK_SIZE / 2.f, 0, Block::BLOCK_SIZE / 2.f);
+}

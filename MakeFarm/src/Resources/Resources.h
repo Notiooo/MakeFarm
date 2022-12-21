@@ -12,6 +12,8 @@ namespace Resources
 static const inline std::string SAVE_DIRECTORY_FOLDER = "saves";
 }
 
+class Player;
+
 /**
  * \brief Texture IDs under which individual textures can be saved and read.
  */
@@ -65,6 +67,7 @@ struct GameResources
 struct GameSession
 {
     std::optional<std::string> currentlyPlayedWorld;
+    Player* player;
 };
 
 #endif

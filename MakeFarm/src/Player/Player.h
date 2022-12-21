@@ -85,6 +85,11 @@ public:
      */
     bool isDead() const;
 
+    /**
+     * @brief Respawns the player back to his starting point and clean their inventory.
+     */
+    void respawn();
+
 private:
     /**
      * @brief Updates the player's velocity.
@@ -262,6 +267,7 @@ private:
     Healthbar mHealthbar;
     Oxygenbar mOxygenbar;
     Serializer mSerializer;
+    sf::Vector3f mSpawnPoint;
 
     bool mIsPlayerOnGround = false;
     bool mWasPlayerOnGroundBefore = true;

@@ -503,6 +503,18 @@ bool Chunk::doesChunkHaveSavedFile() const
     return std::filesystem::exists(chunkSaveFilePath());
 }
 
+Block::Coordinate Chunk::highestSetBlock(const Block::Coordinate& blockPos)
+{
+    for (auto y = BLOCKS_PER_Y_DIMENSION - 1; y > 0; --y)
+    {
+        if (localBlock({blockPos.x, y, blockPos.z}).id() != BlockId::Air)
+        {
+            return {blockPos.x, y, blockPos.z};
+        }
+    }
+    return {blockPos.x, 0, blockPos.z};
+}
+
 
 Chunk::~Chunk()
 {

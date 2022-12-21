@@ -17,6 +17,7 @@ Player::Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf:
     , mChunkManager(chunkManager)
     , mCrosshairTexture()
     , mCrosshair()
+    , mSpawnPoint(position)
     , mInventory(sf::Vector2i(target.getSize()), gameResources, savedWorldPath)
     , mHealthbar(gameResources.textureManager, mInventory.hotbar().position())
     , mOxygenbar(gameResources.textureManager, {0, 0})
@@ -446,7 +447,8 @@ void Player::savePlayerDataToFile()
 {
     auto playerPosition = position();
     mSerializer.serialize(playerPosition.x, playerPosition.y, playerPosition.z,
-                          static_cast<float>(mPlayerHealth));
+                          static_cast<float>(mPlayerHealth), mSpawnPoint.x, mSpawnPoint.y,
+                          mSpawnPoint.z);
     mSerializer.saveToFile(playerSaveFilePath());
 }
 
@@ -456,10 +458,23 @@ void Player::loadSavedPlayerData()
     if (file.is_open())
     {
         auto playerHealth = 0.f;
-        mSerializer.readSerialized(file, mPosition.x, mPosition.y, mPosition.z, playerHealth);
+        mSerializer.readSerialized(file, mPosition.x, mPosition.y, mPosition.z, playerHealth,
+                                   mSpawnPoint.x, mSpawnPoint.y, mSpawnPoint.z);
+        // TODO: Position has a little problem when reading that may cause the player to stuck
+        //       in the ground for some reason. This little offset helps with it slightly
+        mPosition += glm::vec3{0, Block::BLOCK_SIZE / 2.f, 0};
         mPlayerHealth = playerHealth;
         mHealthbar.hearts(mPlayerHealth);
     }
+}
+
+void Player::respawn()
+{
+    mHealthbar.hearts(10);
+    mPlayerHealth = 10;
+    mPosition = {mSpawnPoint.x, mSpawnPoint.y, mSpawnPoint.z};
+    mInventory.clear();
+    mCamera.rotation(0);
 }
 
 Player::~Player()

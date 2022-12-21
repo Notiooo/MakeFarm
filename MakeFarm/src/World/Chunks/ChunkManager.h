@@ -87,6 +87,12 @@ public:
      */
     void forceFinishingAllProcesses();
 
+    /**
+     * @brief Calculates a player's spawn point
+     * @return Spawn point of the player in non-block coordinates.
+     */
+    sf::Vector3f calculateSpawnPoint();
+
 private:
     /**
      * @brief Determines the priority at which chunks may be rebuilt.

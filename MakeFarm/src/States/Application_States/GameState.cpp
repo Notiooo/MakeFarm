@@ -22,13 +22,16 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window, GameResources&
     , mWorldSeed(TerrainGenerator::randomSeed())
     , mSavedWorldName(gameSession.currentlyPlayedWorld.value())
     , mChunkManager(mGameResources.texturePack, mSavedWorldName, mWorldSeed)
-    , mPlayer({0.f, 150.f, 0.f}, mGameWindow, m3DWorldRendererShader, mChunkManager, mGameResources,
-              mSavedWorldName)
+    , mPlayer(mChunkManager.calculateSpawnPoint(), mGameWindow, m3DWorldRendererShader,
+              mChunkManager, mGameResources, mSavedWorldName)
     , mGameSettings("settings.cfg")
 {
     Mouse::lockMouseAtCenter(mGameWindow);
     m3DWorldRendererShader.loadFromFile("resources/shaders/3DWorldRenderer/VertexShader.shader",
                                         "resources/shaders/3DWorldRenderer/FragmentShader.shader");
+
+    // TODO: Probably it is not the best approach to pass variables between states
+    gameSession.player = &mPlayer;
 
     // TODO: This stuff works just because seed is passed to ChunkManager by reference!
     // Maybe chunk manager costruction should be delayed using unique_ptr?
@@ -165,7 +168,7 @@ void GameState::checkIfPlayerIsDead(const float& deltaTime)
 {
     if (mPlayer.isDead())
     {
-        mPlayer.camera().rotate(45);
+        mPlayer.camera().rotation(45);
         mPlayer.camera().update(deltaTime);
         requestPush(State_ID::DeathState);
     }

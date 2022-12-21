@@ -147,6 +147,16 @@ void Inventory::loadSavedInventoryData()
     }
 }
 
+void Inventory::clear()
+{
+    for (auto slotId = 0; slotId < mItems.size(); ++slotId)
+    {
+        mItems.at(slotId).reset();
+    }
+    hotbar().updateHotbarState();
+}
+
+
 Inventory::~Inventory()
 {
     saveInventoryDataToFile();

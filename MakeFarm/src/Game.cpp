@@ -34,7 +34,7 @@ Game::Game()
     mGameWindow->setFramerateLimit(FRAMES_PER_SECOND);
     mGameWindow->setActive(true);
     loadResources();
-// clang-format off
+    // clang-format off
     // ImGui setup
     #ifdef _DEBUG
     ImGui::SFML::Init(*mGameWindow);
@@ -50,7 +50,8 @@ Game::Game()
 
     // Setup all application-flow states
     mAppStack.saveState<GameState>(State_ID::GameState, *mGameWindow, mGameResources, mGameSession);
-    mAppStack.saveState<DeathState>(State_ID::DeathState, *mGameWindow, mGameResources);
+    mAppStack.saveState<DeathState>(State_ID::DeathState, *mGameWindow, mGameResources,
+                                    mGameSession);
     mAppStack.saveState<PauseState>(State_ID::PauseState, *mGameWindow, mGameResources);
     mAppStack.saveState<ExitGameState>(State_ID::ExitGameState);
     mAppStack.saveState<MainMenuState>(State_ID::MainMenuState, *mGameWindow, mGameResources,
@@ -72,7 +73,7 @@ void Game::run()
     while (isGameRunning)
     {
         frameTimeElapsed = clock.restart();
-// clang-format off
+        // clang-format off
         #ifdef _DEBUG
         ImGui::SFML::Update(*mGameWindow, frameTimeElapsed);
         #endif
@@ -114,7 +115,7 @@ void Game::processEvents()
         {
             isGameRunning = false;
         }
-// clang-format off
+        // clang-format off
         #ifdef _DEBUG
         ImGui::SFML::ProcessEvent(event);
         #endif
@@ -151,7 +152,7 @@ void Game::render()
     // draw the application
     mAppStack.draw(*mGameWindow, sf::Transform::Identity);
 
-// clang-format off
+    // clang-format off
     #ifdef _DEBUG
     mGameWindow->pushGLStates();
     ImGui::SFML::Render(*mGameWindow);

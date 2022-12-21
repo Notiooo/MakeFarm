@@ -62,6 +62,11 @@ public:
      */
     [[nodiscard]] const Hotbar& hotbar() const;
 
+    /**
+     * @brief Cleans the contents of the inventory.
+     */
+    void clear();
+
 private:
     /**
      * @brief Finds a slot with a given item that could hold the indicated number of items.

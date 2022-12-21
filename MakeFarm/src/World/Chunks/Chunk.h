@@ -226,6 +226,13 @@ public:
     std::optional<Block> neighbourBlockInGivenDirection(const Block::Coordinate& blockPos,
                                                         const Direction& direction);
 
+    /**
+     * @brief Returns the highest located block in a given column with x, z coordinates.
+     * @param blockPos Column of block at given x, z coordinates.
+     * @return The highest located block in a given column of blocks.
+     */
+    Block::Coordinate highestSetBlock(const Block::Coordinate& blockPos);
+
 private:
     using ChunkArray1D = std::array<BlockId, Chunk::BLOCKS_IN_CHUNK>;
 
