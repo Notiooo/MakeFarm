@@ -49,18 +49,11 @@ void Mouse::update(const float& deltaTime, const sf::Window& window)
 
 void Mouse::handleFirstPersonBehaviour(const sf::Event& event, sf::RenderWindow& gameWindow)
 {
-    if (event.type == sf::Event::KeyPressed)
-    {
-        if (event.key.code == sf::Keyboard::Escape)
-        {
-            Mouse::unlockMouse(gameWindow);
-        }
-    }
-    else if (event.type == sf::Event::MouseButtonPressed)
+    if (event.type == sf::Event::MouseButtonPressed)
     {
         if (event.key.code == sf::Mouse::Left)
         {
-            // clang-format off
+// clang-format off
             #ifdef _DEBUG
             if (!ImGui::IsWindowHovered(ImGuiFocusedFlags_AnyWindow) && !ImGui::IsAnyItemActive())
             {

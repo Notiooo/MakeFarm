@@ -20,7 +20,8 @@ class Player;
 enum class TextureManagerId
 {
     // GUI
-    GUI_Inventory,
+    GUI_Inventory_Background,
+    GUI_Inventory_Slot,
     GUI_Inventory_Selected_Block,
     GUI_Inventory_Unselected_Block,
     GUI_Healthbar_FullHeart,

@@ -34,7 +34,7 @@ Game::Game()
     mGameWindow->setFramerateLimit(FRAMES_PER_SECOND);
     mGameWindow->setActive(true);
     loadResources();
-    // clang-format off
+// clang-format off
     // ImGui setup
     #ifdef _DEBUG
     ImGui::SFML::Init(*mGameWindow);
@@ -73,7 +73,7 @@ void Game::run()
     while (isGameRunning)
     {
         frameTimeElapsed = clock.restart();
-        // clang-format off
+// clang-format off
         #ifdef _DEBUG
         ImGui::SFML::Update(*mGameWindow, frameTimeElapsed);
         #endif
@@ -115,7 +115,7 @@ void Game::processEvents()
         {
             isGameRunning = false;
         }
-        // clang-format off
+// clang-format off
         #ifdef _DEBUG
         ImGui::SFML::ProcessEvent(event);
         #endif
@@ -152,7 +152,7 @@ void Game::render()
     // draw the application
     mAppStack.draw(*mGameWindow, sf::Transform::Identity);
 
-    // clang-format off
+// clang-format off
     #ifdef _DEBUG
     mGameWindow->pushGLStates();
     ImGui::SFML::Render(*mGameWindow);
@@ -206,7 +206,10 @@ void Game::loadHealthbarTextures(const std::string& guiTexturesFolder)
 void Game::loadInventoryTextures(const std::string& guiTexturesFolder)
 {
     auto& textures = mGameResources.textureManager;
-    textures.storeResource(TextureManagerId::GUI_Inventory, guiTexturesFolder + "inventory.png");
+    textures.storeResource(TextureManagerId::GUI_Inventory_Background,
+                           guiTexturesFolder + "inventory_background.png");
+    textures.storeResource(TextureManagerId::GUI_Inventory_Slot,
+                           guiTexturesFolder + "inventory_slot.png");
     textures.storeResource(TextureManagerId::GUI_Inventory_Selected_Block,
                            guiTexturesFolder + "hotbar/selected_block.png");
     textures.storeResource(TextureManagerId::GUI_Inventory_Unselected_Block,

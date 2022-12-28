@@ -84,4 +84,5 @@ private:
     tgui::GuiSFML mGui;
     sf::RectangleShape mPauseScreenBackground;
     sf::Text mPauseText;
+    bool mWasMouseLocked;
 };

@@ -125,6 +125,11 @@ public:
      */
     void rotation(float angle);
 
+    /**
+     * @brief Activates/deactivates in-game controls
+     */
+    void toggleControls();
+
 private:
     /**
      * \brief Updates the status/logic of the ImGui Debug Menu
@@ -194,6 +199,7 @@ private:
     float mCameraSpeed = 5.f;
     float mCameraSensitivity = 4.f;
     float mFovCamera = 90.0f;
+    bool mAreControlsEnabled = true;
 
     glm::mat4 mViewMatrix;
     mutable glm::mat4 mProjectionMatrix;

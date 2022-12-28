@@ -1,27 +1,29 @@
 #include "Player.h"
 #include "Player/GUI/Bars/Hotbar.h"
+#include "Utils/Mouse.h"
 #include "World/Chunks/ChunkContainer.h"
 #include "pch.h"
 #include "utils/utils.h"
 #include <SFML/Graphics/Shader.hpp>
 #include <filesystem>
 
-Player::Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf::Shader& shader,
+Player::Player(const sf::Vector3f& position, sf::RenderWindow& gameWindow, sf::Shader& shader,
                ChunkManager& chunkManager, const GameResources& gameResources,
                const std::string& savedWorldPath)
-    : mCamera(target, shader)
+    : mCamera(gameWindow, shader)
     , mPosition({position.x, position.y, position.z})
     , mAABB({Block::BLOCK_SIZE * 0.5f, Block::BLOCK_SIZE * 1.8f, Block::BLOCK_SIZE * 0.5f})
-    , mWaterInWaterEffect(sf::Vector2f(target.getSize().x, target.getSize().y))
+    , mWaterInWaterEffect(sf::Vector2f(gameWindow.getSize().x, gameWindow.getSize().y))
     , mSelectedBlock()
     , mChunkManager(chunkManager)
     , mCrosshairTexture()
     , mCrosshair()
     , mSpawnPoint(position)
-    , mInventory(sf::Vector2i(target.getSize()), gameResources, savedWorldPath)
+    , mInventory(gameWindow, gameResources, savedWorldPath)
     , mHealthbar(gameResources.textureManager, mInventory.hotbar().position())
     , mOxygenbar(gameResources.textureManager, {0, 0})
     , mSavedWorldPath(savedWorldPath)
+    , mGameWindow(gameWindow)
 {
     auto newOxygenPosition = mInventory.hotbar().position();
     mOxygenbar.position(
@@ -30,7 +32,7 @@ Player::Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf:
     mCrosshairTexture.loadFromFile("resources/textures/crosshair.png");
     mCrosshair.setTexture(mCrosshairTexture);
     centerOrigin(mCrosshair);
-    mCrosshair.setPosition(target.getSize().x / 2.f, target.getSize().y / 2.f);
+    mCrosshair.setPosition(gameWindow.getSize().x / 2.f, gameWindow.getSize().y / 2.f);
 
     mWireframeShader.loadFromFile("resources/shaders/WireframeRenderer/VertexShader.shader",
                                   "resources/shaders/WireframeRenderer/GeometryShader.shader",
@@ -203,31 +205,34 @@ bool Player::tryUpdatePositionByApplyingVelocityIfCollisionAllows(
 
 void Player::handleMovementKeyboardInputs(const float& deltaTime)
 {
-    constexpr auto ACCELERATION_RATIO = 0.1f;
-    auto playerSpeed = mIsPlayerInWater ? PLAYER_WALKING_SPEED_IN_WATER : PLAYER_WALKING_SPEED;
-    const auto finalSpeed = playerSpeed * ACCELERATION_RATIO * deltaTime;
+    if (mAreControlsEnabled)
+    {
+        constexpr auto ACCELERATION_RATIO = 0.1f;
+        auto playerSpeed = mIsPlayerInWater ? PLAYER_WALKING_SPEED_IN_WATER : PLAYER_WALKING_SPEED;
+        const auto finalSpeed = playerSpeed * ACCELERATION_RATIO * deltaTime;
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-    {
-        mVelocity += finalSpeed * mCamera.directionWithoutPitch();
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+        {
+            mVelocity += finalSpeed * mCamera.directionWithoutPitch();
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        {
+            mVelocity += -(finalSpeed * mCamera.directionWithoutPitch());
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        {
+            mVelocity += finalSpeed * mCamera.rightDirectionWithoutPitch();
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+        {
+            mVelocity += -(finalSpeed * mCamera.rightDirectionWithoutPitch());
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mIsPlayerInWater)
+        {
+            mVelocity += (finalSpeed * 0.5f * mCamera.upwardDirection());
+        }
+        handleFlyingKeyboardInputs(deltaTime);
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-    {
-        mVelocity += -(finalSpeed * mCamera.directionWithoutPitch());
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-    {
-        mVelocity += finalSpeed * mCamera.rightDirectionWithoutPitch();
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-    {
-        mVelocity += -(finalSpeed * mCamera.rightDirectionWithoutPitch());
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && mIsPlayerInWater)
-    {
-        mVelocity += (finalSpeed * 0.5f * mCamera.upwardDirection());
-    }
-    handleFlyingKeyboardInputs(deltaTime);
 }
 
 void Player::handleFlyingKeyboardInputs(const float& deltaTime)
@@ -244,6 +249,10 @@ void Player::handleFlyingKeyboardInputs(const float& deltaTime)
 void Player::handleEvent(const sf::Event& event)
 {
     mInventory.handleEvent(event);
+    if (mAreControlsEnabled)
+    {
+        Mouse::handleFirstPersonBehaviour(event, mGameWindow);
+    }
 
     switch (event.type)
     {
@@ -251,31 +260,46 @@ void Player::handleEvent(const sf::Event& event)
         case sf::Event::MouseButtonPressed: handleMouseEvents(event); break;
     }
 }
+
 void Player::handleKeyboardEvents(const sf::Event& event)
 {
-    switch (event.key.code)
+    if (mAreControlsEnabled)
     {
-        case sf::Keyboard::Space: tryJump(); break;
+        switch (event.key.code)
+        {
+            case sf::Keyboard::Space: tryJump(); break;
+
 #ifdef _DEBUG
-        case sf::Keyboard::F2: takeDamage(0.5); break;
-        case sf::Keyboard::F3: mIsFlying = !mIsFlying; break;
+            case sf::Keyboard::F2: takeDamage(0.5); break;
+            case sf::Keyboard::F3: mIsFlying = !mIsFlying; break;
 #endif
+        }
+    }
+
+    if (event.key.code == sf::Keyboard::E)
+    {
+        toggleControls();
+        mInventory.toggleInventory();
+        mCamera.toggleControls();
     }
 }
 
 void Player::handleMouseEvents(const sf::Event& event)
 {
-    switch (event.mouseButton.button)
+    if (mAreControlsEnabled)
     {
-        case sf::Mouse::Left:
+        switch (event.mouseButton.button)
         {
-            tryDestroyBlock();
-            break;
-        }
-        case sf::Mouse::Right:
-        {
-            tryPlaceBlock();
-            break;
+            case sf::Mouse::Left:
+            {
+                tryDestroyBlock();
+                break;
+            }
+            case sf::Mouse::Right:
+            {
+                tryPlaceBlock();
+                break;
+            }
         }
     }
 }
@@ -318,8 +342,8 @@ void Player::tryPlaceBlock()
             auto removedItem = mInventory.hotbar().tryRemoveItemInHand(1);
             if (removedItem.has_value())
             {
-                // TODO: Check if block was placed first so it can be decided later to remove item
-                // from inventory
+                // TODO: Check if block was placed first so it can be decided
+                //       later to remove item from inventory
                 mChunkManager.chunks().tryToPlaceBlock(
                     static_cast<BlockId>(removedItem.value()), coordinatesOfBlockToBePlaced,
                     {HighlightedBlock::BLOCKS_THAT_MIGHT_BE_OVERPLACED},
@@ -476,6 +500,12 @@ void Player::respawn()
     mInventory.clear();
     mCamera.rotation(0);
 }
+
+void Player::toggleControls()
+{
+    mAreControlsEnabled = !mAreControlsEnabled;
+}
+
 
 Player::~Player()
 {

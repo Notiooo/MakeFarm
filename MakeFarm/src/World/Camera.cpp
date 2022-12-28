@@ -54,7 +54,7 @@ void Camera::fixedUpdate(const float& deltaTime)
 
 void Camera::handleMouseInputs(const float& deltaTime)
 {
-    if (Mouse::isMouseLocked())
+    if (Mouse::isMouseLocked() && mAreControlsEnabled)
     {
         calculateCameraAngles(deltaTime);
         keepNaturalPitchRanges();
@@ -225,4 +225,9 @@ void Camera::rotation(float angle)
         auto rollMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(mRoll), mCameraFront);
         mCameraUp = glm::mat3(rollMatrix) * mCameraUp;
     }
+}
+
+void Camera::toggleControls()
+{
+    mAreControlsEnabled = !mAreControlsEnabled;
 }

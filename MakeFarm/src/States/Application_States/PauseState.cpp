@@ -12,6 +12,7 @@ PauseState::PauseState(StateStack& stack, sf::RenderWindow& window, GameResource
     , mPauseScreenBackground()
     , mPauseText()
     , mGui(window)
+    , mWasMouseLocked(Mouse::isMouseLocked())
 {
     setupPauseScreenBackground(window);
     setupPauseText(window, gameResources.fontManager);
@@ -76,7 +77,10 @@ bool PauseState::handleEvent(const sf::Event& event)
         switch (event.key.code)
         {
             case sf::Keyboard::Escape:
-                Mouse::lockMouseAtCenter(mGameWindow);
+                if (mWasMouseLocked)
+                {
+                    Mouse::lockMouseAtCenter(mGameWindow);
+                }
                 requestPop();
                 break;
         }

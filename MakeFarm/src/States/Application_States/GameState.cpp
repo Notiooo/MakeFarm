@@ -54,7 +54,6 @@ void GameState::loadSavedGameData()
 
 bool GameState::handleEvent(const sf::Event& event)
 {
-    Mouse::handleFirstPersonBehaviour(event, mGameWindow);
     mPlayer.handleEvent(event);
 
     if (event.type == sf::Event::KeyPressed)

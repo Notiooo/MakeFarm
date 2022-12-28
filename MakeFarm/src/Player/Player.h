@@ -13,7 +13,7 @@ class ChunkContainer;
 class Player
 {
 public:
-    Player(const sf::Vector3f& position, const sf::RenderTarget& target, sf::Shader& shader,
+    Player(const sf::Vector3f& position, sf::RenderWindow& gameWindow, sf::Shader& shader,
            ChunkManager& chunkManager, const GameResources& gameResources,
            const std::string& savedWorldPath);
 
@@ -89,6 +89,11 @@ public:
      * @brief Respawns the player back to his starting point and clean their inventory.
      */
     void respawn();
+
+    /**
+     * @brief TODO: THIS
+     */
+    void toggleControls();
 
 private:
     /**
@@ -268,12 +273,14 @@ private:
     Oxygenbar mOxygenbar;
     Serializer mSerializer;
     sf::Vector3f mSpawnPoint;
+    sf::RenderWindow& mGameWindow;
 
     bool mIsPlayerOnGround = false;
     bool mWasPlayerOnGroundBefore = true;
     bool mIsPlayerInWater = false;
     bool mArePlayerEyesInWater = false;
     bool mIsFlying = false;
+    bool mAreControlsEnabled = true;
     DiscreteBarValue mPlayerHealth = 10;
     const std::string& mSavedWorldPath;
 

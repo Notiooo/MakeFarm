@@ -14,6 +14,7 @@ enum class ItemId
     Log_Block         = 5,
     Leaves_Block      = 6,
     Water_Block       = 7,
+    Spurce_Log_Block  = 11,
 
     Wooden_Sword        = 1000,
     Wooden_Pickaxe      = 1001,
