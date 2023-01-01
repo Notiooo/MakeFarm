@@ -91,7 +91,7 @@ public:
     void respawn();
 
     /**
-     * @brief TODO: THIS
+     * @brief Enables/disables player controls.
      */
     void toggleControls();
 

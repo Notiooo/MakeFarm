@@ -1,6 +1,6 @@
 #pragma once
 #include "Player/GUI/Inventory.h"
-#include "Player/GUI/InventorySlot.h"
+#include "Player/GUI/ItemSlot.h"
 #include <array>
 
 /**
@@ -9,6 +9,7 @@
 class Hotbar
 {
 public:
+    static constexpr auto HOTBAR_SLOTS = Inventory::NUMBER_OF_COLUMNS;
     static constexpr auto BOTTOM_SCREEN_OFFSET = 100.f;
     static constexpr auto HOTBAR_SCALE = 2.f;
     static constexpr auto TEXTURE_OFFSET = 2.f;
@@ -16,8 +17,7 @@ public:
     static constexpr auto ITEM_AMOUNT_OFFSET_Y = 0.5;
 
 
-    Hotbar(std::array<std::optional<InventorySlot>, Inventory::NUMBER_OF_COLUMNS>& hotbarSlots,
-           const GameResources& gameResources, sf::Vector2i windowSize);
+    Hotbar(ItemSlots& hotbarSlots, const GameResources& gameResources, sf::Vector2i windowSize);
 
     /**
      * \brief Updates the hotbar logic dependent, or independent of time, every rendered frame.
@@ -134,7 +134,7 @@ private:
     void createItemAmountAtGivenSlot(int slotIndex, int amount, const sf::Vector2f& positionOfSlot);
 
 private:
-    std::array<std::optional<InventorySlot>, Inventory::NUMBER_OF_COLUMNS>& mSlots;
+    ItemSlots& mSlots;
     std::array<sf::Sprite, Inventory::NUMBER_OF_COLUMNS> mBackgroundSprites;
     std::array<sf::Sprite, Inventory::NUMBER_OF_COLUMNS> mItemSprites;
     std::array<sf::Text, Inventory::NUMBER_OF_COLUMNS> mItemAmount;

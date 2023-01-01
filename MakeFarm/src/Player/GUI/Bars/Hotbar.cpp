@@ -5,8 +5,7 @@
 #include "World/Block/BlockMap.h"
 #include "pch.h"
 
-Hotbar::Hotbar(std::array<std::optional<InventorySlot>, Inventory::NUMBER_OF_COLUMNS>& hotbarSlots,
-               const GameResources& gameResources, sf::Vector2i windowSize)
+Hotbar::Hotbar(ItemSlots& hotbarSlots, const GameResources& gameResources, sf::Vector2i windowSize)
     : mSlots(hotbarSlots)
     , mTexturePack(gameResources.texturePack)
     , mUnselectedBlockTexture(gameResources.textureManager.getResourceReference(
@@ -85,9 +84,9 @@ void Hotbar::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 void Hotbar::drawHotbarItems(sf::RenderTarget& target, const sf::RenderStates& states) const
 {
-    for (int slotIndex = 0; slotIndex < Inventory::NUMBER_OF_COLUMNS; ++slotIndex)
+    for (int slotIndex = 0; slotIndex < HOTBAR_SLOTS; ++slotIndex)
     {
-        if (mSlots.at(slotIndex).has_value())
+        if (mSlots.at(slotIndex)->doesContainItem())
         {
             SfmlDraw(mItemSprites.at(slotIndex), target, states);
             SfmlDraw(mItemAmount.at(slotIndex), target, states);
@@ -98,7 +97,7 @@ void Hotbar::drawHotbarItems(sf::RenderTarget& target, const sf::RenderStates& s
 void Hotbar::drawHotbarBackgroundSlots(sf::RenderTarget& target,
                                        const sf::RenderStates& states) const
 {
-    for (int slotIndex = 0; slotIndex < Inventory::NUMBER_OF_COLUMNS; ++slotIndex)
+    for (int slotIndex = 0; slotIndex < HOTBAR_SLOTS; ++slotIndex)
     {
         SfmlDraw(mBackgroundSprites.at(slotIndex), target, states);
     }
@@ -144,10 +143,10 @@ void Hotbar::keepRangesOfSelectedSlotNumber()
 
 void Hotbar::updateTheTextAboutCurrentlyHeldBlock()
 {
-    auto& selectedSlot = mSlots.at(mCurrentlySelectedNumberOfSlot);
-    if (selectedSlot.has_value())
+    auto selectedSlot = mSlots.at(mCurrentlySelectedNumberOfSlot);
+    if (selectedSlot->doesContainItem())
     {
-        auto itemName = selectedSlot.value().item.name();
+        auto itemName = selectedSlot->item()->name();
         mCurrentlyHoldingItemName.setString(itemName);
         centerOrigin(mCurrentlyHoldingItemName);
         mCurrentlyHoldingItemName.setPosition(
@@ -162,15 +161,15 @@ void Hotbar::updateTheTextAboutCurrentlyHeldBlock()
 
 std::optional<ItemId> Hotbar::tryRemoveItemInHand(int amount)
 {
-    auto& currentlySelectedSlot = mSlots.at(mCurrentlySelectedNumberOfSlot);
-    if (currentlySelectedSlot.has_value() && currentlySelectedSlot.value().amount >= amount)
+    auto currentlySelectedSlot = mSlots.at(mCurrentlySelectedNumberOfSlot);
+    if (currentlySelectedSlot->doesContainItem() && currentlySelectedSlot->amount() >= amount)
     {
-        currentlySelectedSlot.value().amount -= amount;
+        currentlySelectedSlot->amount(currentlySelectedSlot->amount() - amount);
 
-        auto removedItemId = currentlySelectedSlot.value().item.id();
-        if (currentlySelectedSlot.value().amount == 0)
+        auto removedItemId = currentlySelectedSlot->item()->id();
+        if (currentlySelectedSlot->amount() == 0)
         {
-            currentlySelectedSlot = std::nullopt;
+            currentlySelectedSlot->removeItem();
         }
         updateHotbarState();
         return removedItemId;
@@ -180,18 +179,17 @@ std::optional<ItemId> Hotbar::tryRemoveItemInHand(int amount)
 
 void Hotbar::updateHotbarState()
 {
-    auto index = 0;
-    for (auto& slot: mSlots)
+    for (auto i = 0; i < Inventory::NUMBER_OF_COLUMNS; ++i)
     {
-        if (slot.has_value())
+        auto slot = mSlots.at(i);
+        if (slot->doesContainItem())
         {
-            auto& itemInSlot = slot.value().item;
-            auto& amount = slot.value().amount;
-            auto positionOfCurrentSlot = positionOfGivenSlot(index);
-            createSpriteAtGivenSlot(index, itemInSlot, positionOfCurrentSlot);
-            createItemAmountAtGivenSlot(index, amount, positionOfCurrentSlot);
+            auto itemInSlot = slot->item().value();
+            auto amount = slot->amount();
+            auto positionOfCurrentSlot = positionOfGivenSlot(i);
+            createSpriteAtGivenSlot(i, itemInSlot, positionOfCurrentSlot);
+            createItemAmountAtGivenSlot(i, amount, positionOfCurrentSlot);
         }
-        ++index;
     }
     updateTheTextAboutCurrentlyHeldBlock();
 }

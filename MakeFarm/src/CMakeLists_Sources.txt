@@ -3,7 +3,8 @@ set(PROJECT_SOURCES
         pch.cpp
         Player/Player.cpp
         Player/GUI/Inventory.cpp
-        Player/GUI/InventorySlot.cpp
+        Player/GUI/ItemSlot.cpp
+        Player/GUI/ItemSlots.cpp
         Player/GUI/Bars/DiscreteBar.cpp
         Player/GUI/Bars/DiscreteBarValue.cpp
         Player/GUI/Bars/Hotbar.cpp

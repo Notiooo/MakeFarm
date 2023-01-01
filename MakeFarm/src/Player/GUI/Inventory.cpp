@@ -8,20 +8,31 @@
 
 Inventory::Inventory(sf::RenderWindow& gameWindow, const GameResources& gameResources,
                      const std::string& saveWorldPath)
-    : mItems()
+    : mItems(gameResources, gameWindow)
     , mTexturePack(gameResources.texturePack)
     , mSaveWorldFilePath(saveWorldPath)
     , mGameWindow(gameWindow)
+    , mTextureManager(gameResources.textureManager)
 {
     auto windowSize = sf::Vector2i(mGameWindow.getSize());
-
-    mHotbar = std::make_unique<Hotbar>(
-        reinterpret_cast<std::array<std::optional<InventorySlot>, NUMBER_OF_COLUMNS>&>(mItems),
-        gameResources, windowSize);
-
     setupInventoryBackground(gameResources, windowSize);
-    setupSpritesOfSlots(gameResources);
+    setupInventorySlots(gameResources);
+
+    mHotbar = std::make_unique<Hotbar>(mItems, gameResources, windowSize);
+
     loadSavedInventoryData();
+}
+
+void Inventory::setupInventorySlots(const GameResources& gameResources)
+{
+    mItems.reserve(NUMBER_OF_SLOTS);
+    for (auto itemIndex = 0; itemIndex < NUMBER_OF_SLOTS; ++itemIndex)
+    {
+        auto itemSlot = ItemSlot(gameResources);
+        itemSlot.scale(INVENTORY_SCALE);
+        itemSlot.position(positionOfGivenSlot(itemIndex));
+        mItems.insert(std::move(itemSlot));
+    }
 }
 
 void Inventory::setupInventoryBackground(const GameResources& gameResources,
@@ -34,42 +45,12 @@ void Inventory::setupInventoryBackground(const GameResources& gameResources,
     mInventoryBackground.setPosition(windowSize.x / 2.f, windowSize.y / 2.f);
 }
 
-void Inventory::setupSpritesOfSlots(const GameResources& gameResources)
-{
-    auto slotIndex = 0;
-    for (auto& sprite: mItemsSprites)
-    {
-        setupBackgroundSprite(gameResources.textureManager, slotIndex, sprite);
-        setupItemAmountText(gameResources.fontManager, sprite);
-        ++slotIndex;
-    }
-}
-
-void Inventory::setupItemAmountText(const FontManager& fontManager,
-                                    Inventory::InventorySlotSprite& slotSprite) const
-{
-    slotSprite.itemAmountText.setFont(fontManager.getResourceReference(FontId::ArialNarrow));
-    slotSprite.itemAmountText.setCharacterSize(7 * INVENTORY_SCALE);
-    slotSprite.itemAmountText.setFillColor(sf::Color::White);
-    slotSprite.itemAmountText.setOutlineColor(sf::Color::Black);
-    slotSprite.itemAmountText.setOutlineThickness(1.f);
-}
-
-void Inventory::setupBackgroundSprite(const TextureManager& textureManager, int slotIndex,
-                                      Inventory::InventorySlotSprite& slotSprite)
-{
-    slotSprite.background.setTexture(
-        textureManager.getResourceReference(TextureManagerId::GUI_Inventory_Slot));
-    slotSprite.background.setScale(INVENTORY_SCALE, INVENTORY_SCALE);
-    slotSprite.background.setPosition(positionOfGivenSlot(slotIndex));
-}
-
 bool Inventory::tryAddItem(const ItemId& itemToInsert, int amount)
 {
     auto inventorySlot = findExistingItemSlotThatMayTakeGivenAmount(itemToInsert, amount);
     if (inventorySlot)
     {
-        inventorySlot->amount += amount;
+        inventorySlot->amount(inventorySlot->amount() + amount);
         updateInventoryState();
         return true;
     }
@@ -77,18 +58,19 @@ bool Inventory::tryAddItem(const ItemId& itemToInsert, int amount)
     return tryEmplaceFirstEmptySlot(amount, itemToInsert);
 }
 
-template<typename... Ts>
-bool Inventory::tryEmplaceFirstEmptySlot(Ts&&... args)
+bool Inventory::tryEmplaceFirstEmptySlot(int amount, const ItemId& itemId)
 {
     auto found = std::find_if(this->mItems.begin(), this->mItems.end(),
-                              [](std::optional<InventorySlot>& slot)
+                              [](const std::shared_ptr<ItemSlot>& slot)
                               {
-                                  return !slot.has_value();
+                                  return !slot->doesContainItem();
                               });
 
     if (found != mItems.end())
     {
-        found->emplace(std::forward<Ts>(args)...);
+        auto& itemSlot = *found;
+        itemSlot->item(itemId);
+        itemSlot->amount(amount);
         updateInventoryState();
         return true;
     }
@@ -96,24 +78,24 @@ bool Inventory::tryEmplaceFirstEmptySlot(Ts&&... args)
     return false;
 }
 
-InventorySlot* const Inventory::findExistingItemSlotThatMayTakeGivenAmount(const ItemId& item,
-                                                                           int amount)
+std::shared_ptr<ItemSlot> Inventory::findExistingItemSlotThatMayTakeGivenAmount(
+    const ItemId& itemId, int amount)
 {
-    auto found =
-        std::find_if(mItems.begin(), mItems.end(),
-                     [item, amount](std::optional<InventorySlot>& slot)
-                     {
-                         if (slot.has_value())
-                         {
-                             return slot->item.id() == item &&
-                                    slot->amount + amount <= slot->item.maximumAmountInSlot();
-                         }
-                         return false;
-                     });
+    auto found = std::find_if(mItems.begin(), mItems.end(),
+                              [itemId, amount](const std::shared_ptr<ItemSlot>& slot)
+                              {
+                                  if (slot->doesContainItem())
+                                  {
+                                      auto item = slot->item().value();
+                                      return item.id() == itemId &&
+                                             slot->amount() + amount <= item.maximumAmountInSlot();
+                                  }
+                                  return false;
+                              });
 
     if (found != mItems.end())
     {
-        return &found->value();
+        return *found;
     }
 
     return nullptr;
@@ -131,12 +113,7 @@ const Hotbar& Inventory::hotbar() const
 
 void Inventory::update(const float& deltaTime)
 {
-    if (doesMouseHoldAnItem())
-    {
-        auto& holdingItem = mItemsSprites.at(mIndexOfSlotHoldingByMouse.value());
-        holdingItem.item.setPosition(sf::Vector2f(Mouse::getPosition(mGameWindow)));
-        holdingItem.itemAmountText.setPosition(sf::Vector2f(Mouse::getPosition(mGameWindow)));
-    }
+    mItems.update(deltaTime);
     mHotbar->update(deltaTime);
 }
 
@@ -153,108 +130,18 @@ void Inventory::draw(sf::RenderTarget& target, sf::RenderStates states) const
 void Inventory::drawInventory(sf::RenderTarget& target, sf::RenderStates states) const
 {
     SfmlDraw(mInventoryBackground, target, states);
-    drawAllSlots(target, states);
-    tryDrawItemHoldingByMouse(target, states);
-}
-
-void Inventory::drawAllSlots(sf::RenderTarget& target, sf::RenderStates states) const
-{
-    for (int i = 0; i < NUMBER_OF_ROWS * NUMBER_OF_COLUMNS; ++i)
-    {
-        auto& sprite = mItemsSprites.at(i);
-        SfmlDraw(sprite.background, target, states);
-
-        if (mItems.at(i).has_value())
-        {
-            SfmlDraw(sprite.item, target, states);
-            SfmlDraw(sprite.itemAmountText, target, states);
-        }
-    }
-}
-
-void Inventory::tryDrawItemHoldingByMouse(sf::RenderTarget& target, sf::RenderStates states) const
-{
-    if (doesMouseHoldAnItem())
-    {
-        auto& holdingItem = mItemsSprites.at(mIndexOfSlotHoldingByMouse.value());
-        SfmlDraw(holdingItem.item, target, states);
-        SfmlDraw(holdingItem.itemAmountText, target, states);
-    }
+    mItems.draw(target, states);
 }
 
 void Inventory::handleEvent(const sf::Event& event)
 {
     if (mIsInventoryOpened)
     {
-        handleLeftMouseClick(event);
+        mItems.handleEvent(event);
+        updateInventoryState();
     }
 
     mHotbar->handleEvent(event);
-}
-
-void Inventory::handleLeftMouseClick(const sf::Event& event)
-{
-    if (event.type == sf::Event::MouseButtonPressed)
-    {
-        if (event.mouseButton.button == Mouse::Left)
-        {
-            auto optionalSlotIndex =
-                indexOfSlotAtPosition({event.mouseButton.x, event.mouseButton.y});
-
-            auto doesMouseClickedAtSlot = optionalSlotIndex.has_value();
-            if (!doesMouseHoldAnItem())
-            {
-                catchItemAtGivenSlotByMouse(optionalSlotIndex);
-            }
-            else if (doesMouseClickedAtSlot)
-            {
-                clickOnSlotWhileMouseHoldingItem(optionalSlotIndex.value());
-            }
-        }
-    }
-}
-
-void Inventory::clickOnSlotWhileMouseHoldingItem(int clickedSlotIndex)
-{
-    auto& slotIndex = clickedSlotIndex;
-    auto doesItClickedOnTheSameSlotFromWhichItemIsHolding =
-        slotIndex == mIndexOfSlotHoldingByMouse.value();
-
-    if (doesItClickedOnTheSameSlotFromWhichItemIsHolding)
-    {
-        clearItemHoldingByMouse();
-    }
-    else
-    {
-        dropItemHoldingByMouseOntoTheGivenSlot(slotIndex);
-    }
-    updateInventoryState();
-}
-
-void Inventory::clearItemHoldingByMouse()
-{
-    mIndexOfSlotHoldingByMouse = std::nullopt;
-}
-
-void Inventory::dropItemHoldingByMouseOntoTheGivenSlot(const int& slotIndex)
-{
-    auto& selectedSlot = mItems.at(slotIndex);
-    if (!selectedSlot.has_value())
-    {
-        mItems.at(slotIndex) = mItems.at(mIndexOfSlotHoldingByMouse.value());
-        mItems.at(mIndexOfSlotHoldingByMouse.value()) = std::nullopt;
-        clearItemHoldingByMouse();
-    }
-}
-
-void Inventory::catchItemAtGivenSlotByMouse(const std::optional<int>& slotIndex)
-{
-    mIndexOfSlotHoldingByMouse = slotIndex;
-}
-
-bool Inventory::doesMouseHoldAnItem() const
-{
-    return mIndexOfSlotHoldingByMouse.has_value();
 }
 
 std::string Inventory::inventorySaveFilePath()
@@ -267,12 +154,11 @@ Inventory::SerializableInventory Inventory::serializableInventory()
     SerializableInventory inventoryToSave;
     for (auto slotId = 0; slotId < mItems.size(); ++slotId)
     {
-        auto& currentItem = mItems.at(slotId);
-        if (currentItem.has_value())
+        auto currentSlot = mItems.at(slotId);
+        if (currentSlot->doesContainItem())
         {
-            auto& slotValue = currentItem.value();
             inventoryToSave[slotId] =
-                SerializableInventorySlot{slotValue.amount, slotValue.item.id()};
+                SerializableInventorySlot{currentSlot->amount(), currentSlot->item()->id()};
         }
     }
     return inventoryToSave;
@@ -285,7 +171,8 @@ void Inventory::overwriteInventory(const Inventory::SerializableInventory& inven
         auto& currentSlot = inventory.at(slotId);
         if (currentSlot.amount > 0)
         {
-            mItems.at(slotId).emplace(currentSlot.amount, currentSlot.item);
+            mItems.at(slotId)->item(currentSlot.item);
+            mItems.at(slotId)->amount(currentSlot.amount);
         }
     }
 }
@@ -323,99 +210,46 @@ void Inventory::toggleInventory()
     if (mIsInventoryOpened)
     {
         Mouse::unlockMouse(mGameWindow);
-
-        if (doesMouseHoldAnItem())
-        {
-            clearItemHoldingByMouse();
-            updateInventoryState();
-        }
+        mItems.clearItemHoldingByMouse();
     }
     else
     {
         Mouse::lockMouseAtCenter(mGameWindow);
+        updateInventoryState();
     }
 }
 
 sf::Vector2f Inventory::positionOfGivenSlot(int index)
 {
     auto inventoryDimensions = mInventoryBackground.getGlobalBounds();
-    auto slotDimensions = mItemsSprites.at(0).background.getGlobalBounds();
+    auto slotDimensions = ItemSlot::dimensions(mTextureManager, INVENTORY_SCALE);
 
     auto row = static_cast<int>(index / NUMBER_OF_COLUMNS);
     auto column = index % NUMBER_OF_COLUMNS;
 
-    auto widthOfRowOfSlots = slotDimensions.width * NUMBER_OF_COLUMNS;
+    auto widthOfRowOfSlots = slotDimensions.x * NUMBER_OF_COLUMNS;
     auto leftPadding = (inventoryDimensions.width - widthOfRowOfSlots) / 2.f;
 
     auto leftTopCornerOfInventory = sf::Vector2f(inventoryDimensions.left, inventoryDimensions.top);
 
     auto startingPosition =
         leftTopCornerOfInventory +
-        sf::Vector2f(leftPadding, inventoryDimensions.height - slotDimensions.height);
+        sf::Vector2f(leftPadding, inventoryDimensions.height - slotDimensions.y);
 
 
     if (row == 0)
     {
         startingPosition -= sf::Vector2f(0, 3 * INVENTORY_SCALE);
-        return startingPosition + sf::Vector2f(slotDimensions.width * column, 0);
+        return startingPosition + sf::Vector2f(slotDimensions.x * column, 0);
     }
 
     startingPosition -= sf::Vector2f(0, 6 * INVENTORY_SCALE);
-    return startingPosition +
-           sf::Vector2f(slotDimensions.width * column, -slotDimensions.height * row);
+    return startingPosition + sf::Vector2f(slotDimensions.x * column, -slotDimensions.y * row);
 }
 
 void Inventory::updateInventoryState()
 {
-    auto index = 0;
-    for (auto& slot: mItems)
-    {
-        if (slot.has_value())
-        {
-            auto& itemInSlot = slot.value().item;
-            auto& amount = slot.value().amount;
-            auto positionOfCurrentSlot = positionOfGivenSlot(index);
-            createSpriteAtGivenSlot(index, itemInSlot, positionOfCurrentSlot);
-            createItemAmountAtGivenSlot(index, amount, positionOfCurrentSlot);
-        }
-
-        ++index;
-    }
     hotbar().updateHotbarState();
-}
-
-void Inventory::createSpriteAtGivenSlot(int slotNumber, Item& itemInSlot, sf::Vector2f slotPosition)
-{
-    auto& itemSprite = mItemsSprites.at(slotNumber).item;
-    itemSprite.setTexture(mTexturePack.texture(itemInSlot.renderType()));
-    itemSprite.setTextureRect(mTexturePack.textureRect(itemInSlot));
-    itemSprite.setScale(INVENTORY_SCALE, INVENTORY_SCALE);
-    itemSprite.setPosition(slotPosition.x + ITEM_OFFSET, slotPosition.y + ITEM_OFFSET);
-}
-
-void Inventory::createItemAmountAtGivenSlot(int slotNumber, int amount, sf::Vector2f slotPosition)
-{
-    auto& itemAmount = mItemsSprites.at(slotNumber).itemAmountText;
-    auto fontOffset = sf::Vector2f(ITEM_AMOUNT_OFFSET_X, ITEM_AMOUNT_OFFSET_Y) * INVENTORY_SCALE;
-    itemAmount.setPosition(slotPosition.x + fontOffset.x, slotPosition.y + fontOffset.y);
-
-    itemAmount.setString(std::to_string(amount));
-}
-
-std::optional<int> Inventory::indexOfSlotAtPosition(sf::Vector2i position)
-{
-    auto slotDimensions = mItemsSprites.at(0).background.getGlobalBounds();
-
-    for (int i = 0; i < NUMBER_OF_ROWS * NUMBER_OF_COLUMNS; ++i)
-    {
-        auto slotPosition = positionOfGivenSlot(i);
-        if (slotPosition.x <= position.x && slotPosition.x + slotDimensions.width >= position.x &&
-            slotPosition.y <= position.y && slotPosition.y + slotDimensions.height >= position.y)
-        {
-            return i;
-        }
-    }
-    return std::nullopt;
 }
 
 
