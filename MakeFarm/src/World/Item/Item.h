@@ -39,6 +39,12 @@ public:
     };
 
     /**
+     * @brief Returns information about whether the item represents a block.
+     * @return True if this item represents a block, otherwise false.
+     */
+    [[nodiscard]] bool isBlock() const;
+
+    /**
      * @brief Sets the type of object, changing its meaning
      * @param itemId New item identifier
      */

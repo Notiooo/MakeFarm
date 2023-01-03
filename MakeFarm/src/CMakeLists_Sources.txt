@@ -45,6 +45,10 @@ set(PROJECT_SOURCES
         World/Block/BlockType.cpp
         World/Block/HighlightedBlock.cpp
         World/Block/WireframeBlock.cpp
+        World/Crafting/RecipeSettings.cpp
+        World/Crafting/RecipeContainer.cpp
+        World/Crafting/Recipe.cpp
+        World/Crafting/Crafting.cpp
         World/Item/Item.cpp
         World/Item/ItemMap.cpp
         World/Item/ItemType.cpp

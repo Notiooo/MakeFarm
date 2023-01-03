@@ -24,7 +24,6 @@ Camera::Camera(const sf::RenderTarget& target, sf::Shader& shader)
 
 void Camera::update(const float& deltaTime)
 {
-    updateDebugMenu();
     handleMouseInputs(deltaTime);
 
     auto width = static_cast<float>(mRenderTarget.getSize().x);

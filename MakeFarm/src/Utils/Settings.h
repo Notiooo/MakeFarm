@@ -11,6 +11,7 @@ class Settings : sf::NonCopyable
 public:
     Settings() = default;
     Settings(const std::string& fileName);
+    virtual ~Settings() = default;
 
     /**
      * Opens game settings file
@@ -50,12 +51,24 @@ public:
     template<typename T>
     void set(const std::string& settingName, const T& value);
 
-private:
-    std::string mSettingsFilename;
-    mutable std::ifstream mSettingsFile;
-
+protected:
+    /**
+     * @brief It converts the result into the type indicated to it.
+     * @tparam T The type to which the setting entry is to be converted
+     * @param settingResult Variable to be converted to another type
+     * @return The result of the setting in the form of a variable type equal to T
+     */
     template<typename T>
     T parseResult(const std::string& settingResult) const;
+
+    /**
+     * @brief If a file has been read before, to read it from the beginning you have to reset it,
+     * which this function does.
+     */
+    void prepareToReadFromFstreamAgain() const;
+
+    std::string mSettingsFilename;
+    mutable std::ifstream mSettingsFile;
 };
 
 
@@ -67,11 +80,10 @@ T Settings::get(const std::string& settingName) const
         throw std::logic_error("Trying to get content of file of unknown/closed file");
     }
 
-    // It set up fstream to be possible to read it again
-    mSettingsFile.clear();
-    mSettingsFile.seekg(0);
+    prepareToReadFromFstreamAgain();
 
     std::string fileLine;
+    bool stopParsing = false;
     while (std::getline(mSettingsFile, fileLine))
     {
         std::stringstream ss(fileLine);
@@ -87,7 +99,16 @@ T Settings::get(const std::string& settingName) const
             foundSetting += word;
         }
 
-        if (foundSetting == settingName)
+        if (foundSetting == "Crafting")
+        {
+            stopParsing = true;
+        }
+        else if (foundSetting == "EndCrafting")
+        {
+            stopParsing = false;
+        }
+
+        if (!stopParsing && foundSetting == settingName)
         {
             // Now I'm removing white spaces at the beginning
             // and return the settingValue part
@@ -189,11 +210,12 @@ inline bool Settings::parseResult(const std::string& settingResult) const
                        {
                            return std::tolower(character);
                        });
+
         if (basicString == "true")
         {
             return true;
         }
-        if (basicString == "false")
+        else if (basicString == "false")
         {
             return false;
         }

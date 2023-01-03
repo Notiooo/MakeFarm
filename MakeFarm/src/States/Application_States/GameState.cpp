@@ -62,7 +62,7 @@ bool GameState::handleEvent(const sf::Event& event)
         {
             case sf::Keyboard::Escape: requestPush(State_ID::PauseState); break;
             case sf::Keyboard::F1: Mouse::unlockMouse(mGameWindow); break;
-            case sf::Keyboard::F4: requestClear(); break;
+            case sf::Keyboard::F4: isDebugMenuActivated = !isDebugMenuActivated; break;
         }
     }
 
@@ -95,58 +95,63 @@ bool GameState::fixedUpdate(const float& deltaTime)
 
 void GameState::updateDebugMenu()
 {
-    if (ImGui::BeginMainMenuBar())
+    if (isDebugMenuActivated)
     {
-        if (ImGui::BeginMenu("OpenGL"))
+        mPlayer.updateDebugMenu();
+        
+        if (ImGui::BeginMainMenuBar())
         {
-            if (ImGui::MenuItem("Switch Wireframe (on/off)"))
+            if (ImGui::BeginMenu("OpenGL"))
             {
-                std::unique_ptr<int[]> rastMode(new int[2]);
-                GLCall(glGetIntegerv(GL_POLYGON_MODE, rastMode.get()));
+                if (ImGui::MenuItem("Switch Wireframe (on/off)"))
+                {
+                    std::unique_ptr<int[]> rastMode(new int[2]);
+                    GLCall(glGetIntegerv(GL_POLYGON_MODE, rastMode.get()));
 
-                if (rastMode[1] == GL_FILL)
-                {
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                }
-                else
-                {
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                }
-            }
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("MakeFarm"))
-        {
-            if (ImGui::BeginMenu("Texture Packs"))
-            {
-                for (auto const& texturePackDir:
-                     std::filesystem::directory_iterator{"resources/textures/texturePacks"})
-                {
-                    if (texturePackDir.is_directory())
+                    if (rastMode[1] == GL_FILL)
                     {
-                        auto texturePackFolder = texturePackDir.path().filename().string();
-                        if (ImGui::MenuItem(texturePackFolder.c_str()))
-                        {
-                            mGameResources.texturePack.loadTexturePack(texturePackFolder);
-                        }
+                        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                    }
+                    else
+                    {
+                        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                     }
                 }
                 ImGui::EndMenu();
             }
-            ImGui::EndMenu();
+
+            if (ImGui::BeginMenu("MakeFarm"))
+            {
+                if (ImGui::BeginMenu("Texture Packs"))
+                {
+                    for (auto const& texturePackDir:
+                         std::filesystem::directory_iterator{"resources/textures/texturePacks"})
+                    {
+                        if (texturePackDir.is_directory())
+                        {
+                            auto texturePackFolder = texturePackDir.path().filename().string();
+                            if (ImGui::MenuItem(texturePackFolder.c_str()))
+                            {
+                                mGameResources.texturePack.loadTexturePack(texturePackFolder);
+                            }
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenu();
+            }
+
+            // FPS Counter
+            std::stringstream ss;
+            ss << std::fixed << std::setprecision(2) << ImGui::GetIO().Framerate << " FPS ";
+            auto windowWidth = ImGui::GetWindowSize().x;
+            auto fpsString = ss.str();
+            auto textWidth = ImGui::CalcTextSize(fpsString.c_str()).x;
+
+            ImGui::SetCursorPosX(windowWidth - textWidth);
+            ImGui::Text(fpsString.c_str());
+            ImGui::EndMainMenuBar();
         }
-
-        // FPS Counter
-        std::stringstream ss;
-        ss << std::fixed << std::setprecision(2) << ImGui::GetIO().Framerate << " FPS ";
-        auto windowWidth = ImGui::GetWindowSize().x;
-        auto fpsString = ss.str();
-        auto textWidth = ImGui::CalcTextSize(fpsString.c_str()).x;
-
-        ImGui::SetCursorPosX(windowWidth - textWidth);
-        ImGui::Text(fpsString.c_str());
-        ImGui::EndMainMenuBar();
     }
 }
 

@@ -20,6 +20,28 @@ public:
     void insert(ItemSlot&& itemSlot);
 
     /**
+     * @brief Inserts the new slot into the container.
+     * @param itemSlot A new slot that should be added to the container.
+     */
+    void insert(std::shared_ptr<ItemSlot> itemSlot);
+
+    /**
+     * @brief Adds sets of slots together to form one common set
+     * @param rhs Another set to add
+     * @return Common set containing itemslots of both containers
+     */
+    ItemSlots operator+(const ItemSlots& rhs);
+
+    /**
+     * @brief This itemslot after this operation contains the same collection as the slot on the
+     * right, including the slot currently held by the mouse - if there is one.
+     * @param rhs Object to be copied
+     * @return The same object to which the assignment was made with a collection equal to the
+     * container on the right
+     */
+    ItemSlots& operator=(const ItemSlots& rhs);
+
+    /**
      * @brief Returns how many item slots are in the container.
      * @return Number of item slots in the container.
      */
@@ -89,13 +111,19 @@ public:
      */
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
-private:
     /**
      * @brief Checks if the mouse is currently holding an item in the container
      * @return True if the mouse holds an object from the container, false otherwise.
      */
     [[nodiscard]] bool doesMouseHoldAnItem() const;
 
+    /**
+     * @brief Returns a slot held by the mouse
+     * @return Slot held by the mouse
+     */
+    std::shared_ptr<ItemSlot> slotHoldByMouse();
+
+private:
     /**
      * @brief It tries to grab an item from the slot indicated by the mouse.
      * @param Slot from which the item is trying to be caught

@@ -12,6 +12,12 @@ void ItemSlots::insert(ItemSlot&& itemSlot)
     mItemSlots.emplace_back(std::make_shared<ItemSlot>(itemSlot));
 }
 
+void ItemSlots::insert(std::shared_ptr<ItemSlot> itemSlot)
+{
+    mItemSlots.emplace_back(itemSlot);
+}
+
+
 void ItemSlots::handleEvent(const sf::Event& event)
 {
     if (event.type == sf::Event::MouseButtonPressed)
@@ -216,4 +222,29 @@ void ItemSlots::holdSlotByMouse(const std::shared_ptr<ItemSlot>& slot)
 {
     clearItemHoldingByMouse();
     mSlotHoldingByMouse = slot;
+}
+
+ItemSlots ItemSlots::operator+(const ItemSlots& rhs)
+{
+    for (auto itemSlot: rhs.mItemSlots)
+    {
+        mItemSlots.emplace_back(itemSlot);
+    }
+    return *this;
+}
+
+ItemSlots& ItemSlots::operator=(const ItemSlots& rhs)
+{
+    mItemSlots = rhs.mItemSlots;
+    mSlotHoldingByMouse = rhs.mSlotHoldingByMouse;
+    return *this;
+}
+
+std::shared_ptr<ItemSlot> ItemSlots::slotHoldByMouse()
+{
+    if (mSlotHoldingByMouse.has_value())
+    {
+        return mSlotHoldingByMouse.value();
+    }
+    return nullptr;
 }

@@ -53,6 +53,12 @@ public:
     std::optional<ItemId> tryRemoveItemInHand(int amount = 1);
 
     /**
+     * @brief Returns the item currently held in the hand.
+     * @return Item currently held in the hand.
+     */
+    std::optional<Item> itemInHand();
+
+    /**
      * @brief Returns the position of the upper left hotbar point.
      * @return Position of the upper left hotbar point.
      */

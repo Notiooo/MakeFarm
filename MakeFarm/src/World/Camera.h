@@ -130,12 +130,12 @@ public:
      */
     void toggleControls();
 
-private:
     /**
      * \brief Updates the status/logic of the ImGui Debug Menu
      */
     void updateDebugMenu();
 
+private:
     /**
      * Handle keyboard behavior such as moving the camera inside the game
      * @param deltaTime the time that has passed since the game was last updated.

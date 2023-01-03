@@ -43,6 +43,11 @@ public:
     void update(const float& deltaTime);
 
     /**
+     * @brief Updates debug game windows
+     */
+    void updateDebugMenu();
+
+    /**
      * \brief Updates the Player logic at equal intervals independent of the frame rate.
      * \param deltaTime Time interval
      */

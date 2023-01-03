@@ -99,6 +99,7 @@ private:
     /** Utils */
     ChunkManager mChunkManager;
     Player mPlayer;
+    bool isDebugMenuActivated = false;
 };
 
 

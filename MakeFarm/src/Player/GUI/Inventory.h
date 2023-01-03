@@ -1,12 +1,12 @@
 #pragma once
-#include "ItemSlots.h"
-#include "Player/GUI/ItemSlot.h"
+#include "Player/GUI/ItemSlots.h"
 #include "Resources/Resources.h"
 #include "Utils/Serializer.h"
 #include "World/Item/Item.h"
 #include <optional>
 
 class Hotbar;
+class Crafting;
 
 /**
  * @brief The equipment in which the player stores belongings
@@ -175,15 +175,23 @@ private:
      */
     void setupInventorySlots(const GameResources& gameResources);
 
+    /**
+     * @brief Prepares settings for crafting displayed in the inventory.
+     * @param gameWindow The game window in which the game is displayed.
+     * @param gameResources Game resources that store data such as fonts and textures
+     */
+    void setupCrafting(sf::RenderWindow& gameWindow, const GameResources& gameResources);
+
 private:
     sf::Sprite mInventoryBackground;
     ItemSlots mItems;
+    ItemSlots mCombinedSlots;
     std::unique_ptr<Hotbar> mHotbar;
     const std::string& mSaveWorldFilePath;
-    const TexturePack& mTexturePack;
     const TextureManager& mTextureManager;
     sf::RenderWindow& mGameWindow;
     Serializer mSerializer;
+    std::unique_ptr<Crafting> mCrafting;
 
     bool mIsInventoryOpened = false;
 };

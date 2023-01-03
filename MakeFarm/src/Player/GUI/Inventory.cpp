@@ -3,24 +3,40 @@
 #include "Renderer3D/Renderer3D.h"
 #include "Utils/Mouse.h"
 #include "Utils/utils.h"
+#include "World/Crafting/Crafting.h"
 #include "pch.h"
 #include <filesystem>
 
 Inventory::Inventory(sf::RenderWindow& gameWindow, const GameResources& gameResources,
                      const std::string& saveWorldPath)
     : mItems(gameResources, gameWindow)
-    , mTexturePack(gameResources.texturePack)
     , mSaveWorldFilePath(saveWorldPath)
     , mGameWindow(gameWindow)
     , mTextureManager(gameResources.textureManager)
+    , mCombinedSlots(gameResources, gameWindow)
 {
     auto windowSize = sf::Vector2i(mGameWindow.getSize());
     setupInventoryBackground(gameResources, windowSize);
     setupInventorySlots(gameResources);
+    setupCrafting(gameWindow, gameResources);
 
     mHotbar = std::make_unique<Hotbar>(mItems, gameResources, windowSize);
 
     loadSavedInventoryData();
+    mCombinedSlots = mItems;
+    mCombinedSlots = mCombinedSlots + mCrafting->itemSlots();
+}
+
+void Inventory::setupCrafting(sf::RenderWindow& gameWindow, const GameResources& gameResources)
+{
+    auto inventoryMiddle = mInventoryBackground.getGlobalBounds().left +
+                           (mInventoryBackground.getGlobalBounds().width / 2.f);
+    auto inventoryTop = mInventoryBackground.getGlobalBounds().top;
+    auto craftingDimensions = Crafting::dimensions(gameResources.textureManager, INVENTORY_SCALE);
+    auto padding = 10.f * INVENTORY_SCALE;
+    auto topLeftPositionOfCrafting =
+        sf::Vector2f(inventoryMiddle - (craftingDimensions.x / 2.f), inventoryTop + padding);
+    mCrafting = std::make_unique<Crafting>(gameWindow, gameResources, topLeftPositionOfCrafting);
 }
 
 void Inventory::setupInventorySlots(const GameResources& gameResources)
@@ -113,7 +129,7 @@ const Hotbar& Inventory::hotbar() const
 
 void Inventory::update(const float& deltaTime)
 {
-    mItems.update(deltaTime);
+    mCombinedSlots.update(deltaTime);
     mHotbar->update(deltaTime);
 }
 
@@ -130,15 +146,31 @@ void Inventory::draw(sf::RenderTarget& target, sf::RenderStates states) const
 void Inventory::drawInventory(sf::RenderTarget& target, sf::RenderStates states) const
 {
     SfmlDraw(mInventoryBackground, target, states);
-    mItems.draw(target, states);
+    mCombinedSlots.draw(target, states);
 }
 
 void Inventory::handleEvent(const sf::Event& event)
 {
     if (mIsInventoryOpened)
     {
-        mItems.handleEvent(event);
-        updateInventoryState();
+        mCombinedSlots.handleEvent(event);
+        mCrafting->handleEvent(event);
+
+        if (event.type == sf::Event::MouseButtonPressed)
+        {
+            if (mCombinedSlots.doesMouseHoldAnItem())
+            {
+                if (mCombinedSlots.slotHoldByMouse() == mCrafting->resultItem())
+                {
+                    mCrafting->finalizeCrafting();
+                }
+                else
+                {
+                    mCrafting->hideResultItem();
+                }
+            }
+            updateInventoryState();
+        }
     }
 
     mHotbar->handleEvent(event);
@@ -199,7 +231,7 @@ void Inventory::clear()
 {
     for (auto& mItem: mItems)
     {
-        mItem.reset();
+        mItem->removeItem();
     }
     updateInventoryState();
 }

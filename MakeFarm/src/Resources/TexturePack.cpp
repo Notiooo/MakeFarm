@@ -1,4 +1,5 @@
 #include "TexturePack.h"
+#include "Utils/message_assert.h"
 #include "pch.h"
 
 
@@ -66,6 +67,7 @@ const sf::Texture& TexturePack::texture(const TexturePack::Spritesheet& textures
     {
         case Spritesheet::Blocks: return mBlocks;
         case Spritesheet::Items: return mItems;
+        default: message_assert(false, "Not existing spritesheet used?");
     }
 }
 
@@ -84,6 +86,7 @@ const sf::Texture& TexturePack::texture(const Item::Render& renderType) const
     {
         case Item::Render::Block: return texture(TexturePack::Spritesheet::Blocks);
         case Item::Render::Item: return texture(TexturePack::Spritesheet::Items);
+        default: message_assert(false, "Not existing rendertype used?");
     }
 }
 

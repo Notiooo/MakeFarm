@@ -54,6 +54,11 @@ void Player::update(const float& deltaTime)
     updatePlayerDrowingState();
 }
 
+void Player::updateDebugMenu()
+{
+    mCamera.updateDebugMenu();
+}
+
 void Player::updatePlayerDrowingState()
 {
     if (mArePlayerEyesInWater)
@@ -297,7 +302,11 @@ void Player::handleMouseEvents(const sf::Event& event)
             }
             case sf::Mouse::Right:
             {
-                tryPlaceBlock();
+                auto itemInHand = mInventory.hotbar().itemInHand();
+                if (itemInHand.has_value() && itemInHand.value().isBlock())
+                {
+                    tryPlaceBlock();
+                }
                 break;
             }
         }

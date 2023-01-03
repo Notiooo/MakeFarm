@@ -164,9 +164,8 @@ std::optional<ItemId> Hotbar::tryRemoveItemInHand(int amount)
     auto currentlySelectedSlot = mSlots.at(mCurrentlySelectedNumberOfSlot);
     if (currentlySelectedSlot->doesContainItem() && currentlySelectedSlot->amount() >= amount)
     {
-        currentlySelectedSlot->amount(currentlySelectedSlot->amount() - amount);
-
         auto removedItemId = currentlySelectedSlot->item()->id();
+        currentlySelectedSlot->amount(currentlySelectedSlot->amount() - amount);
         if (currentlySelectedSlot->amount() == 0)
         {
             currentlySelectedSlot->removeItem();
@@ -229,4 +228,9 @@ sf::Vector2f Hotbar::positionOfGivenSlot(int slotIndex) const
 sf::Vector2f Hotbar::position() const
 {
     return mRenderPosition;
+}
+
+std::optional<Item> Hotbar::itemInHand()
+{
+    return mSlots.at(mCurrentlySelectedNumberOfSlot)->item();
 }

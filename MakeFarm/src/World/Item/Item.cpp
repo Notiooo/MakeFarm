@@ -32,6 +32,7 @@ std::string Item::name() const
 {
     return mItemType->name;
 }
+
 unsigned int Item::textureId() const
 {
     switch (renderType())
@@ -40,6 +41,10 @@ unsigned int Item::textureId() const
             return static_cast<unsigned int>(BlockMap::blockMap()
                                                  .blockType(static_cast<BlockId>(id()))
                                                  .textureId.at(Block::Face::Front));
-        case Item::Render::Item: return static_cast<unsigned int>(id());
+        case Item::Render::Item: return static_cast<unsigned int>(id()) % 1000;
     }
+}
+bool Item::isBlock() const
+{
+    return renderType() == Item::Render::Block;
 }

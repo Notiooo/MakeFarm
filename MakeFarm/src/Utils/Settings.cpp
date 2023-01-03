@@ -32,9 +32,7 @@ bool Settings::isPresent(const std::string& settingName) const
         throw std::logic_error("Trying to get content of file of unknown/closed name");
     }
 
-    // It set up fstream to be possible to read it again
-    mSettingsFile.clear();
-    mSettingsFile.seekg(0);
+    prepareToReadFromFstreamAgain();
 
     std::string fileLine;
     while (std::getline(mSettingsFile, fileLine))
@@ -43,15 +41,33 @@ bool Settings::isPresent(const std::string& settingName) const
         std::string foundSetting;
 
         std::string word;
+
         while (ss >> word && word != "=")
         {
             foundSetting += word;
         }
 
-        if (foundSetting == settingName)
+        bool stopParsing = false;
+        if (foundSetting == "Crafting")
+        {
+            stopParsing = true;
+        }
+        else if (foundSetting == "EndCrafting")
+        {
+            stopParsing = false;
+        }
+
+
+        if (!stopParsing && foundSetting == settingName)
         {
             return true;
         }
     }
     return false;
+}
+
+void Settings::prepareToReadFromFstreamAgain() const
+{
+    mSettingsFile.clear();
+    mSettingsFile.seekg(0);
 }
