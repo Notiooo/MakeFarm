@@ -14,11 +14,11 @@ target_precompile_headers(MakeFarmSrc PUBLIC pch.h)
 set(CUSTOM_INCLUDES_DIR ${CMAKE_CURRENT_BINARY_DIR}/custom_includes)
 file(MAKE_DIRECTORY ${CUSTOM_INCLUDES_DIR})
 
-add_custom_command(TARGET MakeFarmSrc PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
+configure_file(
         ${FETCHCONTENT_BASE_DIR}/serializer-src/serializer.h
         ${CUSTOM_INCLUDES_DIR}
-        )
+        COPYONLY
+)
 
 target_include_directories(MakeFarmSrc PUBLIC
         ${FETCHCONTENT_BASE_DIR}/glew-src/include
