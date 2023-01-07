@@ -98,7 +98,7 @@ void GameState::updateDebugMenu()
     if (isDebugMenuActivated)
     {
         mPlayer.updateDebugMenu();
-        
+
         if (ImGui::BeginMainMenuBar())
         {
             if (ImGui::BeginMenu("OpenGL"))

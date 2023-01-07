@@ -34,12 +34,10 @@ Game::Game()
     mGameWindow->setFramerateLimit(FRAMES_PER_SECOND);
     mGameWindow->setActive(true);
     loadResources();
-// clang-format off
-    // ImGui setup
-    #ifdef _DEBUG
+
+#ifdef _DEBUG
     ImGui::SFML::Init(*mGameWindow);
-    #endif
-    // clang-format on
+#endif
 
     // GLEW setup
     glewExperimental = GL_TRUE;
@@ -73,11 +71,9 @@ void Game::run()
     while (isGameRunning)
     {
         frameTimeElapsed = clock.restart();
-// clang-format off
-        #ifdef _DEBUG
+#ifdef _DEBUG
         ImGui::SFML::Update(*mGameWindow, frameTimeElapsed);
-        #endif
-        // clang-format on
+#endif
         update(frameTimeElapsed);
         performFixedUpdateAtLeastMinimalNumberOfTimes(frameTimeElapsed);
         processEvents();
@@ -115,11 +111,10 @@ void Game::processEvents()
         {
             isGameRunning = false;
         }
-// clang-format off
-        #ifdef _DEBUG
+
+#ifdef _DEBUG
         ImGui::SFML::ProcessEvent(event);
-        #endif
-        // clang-format on
+#endif
 
         mAppStack.handleEvent(event);
     }
@@ -152,13 +147,11 @@ void Game::render()
     // draw the application
     mAppStack.draw(*mGameWindow, sf::Transform::Identity);
 
-// clang-format off
-    #ifdef _DEBUG
+#ifdef _DEBUG
     mGameWindow->pushGLStates();
     ImGui::SFML::Render(*mGameWindow);
     mGameWindow->popGLStates();
-    #endif
-    // clang-format on
+#endif
 
     // display to the window
     mGameWindow->display();

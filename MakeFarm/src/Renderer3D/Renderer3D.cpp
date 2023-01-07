@@ -40,13 +40,11 @@ void Renderer3D::draw(const VertexArray& va, const IndexBuffer& ib, const sf::Sh
     ib.bind();
     GLCall(glDrawElements(toOpenGL(drawMode), ib.size(), GL_UNSIGNED_INT, nullptr));
 
-// clang-format off
-    #ifdef _DEBUG
+#ifdef _DEBUG
     sf::Shader::bind(nullptr);
     va.unbind();
     ib.unbind();
-    #endif
-    // clang-format on
+#endif
 }
 
 void Renderer3D::draw(const VertexArray& va, const sf::Shader& shader, int number,
@@ -56,12 +54,10 @@ void Renderer3D::draw(const VertexArray& va, const sf::Shader& shader, int numbe
     va.bind();
     GLCall(glDrawArrays(toOpenGL(drawMode), 0, number));
 
-// clang-format off
-    #ifdef _DEBUG
+#ifdef _DEBUG
     sf::Shader::bind(nullptr);
     va.unbind();
-    #endif
-    // clang-format on
+#endif
 }
 
 unsigned Renderer3D::toOpenGL(const Renderer3D::DrawMode& drawMode) const

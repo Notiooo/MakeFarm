@@ -15,12 +15,10 @@ void Model3D::setMesh(std::unique_ptr<Mesh3D> mesh)
     mVertexArray.setBuffer(mVertexBuffers, mBufferLayout);
     mIndices.setData(mesh->indices.data(), static_cast<unsigned int>(mesh->indices.size()));
 
-    // clang-format off
-    #ifdef _DEBUG
+#ifdef _DEBUG
     mVertexArray.unbind();
     mIndices.unbind();
-    #endif
-    // clang-format on
+#endif
 }
 
 void Model3D::draw(const Renderer3D& renderer3d, const sf::Shader& shader) const

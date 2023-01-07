@@ -54,7 +54,7 @@ void Crafting::handleEvent(const sf::Event& event)
             updateIfResultItemOfFinilizedCraftingIsTaken();
         }
 
-        if(!mIsCraftingFinalized)
+        if (!mIsCraftingFinalized)
         {
             updateLayoutCorrectness();
         }
