@@ -198,6 +198,7 @@ private:
      */
     void applyChanges();
 
+protected:
     /**
      * \brief The stack on which the current states are located. It holds the states.
      *
@@ -206,6 +207,7 @@ private:
      */
     std::vector<StateEntry> mStack;
 
+private:
     /**
      * \brief A FIFO queue that holds pending operations for execution on the stack.
      */

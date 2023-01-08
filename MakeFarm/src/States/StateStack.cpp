@@ -125,5 +125,5 @@ State_ID StateStack::top() const
     {
         return State_ID::None;
     }
-    return mStack.front().id;
+    return mStack.back().id;
 }

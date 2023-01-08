@@ -34,7 +34,6 @@ void TerrainGenerator::generateTerrain(Chunk& chunk, Chunk::ChunkBlocks& chunkBl
     if (doesChunkContainOnlyOneBiome(allBiomesInChunkPerCoordinate))
     {
         auto& biome = **biomesToPostProcess.begin();
-        biomesToPostProcess.emplace(&biome);
         generateTerrainForChunkWithGivenBiome(chunk, chunkBlocks, biome);
     }
     else

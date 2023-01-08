@@ -201,7 +201,6 @@ bool Player::tryUpdatePositionByApplyingVelocityIfCollisionAllows(
     if (chunkContainer.doesItCollide(collisionBox()))
     {
         position -= velocity;
-        mAABB.updatePosition(mPosition, AABB::RelativeTo::BottomCenter);
         velocity = 0;
         return false;
     }

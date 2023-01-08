@@ -32,18 +32,22 @@ endif ()
 include(ut/CMakeLists.txt)
 include(mt/CMakeLists.txt)
 include(mocks/CMakeLists.txt)
+include(utils/CMakeLists.txt)
 include_directories(ut/src)
 include_directories(mt/src)
 include_directories(mocks/src)
+include_directories(utils/src)
 list(TRANSFORM UT_Sources PREPEND ut/)
 list(TRANSFORM MT_Sources PREPEND mt/)
 list(TRANSFORM Mocks_Sources PREPEND mocks/)
+list(TRANSFORM Utils_Sources PREPEND utils/)
 
 add_executable(MakeFarmTests
         main.cpp
         ${UT_Sources}
         ${MT_Sources}
         ${Mocks_Sources}
+        ${Utils_Sources}
         )
 
 
