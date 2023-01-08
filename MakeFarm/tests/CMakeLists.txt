@@ -46,13 +46,23 @@ add_executable(MakeFarmTests
         ${Mocks_Sources}
         )
 
+
+target_compile_definitions(MakeFarmTests PUBLIC GTEST_LINKED_AS_SHARED_LIBRARY)
 target_link_libraries(MakeFarmTests PRIVATE MakeFarmSrc)
 target_link_libraries(MakeFarmTests PRIVATE gtest gtest_main)
 target_link_libraries(MakeFarmTests PRIVATE gmock gmock_main)
+
+# Copy libraries
 
 add_custom_command(TARGET MakeFarmTests POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:gtest>
         $<TARGET_FILE:gmock>
+        $<TARGET_FILE:gtest_main>
+        $<TARGET_FILE:gmock_main>
+        $<TARGET_FILE:ImGui-SFML::ImGui-SFML>
+        $<TARGET_FILE:sfml-graphics>
+        $<TARGET_FILE:sfml-window>
+        $<TARGET_FILE:sfml-system>
         $<TARGET_FILE_DIR:MakeFarmTests>
         )
