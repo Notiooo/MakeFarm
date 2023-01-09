@@ -47,7 +47,8 @@ public:
      * @param relativeTo Relative to what to position the cube in space.
      */
     template<typename Vector3>
-    void updatePosition(const Vector3& position, const RelativeTo& relativeTo);
+    void updatePosition(const Vector3& position,
+                        const RelativeTo& relativeTo = RelativeTo::LeftBottomBack);
 
     /**
      * @brief Checks if there is a collision between this cube and the other given cube.

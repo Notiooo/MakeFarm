@@ -3,7 +3,7 @@
 
 AABB::AABB(sf::Vector3f boxSize)
     : mBoxSize(boxSize)
-    , mWireframe()
+    , mWireframe(sf::Vector3f{0, 0, 0}, boxSize)
     , mMin(mWireframe.min)
     , mMax(mWireframe.max)
 {
