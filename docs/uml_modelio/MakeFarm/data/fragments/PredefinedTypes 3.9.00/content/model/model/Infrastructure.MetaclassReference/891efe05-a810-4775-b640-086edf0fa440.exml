@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="" version="4">
+  <OBJECT>
+    <ID name="" mc="Infrastructure.MetaclassReference" uid="891efe05-a810-4775-b640-086edf0fa440"/>
+    <PID name="Analyst" mc="Infrastructure.Profile" uid="943cfd4f-cbbb-45d2-ac27-2d2f8bd419c5"/>
+    <ATTRIBUTES>
+      <ATT name="ReferencedClassName"><![CDATA[Analyst.TestContainer]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="DefinedTable">
+        <COMPID name="Extern Test" mc="Infrastructure.PropertyTableDefinition" uid="ee295439-adfb-4038-9ad2-9e643a37e076"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="" version="4">
+  <OBJECT>
+    <ID name="" mc="Infrastructure.MetaclassReference" uid="d7de0649-dc13-499c-a02e-4bd1b407cb44"/>
+    <PID name="Analyst" mc="Infrastructure.Profile" uid="943cfd4f-cbbb-45d2-ac27-2d2f8bd419c5"/>
+    <ATTRIBUTES>
+      <ATT name="ReferencedClassName"><![CDATA[Analyst.AnalystContainer]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="DefinedTable">
+        <COMPID name="No Properties" mc="Infrastructure.PropertyTableDefinition" uid="7649b5c8-8733-4a02-959c-a269422402b8"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

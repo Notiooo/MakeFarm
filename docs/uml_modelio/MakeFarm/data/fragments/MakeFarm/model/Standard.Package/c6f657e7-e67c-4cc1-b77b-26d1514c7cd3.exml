@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="activity diagram" version="4">
+  <OBJECT>
+    <ID name="activity diagram" mc="Standard.Package" uid="c6f657e7-e67c-4cc1-b77b-26d1514c7cd3"/>
+    <PID name="MakeFarm" mc="Standard.Project" uid="2b25b70e-d551-4ff7-875d-adeb2607dda0"/>
+    <ATTRIBUTES>
+      <ATT name="IsInstantiable">false</ATT>
+      <ATT name="IsAbstract">false</ATT>
+      <ATT name="IsLeaf">false</ATT>
+      <ATT name="IsRoot">false</ATT>
+      <ATT name="Visibility">Public</ATT>
+      <ATT name="Name"><![CDATA[activity diagram]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="OwnedBehavior">
+        <COMPID name="Activity" mc="Standard.Activity" uid="cc2db19e-8bda-48ad-868c-22e650087073"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

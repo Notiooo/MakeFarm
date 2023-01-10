@@ -1,0 +1,226 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="class-diagrams" version="4">
+  <OBJECT>
+    <ID name="class-diagrams" mc="Standard.Package" uid="40600391-20d8-4191-aa3b-01e39fad11f0"/>
+    <PID name="MakeFarm" mc="Standard.Project" uid="2b25b70e-d551-4ff7-875d-adeb2607dda0"/>
+    <ATTRIBUTES>
+      <ATT name="IsInstantiable">false</ATT>
+      <ATT name="IsAbstract">false</ATT>
+      <ATT name="IsLeaf">false</ATT>
+      <ATT name="IsRoot">false</ATT>
+      <ATT name="Visibility">Public</ATT>
+      <ATT name="Name"><![CDATA[class-diagrams]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="OwnedElement">
+        <COMPID name="Game" mc="Standard.Class" uid="5f264b32-d8f7-424d-9e20-bea12af9ccf2"/>
+        <COMPID name="StateStack" mc="Standard.Class" uid="d4e2e3b6-a6c1-4c72-9a12-823ff9e268ba"/>
+        <COMPID name="GameSession" mc="Standard.Class" uid="4778defb-dbe1-4285-aa10-d7659b5c519e"/>
+        <COMPID name="GameResources" mc="Standard.Class" uid="95211400-4ab6-42cb-9d95-474eb77d3e6b"/>
+        <COMPID name="FontManager" mc="Standard.Class" uid="32687535-4d78-4a81-930c-e47f7c8f27f7"/>
+        <COMPID name="SFML" mc="Standard.Package" uid="2f79a263-9f56-4a5e-82a6-96496a4cec7f"/>
+        <COMPID name="std::unique_ptr&lt;sf::RenderWindow&gt;" mc="Standard.DataType" uid="4f5c93f5-d405-4ad2-9c9a-ebe2001d5fef"/>
+        <COMPID name="sf::Time" mc="Standard.DataType" uid="1d3937fb-e7f4-43d3-a1c9-7e2afbdaf5f5"/>
+        <COMPID name="State" mc="Standard.Class" uid="f6e6aa36-364e-4250-8ca8-8904091a807b"/>
+        <COMPID name="sf::Font" mc="Standard.DataType" uid="28600f0c-aab4-42af-a4fe-f77e780d14ca"/>
+        <OBJECT>
+          <ID name="FontId" mc="Standard.Enumeration" uid="3f1371e7-ec42-44a6-89eb-421a79cdc6db"/>
+          <ATTRIBUTES>
+            <ATT name="IsElementary">true</ATT>
+            <ATT name="IsAbstract">false</ATT>
+            <ATT name="IsLeaf">false</ATT>
+            <ATT name="IsRoot">false</ATT>
+            <ATT name="Visibility">Public</ATT>
+            <ATT name="Name"><![CDATA[FontId]]></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES>
+            <COMP relation="Value">
+              <OBJECT>
+                <ID name="ArialNarrow" mc="Standard.EnumerationLiteral" uid="1cea938a-0be9-44ae-9aa3-ff91113646c3"/>
+                <ATTRIBUTES>
+                  <ATT name="Name"><![CDATA[ArialNarrow]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES></DEPENDENCIES>
+              </OBJECT>
+            </COMP>
+          </DEPENDENCIES>
+        </OBJECT>
+        <COMPID name="std::map&lt;Identifier, std::unique_ptr&lt;Resource&gt;&gt;" mc="Standard.DataType" uid="cd4fd0d2-700c-4100-956c-a853ba2bf88b"/>
+        <COMPID name="ResourceManager" mc="Standard.Class" uid="8151758b-119b-4da3-a07d-1c726ab740b5"/>
+        <OBJECT>
+          <ID name="State_ID" mc="Standard.Enumeration" uid="946595c7-4e48-41bf-b0f0-c37819ecef6f"/>
+          <ATTRIBUTES>
+            <ATT name="IsElementary">true</ATT>
+            <ATT name="IsAbstract">false</ATT>
+            <ATT name="IsLeaf">false</ATT>
+            <ATT name="IsRoot">false</ATT>
+            <ATT name="Visibility">Public</ATT>
+            <ATT name="Name"><![CDATA[State_ID]]></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES>
+            <COMP relation="Value">
+              <OBJECT>
+                <ID name="None" mc="Standard.EnumerationLiteral" uid="5f500059-f2d1-4a17-ae80-1ecc9a299707"/>
+                <ATTRIBUTES>
+                  <ATT name="Name"><![CDATA[None]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES></DEPENDENCIES>
+              </OBJECT>
+              <OBJECT>
+                <ID name="GameState" mc="Standard.EnumerationLiteral" uid="6c6d40ae-77ea-4991-bc82-ea8e04f8eaff"/>
+                <ATTRIBUTES>
+                  <ATT name="Name"><![CDATA[GameState]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES></DEPENDENCIES>
+              </OBJECT>
+              <OBJECT>
+                <ID name="DeathState" mc="Standard.EnumerationLiteral" uid="b58aa202-280c-411d-b566-567130e55f21"/>
+                <ATTRIBUTES>
+                  <ATT name="Name"><![CDATA[DeathState]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES></DEPENDENCIES>
+              </OBJECT>
+              <OBJECT>
+                <ID name="MainMenuState" mc="Standard.EnumerationLiteral" uid="5dcb4015-11b2-4ea9-bb9e-fde80c75cfc6"/>
+                <ATTRIBUTES>
+                  <ATT name="Name"><![CDATA[MainMenuState]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES></DEPENDENCIES>
+              </OBJECT>
+              <OBJECT>
+                <ID name="PauseState" mc="Standard.EnumerationLiteral" uid="94e4d994-8ea2-4f2e-8510-ac37754dcba0"/>
+                <ATTRIBUTES>
+                  <ATT name="Name"><![CDATA[PauseState]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES></DEPENDENCIES>
+              </OBJECT>
+            </COMP>
+          </DEPENDENCIES>
+        </OBJECT>
+        <COMPID name="StateEntry" mc="Standard.Class" uid="2d7cebf2-11c5-48d4-a08e-d28bacb2cd41"/>
+        <COMPID name="Change" mc="Standard.Class" uid="188bb3f2-6cd6-40bb-a757-cb17520d4843"/>
+        <OBJECT>
+          <ID name="Perform" mc="Standard.Enumeration" uid="8b972285-48e9-45cc-b5c1-0e284e5e6894"/>
+          <ATTRIBUTES>
+            <ATT name="IsElementary">true</ATT>
+            <ATT name="IsAbstract">false</ATT>
+            <ATT name="IsLeaf">false</ATT>
+            <ATT name="IsRoot">false</ATT>
+            <ATT name="Visibility">Public</ATT>
+            <ATT name="Name"><![CDATA[Perform]]></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES>
+            <COMP relation="Value">
+              <OBJECT>
+                <ID name="Push" mc="Standard.EnumerationLiteral" uid="1c2424ac-e449-46ee-90af-828f6515c78a"/>
+                <ATTRIBUTES>
+                  <ATT name="Name"><![CDATA[Push]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES></DEPENDENCIES>
+              </OBJECT>
+              <OBJECT>
+                <ID name="Pop" mc="Standard.EnumerationLiteral" uid="dd44a963-1c20-48ad-ab3e-621a10862155"/>
+                <ATTRIBUTES>
+                  <ATT name="Name"><![CDATA[Pop]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES></DEPENDENCIES>
+              </OBJECT>
+              <OBJECT>
+                <ID name="Clear" mc="Standard.EnumerationLiteral" uid="6d115e5c-4af5-4f6d-9e5e-0b391d0dc2e0"/>
+                <ATTRIBUTES>
+                  <ATT name="Name"><![CDATA[Clear]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES></DEPENDENCIES>
+              </OBJECT>
+            </COMP>
+          </DEPENDENCIES>
+        </OBJECT>
+        <COMPID name="TextureManager" mc="Standard.Class" uid="91d2333b-3424-4252-bac9-f6c61987b29d"/>
+        <OBJECT>
+          <ID name="TextureId" mc="Standard.Enumeration" uid="8c1c7cac-803a-4a1c-b852-0b5de7b17ae8"/>
+          <ATTRIBUTES>
+            <ATT name="IsElementary">true</ATT>
+            <ATT name="IsAbstract">false</ATT>
+            <ATT name="IsLeaf">false</ATT>
+            <ATT name="IsRoot">false</ATT>
+            <ATT name="Visibility">Public</ATT>
+            <ATT name="Name"><![CDATA[TextureId]]></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES></DEPENDENCIES>
+        </OBJECT>
+        <COMPID name="TexturePack" mc="Standard.Class" uid="71cb26a5-d6cc-47e7-9d95-739dfbd34543"/>
+        <COMPID name="GameState" mc="Standard.Class" uid="1345f1fa-de3a-43c4-80f8-56d66ea53bb0"/>
+        <COMPID name="DeathState" mc="Standard.Class" uid="d97f987a-ae4b-4d19-98d1-a28cee1ba6e5"/>
+        <COMPID name="MainMenuState" mc="Standard.Class" uid="e973deb7-64ca-4c7e-abca-4b9d2c7e363e"/>
+        <COMPID name="PauseState" mc="Standard.Class" uid="ee879b97-f3cf-4401-bcfa-2ce47b82a66f"/>
+        <COMPID name="Args..." mc="Standard.DataType" uid="9ea2452d-dda3-48ed-a933-6be7f311478b"/>
+        <COMPID name="sf::RenderTarget" mc="Standard.DataType" uid="c33f39f2-d742-4194-a0b0-ecce764a5e5f"/>
+        <COMPID name="sf::RenderStates" mc="Standard.DataType" uid="e02c421b-11d2-47ac-a5b7-0f777e22224b"/>
+        <COMPID name="sf::Event" mc="Standard.DataType" uid="942420b9-45d9-4a51-ba03-89b39fac8cb6"/>
+        <COMPID name="SFML" mc="Standard.Package" uid="d6c49772-f09f-4998-b95d-32c94081ff67"/>
+        <COMPID name="Settings" mc="Standard.Class" uid="afd4f4ed-7630-4e58-b1df-9f6185747282"/>
+        <OBJECT>
+          <ID name="SpriteSheet" mc="Standard.Enumeration" uid="31c4ab52-564b-45c2-a1f0-98baf8ce3362"/>
+          <ATTRIBUTES>
+            <ATT name="IsElementary">true</ATT>
+            <ATT name="IsAbstract">false</ATT>
+            <ATT name="IsLeaf">false</ATT>
+            <ATT name="IsRoot">false</ATT>
+            <ATT name="Visibility">Public</ATT>
+            <ATT name="Name"><![CDATA[SpriteSheet]]></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES>
+            <COMP relation="Value">
+              <OBJECT>
+                <ID name="Blocks" mc="Standard.EnumerationLiteral" uid="51c37b14-2729-4e43-9550-af5e75ea1c9c"/>
+                <ATTRIBUTES>
+                  <ATT name="Name"><![CDATA[Blocks]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES></DEPENDENCIES>
+              </OBJECT>
+              <OBJECT>
+                <ID name="Items" mc="Standard.EnumerationLiteral" uid="d8628514-9721-404f-9c1c-241399984d9b"/>
+                <ATTRIBUTES>
+                  <ATT name="Name"><![CDATA[Items]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES></DEPENDENCIES>
+              </OBJECT>
+            </COMP>
+          </DEPENDENCIES>
+        </OBJECT>
+        <COMPID name="sf::vector&lt;GLfloat&gt;" mc="Standard.DataType" uid="4914d76e-9c8f-45e0-b35c-c86eb6a98cda"/>
+        <COMPID name="sf::Vector2i" mc="Standard.DataType" uid="7f6cd2e4-1cee-4deb-88c6-8865908da919"/>
+        <COMPID name="Block::TextureId" mc="Standard.DataType" uid="258d0e8c-2ec1-4cc2-bf2c-2572cb3db562"/>
+        <COMPID name="sf::Rect&lt;int&gt;" mc="Standard.DataType" uid="bd25442b-9615-4fc3-b015-ef072a1fd143"/>
+        <COMPID name="Item" mc="Standard.Class" uid="eadf43b0-40f1-49e1-b346-88a10f0aaf30"/>
+        <COMPID name="ChunkContainer" mc="Standard.Class" uid="95ce8fca-682c-4917-931d-baf612fcc860"/>
+        <COMPID name="AABB" mc="Standard.Class" uid="46f95909-32be-4820-8e82-962927412430"/>
+        <COMPID name="Chunk" mc="Standard.Class" uid="9939d112-bbe5-4b1d-bb6d-5eebf5a4147a"/>
+        <COMPID name="Block::Coordinate" mc="Standard.Class" uid="fc2f972c-cf12-4857-b681-cf6060d8773d"/>
+        <COMPID name="Block" mc="Standard.Class" uid="dd0ac9fa-28a0-4ba0-acb2-9f85e55175bf"/>
+      </COMP>
+      <COMP relation="Product">
+        <COMPID name="general-game-architecture" mc="Standard.ClassDiagram" uid="16032a0c-26b4-4518-a278-f7f74a852f5c"/>
+        <COMPID name="statestack" mc="Standard.ClassDiagram" uid="1ff07d82-ba46-42b6-a8ae-df066fac7d24"/>
+        <COMPID name="resources" mc="Standard.ClassDiagram" uid="2ed68f77-074e-4508-ab0b-f89de2bb610f"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

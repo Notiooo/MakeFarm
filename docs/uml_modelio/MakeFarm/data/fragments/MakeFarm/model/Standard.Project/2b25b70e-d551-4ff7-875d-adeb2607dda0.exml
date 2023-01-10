@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="MakeFarm" version="4">
+  <OBJECT>
+    <ID name="MakeFarm" mc="Standard.Project" uid="2b25b70e-d551-4ff7-875d-adeb2607dda0"/>
+    <ATTRIBUTES>
+      <ATT name="ProjectContext"></ATT>
+      <ATT name="ProjectDescr"></ATT>
+      <ATT name="Name"><![CDATA[MakeFarm]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="Model">
+        <COMPID name="use-case-diagrams" mc="Standard.Package" uid="a8f5ea8d-c76b-4581-8b1a-3f9be31259ee"/>
+        <COMPID name="class-diagrams" mc="Standard.Package" uid="40600391-20d8-4191-aa3b-01e39fad11f0"/>
+        <COMPID name="class-diagrams-simplified" mc="Standard.Package" uid="9af4b9f0-4a26-42d4-be1b-7bda4fba2fc3"/>
+        <COMPID name="sequential diagrams" mc="Standard.Package" uid="6e98048b-9be2-48ff-b35d-ddc6b1a9918c"/>
+        <COMPID name="activity diagram" mc="Standard.Package" uid="c6f657e7-e67c-4cc1-b77b-26d1514c7cd3"/>
+        <COMPID name="simplified class diagrams" mc="Standard.Package" uid="51c6ca07-a376-4b96-9193-4e245a44a3cd"/>
+      </COMP>
+      <COMP relation="DiagramRoot">
+        <COMPID name="MakeFarm" mc="Infrastructure.DiagramSet" uid="8de3eb29-36f2-4b71-88bc-a0a95e4fe458"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="std::unique_ptr&lt;State&gt;" version="4">
+  <OBJECT>
+    <ID name="std::unique_ptr&lt;State&gt;" mc="Standard.DataType" uid="fd324d66-8fad-4a73-bcf1-8c1df38d524e"/>
+    <PID name="StateEntry" mc="Standard.Class" uid="2d7cebf2-11c5-48d4-a08e-d28bacb2cd41"/>
+    <ATTRIBUTES>
+      <ATT name="IsElementary">true</ATT>
+      <ATT name="IsAbstract">false</ATT>
+      <ATT name="IsLeaf">false</ATT>
+      <ATT name="IsRoot">false</ATT>
+      <ATT name="Visibility">Public</ATT>
+      <ATT name="Name"><![CDATA[std::unique_ptr<State>]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES></DEPENDENCIES>
+  </OBJECT>
+</EXT>

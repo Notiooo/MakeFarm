@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<ram-component manifest-version="2.0.02" name="PredefinedTypes" version="3" release="9" clevel="0"
+               modelioVersion="4.0.00" provider="Modeler Module">
+    <description><![CDATA[Predefined types model component provides the default types for UML and Analyst models.
+]]></description>
+    <dependencies></dependencies>
+    <contributors>
+        <contributor name="ModelerModule" version="9.1.00"/>
+    </contributors>
+    <metamodels>
+        <metamodel name="Infrastructure" version="2.1.03"/>
+        <metamodel name="Standard" version="2.3.00"/>
+    </metamodels>
+    <roots>
+        <root metaclass="Infrastructure.ModuleComponent" name="LocalModule"
+              uuid="771a9097-ec5c-4f47-a0c5-ece628a044e6"/>
+        <root metaclass="Standard.Project" name="UML Types" uuid="af249ca6-918c-4754-8097-cdd171d8a4e7"/>
+    </roots>
+</ram-component>

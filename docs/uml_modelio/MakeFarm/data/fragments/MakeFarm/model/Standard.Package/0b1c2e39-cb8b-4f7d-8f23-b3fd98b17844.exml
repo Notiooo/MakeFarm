@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="Graphics" version="4">
+  <OBJECT>
+    <ID name="Graphics" mc="Standard.Package" uid="0b1c2e39-cb8b-4f7d-8f23-b3fd98b17844"/>
+    <PID name="SFML" mc="Standard.Package" uid="d6c49772-f09f-4998-b95d-32c94081ff67"/>
+    <ATTRIBUTES>
+      <ATT name="IsInstantiable">false</ATT>
+      <ATT name="IsAbstract">false</ATT>
+      <ATT name="IsLeaf">false</ATT>
+      <ATT name="IsRoot">false</ATT>
+      <ATT name="Visibility">Public</ATT>
+      <ATT name="Name"><![CDATA[Graphics]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="OwnedElement">
+        <COMPID name="sf::Font" mc="Standard.Class" uid="fb5f5f1f-494b-4fb9-a0a3-61f1c01488a8"/>
+        <COMPID name="sf::Texture" mc="Standard.Class" uid="d71d3c2e-6b79-4c05-8296-2ceaee9cd40d"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

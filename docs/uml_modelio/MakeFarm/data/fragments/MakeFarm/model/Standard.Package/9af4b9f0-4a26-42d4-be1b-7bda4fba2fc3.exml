@@ -1,0 +1,64 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="class-diagrams-simplified" version="4">
+  <OBJECT>
+    <ID name="class-diagrams-simplified" mc="Standard.Package" uid="9af4b9f0-4a26-42d4-be1b-7bda4fba2fc3"/>
+    <PID name="MakeFarm" mc="Standard.Project" uid="2b25b70e-d551-4ff7-875d-adeb2607dda0"/>
+    <ATTRIBUTES>
+      <ATT name="IsInstantiable">false</ATT>
+      <ATT name="IsAbstract">false</ATT>
+      <ATT name="IsLeaf">false</ATT>
+      <ATT name="IsRoot">false</ATT>
+      <ATT name="Visibility">Public</ATT>
+      <ATT name="Name"><![CDATA[class-diagrams-simplified]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="OwnedElement">
+        <COMPID name="StateStack" mc="Standard.Class" uid="13f8f4a1-36e5-4317-85fe-bc143e634842"/>
+        <COMPID name="GameSession" mc="Standard.Class" uid="a3ac1cc9-7223-441b-b727-b1c96562291b"/>
+        <COMPID name="GameResources" mc="Standard.Class" uid="fa0ecfc2-eaa5-469d-a81d-7a925f26312c"/>
+        <COMPID name="FontManager" mc="Standard.Class" uid="e0a6b609-8c15-4eca-9404-d1ee3478e8aa"/>
+        <COMPID name="SFML" mc="Standard.Package" uid="e4960425-9884-402f-b45d-0c807d715862"/>
+        <COMPID name="std::unique_ptr&lt;sf::RenderWindow&gt;" mc="Standard.DataType" uid="3bddb7ec-72f0-44b2-834c-0e80f7b5985a"/>
+        <COMPID name="sf::Time" mc="Standard.DataType" uid="107ef633-2392-4151-8fea-416342755fed"/>
+        <COMPID name="State" mc="Standard.Class" uid="44869d42-4057-4d57-b06b-075ad2efae74"/>
+        <COMPID name="sf::Font" mc="Standard.DataType" uid="805efbeb-41ce-4b92-98f1-c6e315ec9679"/>
+        <OBJECT>
+          <ID name="FontId" mc="Standard.Enumeration" uid="ea641749-7d14-49c0-b3d3-9ef535abc01b"/>
+          <ATTRIBUTES>
+            <ATT name="IsElementary">true</ATT>
+            <ATT name="IsAbstract">false</ATT>
+            <ATT name="IsLeaf">false</ATT>
+            <ATT name="IsRoot">false</ATT>
+            <ATT name="Visibility">Public</ATT>
+            <ATT name="Name"><![CDATA[FontId]]></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES></DEPENDENCIES>
+        </OBJECT>
+        <COMPID name="std::map&lt;Identifier, std::unique_ptr&lt;Resource&gt;&gt;" mc="Standard.DataType" uid="7fe2dff6-f542-40a8-a299-ee44ce1a8fdf"/>
+        <COMPID name="Game" mc="Standard.Class" uid="dbc77775-10bf-4a4b-b7fa-716c02dbfeb6"/>
+        <COMPID name="ResourceManager" mc="Standard.Class" uid="e2058a2f-87f4-4e80-a346-76d87e0bd550"/>
+        <COMPID name="Player" mc="Standard.Class" uid="be460dcb-eab9-4a76-b7bc-096c3b5cc725"/>
+        <COMPID name="Camera" mc="Standard.Class" uid="102d5e26-0c1d-44c2-93b8-9512a34544d0"/>
+        <COMPID name="Inventory" mc="Standard.Class" uid="437cc325-ff1a-4682-a2ce-02f450716a51"/>
+        <COMPID name="HighlightedBlock" mc="Standard.Class" uid="70d4fe4c-0395-4dcc-83c7-2b0655e39c10"/>
+        <COMPID name="Serializer" mc="Standard.Class" uid="bfa8dea1-783b-4ed1-9692-63daae73edaa"/>
+        <COMPID name="Healthbar" mc="Standard.Class" uid="13bb3849-c48b-4a1b-9615-31e013275438"/>
+        <COMPID name="Oxygenbar" mc="Standard.Class" uid="ce807d56-29d0-4fa7-9cfe-4442e3f3b254"/>
+        <COMPID name="AABB" mc="Standard.Class" uid="9ddaba60-3b5e-4d49-8308-4052da94f22d"/>
+        <COMPID name="ChunkManager" mc="Standard.Class" uid="dcddcc39-a214-408b-8d14-1bf77ab55475"/>
+        <COMPID name="DiscreteBarValue" mc="Standard.Class" uid="1072a243-e14b-4c0b-a1ff-c6bd7944753a"/>
+        <COMPID name="Hotbar" mc="Standard.Class" uid="6539ef69-864f-493a-a277-c4d59f49ee3f"/>
+        <COMPID name="Crafting" mc="Standard.Class" uid="600e0861-8fe9-4577-a85b-0bf6843cd756"/>
+        <COMPID name="ItemSlots" mc="Standard.Class" uid="4977424f-e4de-4d17-94de-747dee161bb4"/>
+        <COMPID name="DiscreteBar" mc="Standard.Class" uid="ac23fcda-602b-4ab0-b9a7-51f78cdb0a9f"/>
+        <COMPID name="ItemSlot" mc="Standard.Class" uid="cf263177-1c49-4083-9695-c06c4a7dcd44"/>
+      </COMP>
+      <COMP relation="Product">
+        <COMPID name="general-game-architecture-simplified" mc="Standard.ClassDiagram" uid="deae45e5-f64c-4eac-99d2-aa8fa5a42b4c"/>
+        <COMPID name="Player" mc="Standard.ClassDiagram" uid="a7da60fa-48fa-4752-97da-908b6aba3ec3"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

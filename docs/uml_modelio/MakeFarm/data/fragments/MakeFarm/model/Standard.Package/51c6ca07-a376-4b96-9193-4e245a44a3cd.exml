@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="simplified class diagrams" version="4">
+  <OBJECT>
+    <ID name="simplified class diagrams" mc="Standard.Package" uid="51c6ca07-a376-4b96-9193-4e245a44a3cd"/>
+    <PID name="MakeFarm" mc="Standard.Project" uid="2b25b70e-d551-4ff7-875d-adeb2607dda0"/>
+    <ATTRIBUTES>
+      <ATT name="IsInstantiable">false</ATT>
+      <ATT name="IsAbstract">false</ATT>
+      <ATT name="IsLeaf">false</ATT>
+      <ATT name="IsRoot">false</ATT>
+      <ATT name="Visibility">Public</ATT>
+      <ATT name="Name"><![CDATA[simplified class diagrams]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="OwnedElement">
+        <COMPID name="Biome" mc="Standard.Class" uid="b3062ae9-391f-4ac8-851f-3919657ddd53"/>
+        <COMPID name="ForestBiome" mc="Standard.Class" uid="2c3b30d0-0d74-4f45-a98d-cd32d16dfbf7"/>
+        <COMPID name="SnowyBiome" mc="Standard.Class" uid="a10640bf-e35a-444f-aac5-9f8d7c322cb9"/>
+        <COMPID name="DesertBiome" mc="Standard.Class" uid="6728b176-af44-4aff-b29c-377204ef0d39"/>
+        <COMPID name="VeryDryForestBiome" mc="Standard.Class" uid="3599c5eb-0c4b-4266-a29c-f9d9e0f58405"/>
+        <COMPID name="Block" mc="Standard.Class" uid="6fbd4ab5-9ca6-4105-bddb-411beacc1be4"/>
+        <COMPID name="Chunk" mc="Standard.Class" uid="c1893d9e-ef8d-4c9f-b3b1-7107d06b638c"/>
+        <COMPID name="ChunkContainer" mc="Standard.Class" uid="906dc3e2-4f94-4750-9707-efc6c2cb77c5"/>
+        <COMPID name="TerrainGenerator" mc="Standard.Class" uid="0d7ef6f6-b730-4175-b43f-7cf1b917fd95"/>
+        <COMPID name="ChunkManager" mc="Standard.Class" uid="893259a2-1f78-4b7e-8665-803360f258e2"/>
+        <COMPID name="Serializer" mc="Standard.Class" uid="aee81494-151b-4f28-897d-979933c40679"/>
+        <COMPID name="BlockMeshBuilder" mc="Standard.Class" uid="b6e0f742-9a0e-4e17-bf14-a6f4e8ef190b"/>
+        <COMPID name="TerrainGenerator" mc="Standard.Class" uid="f79d11f7-3af6-4a4b-9bbf-77e983ec04a2"/>
+      </COMP>
+      <COMP relation="Product">
+        <COMPID name="biomes" mc="Standard.ClassDiagram" uid="653e8dd7-d731-403d-aa8f-de61cd2f061e"/>
+        <COMPID name="chunks" mc="Standard.ClassDiagram" uid="ed0134f5-c854-4e0f-aa69-36310c0a0a56"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

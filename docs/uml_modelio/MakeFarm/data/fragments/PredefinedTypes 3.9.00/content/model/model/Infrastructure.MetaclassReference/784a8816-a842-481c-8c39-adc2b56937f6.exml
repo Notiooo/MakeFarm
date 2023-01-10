@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="" version="4">
+  <OBJECT>
+    <ID name="" mc="Infrastructure.MetaclassReference" uid="784a8816-a842-481c-8c39-adc2b56937f6"/>
+    <PID name="Analyst" mc="Infrastructure.Profile" uid="943cfd4f-cbbb-45d2-ac27-2d2f8bd419c5"/>
+    <ATTRIBUTES>
+      <ATT name="ReferencedClassName"><![CDATA[Analyst.KPIContainer]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="DefinedTable">
+        <COMPID name="KPI" mc="Infrastructure.PropertyTableDefinition" uid="2b47f78a-d258-422c-99a8-d54529fe0344"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

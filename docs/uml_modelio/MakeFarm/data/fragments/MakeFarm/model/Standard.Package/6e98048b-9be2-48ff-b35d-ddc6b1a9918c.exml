@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="sequential diagrams" version="4">
+  <OBJECT>
+    <ID name="sequential diagrams" mc="Standard.Package" uid="6e98048b-9be2-48ff-b35d-ddc6b1a9918c"/>
+    <PID name="MakeFarm" mc="Standard.Project" uid="2b25b70e-d551-4ff7-875d-adeb2607dda0"/>
+    <ATTRIBUTES>
+      <ATT name="IsInstantiable">false</ATT>
+      <ATT name="IsAbstract">false</ATT>
+      <ATT name="IsLeaf">false</ATT>
+      <ATT name="IsRoot">false</ATT>
+      <ATT name="Visibility">Public</ATT>
+      <ATT name="Name"><![CDATA[sequential diagrams]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="OwnedBehavior">
+        <COMPID name="StateStack_pop_and_push" mc="Standard.Interaction" uid="2a026534-c198-41bd-bc67-e70266d43f05"/>
+        <COMPID name="Interaction" mc="Standard.Interaction" uid="c14cf123-c8c6-40e2-aa69-8b5e0bb8af7c"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

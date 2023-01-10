@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="" version="4">
+  <OBJECT>
+    <ID name="" mc="Infrastructure.MetaclassReference" uid="a6ad9e37-0267-4596-bf06-e6035f272dcf"/>
+    <PID name="Analyst" mc="Infrastructure.Profile" uid="943cfd4f-cbbb-45d2-ac27-2d2f8bd419c5"/>
+    <ATTRIBUTES>
+      <ATT name="ReferencedClassName"><![CDATA[Analyst.BusinessRuleContainer]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="DefinedTable">
+        <COMPID name="BusinessRule Properties" mc="Infrastructure.PropertyTableDefinition" uid="00bc470c-0000-0019-0000-000000000000"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

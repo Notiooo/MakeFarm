@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="SFML" version="4">
+  <OBJECT>
+    <ID name="SFML" mc="Standard.Package" uid="e4960425-9884-402f-b45d-0c807d715862"/>
+    <PID name="class-diagrams-simplified" mc="Standard.Package" uid="9af4b9f0-4a26-42d4-be1b-7bda4fba2fc3"/>
+    <ATTRIBUTES>
+      <ATT name="IsInstantiable">false</ATT>
+      <ATT name="IsAbstract">false</ATT>
+      <ATT name="IsLeaf">false</ATT>
+      <ATT name="IsRoot">false</ATT>
+      <ATT name="Visibility">Public</ATT>
+      <ATT name="Name"><![CDATA[SFML]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="OwnedElement">
+        <COMPID name="Graphics" mc="Standard.Package" uid="d0ec7578-16e3-45e5-aeda-41864073b36f"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

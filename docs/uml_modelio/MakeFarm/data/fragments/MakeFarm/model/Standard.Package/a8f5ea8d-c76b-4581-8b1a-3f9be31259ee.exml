@@ -1,0 +1,45 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="use-case-diagrams" version="4">
+  <OBJECT>
+    <ID name="use-case-diagrams" mc="Standard.Package" uid="a8f5ea8d-c76b-4581-8b1a-3f9be31259ee"/>
+    <PID name="MakeFarm" mc="Standard.Project" uid="2b25b70e-d551-4ff7-875d-adeb2607dda0"/>
+    <ATTRIBUTES>
+      <ATT name="IsInstantiable">false</ATT>
+      <ATT name="IsAbstract">false</ATT>
+      <ATT name="IsLeaf">false</ATT>
+      <ATT name="IsRoot">false</ATT>
+      <ATT name="Visibility">Public</ATT>
+      <ATT name="Name"><![CDATA[use-case-diagrams]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="OwnedElement">
+        <COMPID name="Player" mc="Standard.Actor" uid="0174852d-46d7-4471-8374-99a6ec818583"/>
+        <COMPID name="Start game" mc="Standard.UseCase" uid="e8fc0b28-d166-4060-a746-a28cc356b902"/>
+        <COMPID name="Exit game" mc="Standard.UseCase" uid="2c77d054-f3fa-4d95-8e4b-f4c13de90336"/>
+        <COMPID name="Create new world" mc="Standard.UseCase" uid="f7378936-cc51-4681-aa83-5b0107aaed2d"/>
+        <COMPID name="Select existing world" mc="Standard.UseCase" uid="daa2f5ed-23c8-4e03-982a-6e411443aa9a"/>
+        <COMPID name="Display game worlds" mc="Standard.UseCase" uid="92c70d49-a659-44c7-b05c-12851d3d989e"/>
+        <COMPID name="Pause game" mc="Standard.UseCase" uid="153b4253-d966-4d9d-8950-f3e4eeb4e52b"/>
+        <COMPID name="Open inventory" mc="Standard.UseCase" uid="c403924c-06af-4af0-9dda-398ff18a4494"/>
+        <COMPID name="Craft new item" mc="Standard.UseCase" uid="1b99566b-bc69-4064-b2d3-612150b3fbc0"/>
+        <COMPID name="Destroy block" mc="Standard.UseCase" uid="beb40737-7141-4ad4-92cc-8f03693e96f8"/>
+        <COMPID name="Place block" mc="Standard.UseCase" uid="5e737877-b8b8-4d39-bd76-86253fa468ff"/>
+        <COMPID name="Go back to main menu" mc="Standard.UseCase" uid="c1c4369b-78f1-4131-a678-73dc8167950b"/>
+        <COMPID name="Save game world" mc="Standard.UseCase" uid="a398d52a-bd20-4758-bec4-29f38bd7d479"/>
+        <COMPID name="Collect item" mc="Standard.UseCase" uid="982e1d4b-daca-433b-af26-e9bf36b26780"/>
+        <COMPID name="Take damage" mc="Standard.UseCase" uid="08685f24-94db-49e0-8569-bf37f543c3c1"/>
+        <COMPID name="Die" mc="Standard.UseCase" uid="6083a15d-5953-4962-9e0b-e9a6e3ef4716"/>
+        <COMPID name="Respawn" mc="Standard.UseCase" uid="559e79f3-457d-4b52-a476-b244f5c1751a"/>
+        <COMPID name="Memory" mc="Standard.Actor" uid="89eb0a95-ba25-41e6-8c0f-27d149984988"/>
+        <COMPID name="Move items" mc="Standard.UseCase" uid="dc6aca84-e54d-406d-bf33-28b4e2ced40b"/>
+      </COMP>
+      <COMP relation="Product">
+        <COMPID name="main-menu" mc="Standard.UseCaseDiagram" uid="313c6155-c27a-4b95-be77-7db7ac0e04aa"/>
+        <COMPID name="game-state" mc="Standard.UseCaseDiagram" uid="87eb3384-316c-4a31-9a83-513086370734"/>
+        <COMPID name="game-state-no-memory" mc="Standard.UseCaseDiagram" uid="5f7c679d-ce1e-4e80-b34e-ce395801f58e"/>
+        <COMPID name="main-menu-no-memory" mc="Standard.UseCaseDiagram" uid="0539bfb5-0c47-4703-9cc4-bfcc65622151"/>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

@@ -1,0 +1,102 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="FontManager" version="4">
+  <OBJECT>
+    <ID name="FontManager" mc="Standard.Class" uid="32687535-4d78-4a81-930c-e47f7c8f27f7"/>
+    <PID name="class-diagrams" mc="Standard.Package" uid="40600391-20d8-4191-aa3b-01e39fad11f0"/>
+    <ATTRIBUTES>
+      <ATT name="IsActive">false</ATT>
+      <ATT name="IsMain">false</ATT>
+      <ATT name="IsElementary">false</ATT>
+      <ATT name="IsAbstract">false</ATT>
+      <ATT name="IsLeaf">false</ATT>
+      <ATT name="IsRoot">false</ATT>
+      <ATT name="Visibility">Public</ATT>
+      <ATT name="Name"><![CDATA[FontManager]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="TemplateInstanciation">
+        <OBJECT>
+          <ID name="-&gt;ResourceManager" mc="Standard.TemplateBinding" uid="d22300cf-f98b-4be6-8737-3b765496b630"/>
+          <ATTRIBUTES>
+            <ATT name="Name"><![CDATA[->ResourceManager]]></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES>
+            <COMP relation="ParameterSubstitution">
+              <OBJECT>
+                <ID name="Resource" mc="Standard.TemplateParameterSubstitution" uid="d2cceb79-2f39-45a2-b205-3c0b7b8adac3"/>
+                <ATTRIBUTES>
+                  <ATT name="Value"></ATT>
+                  <ATT name="Name"><![CDATA[Resource]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES>
+                  <LINK relation="Actual">
+                    <ID name="sf::Font" mc="Standard.DataType" uid="28600f0c-aab4-42af-a4fe-f77e780d14ca"/>
+                  </LINK>
+                  <LINK relation="FormalParameter">
+                    <REFOBJ>
+                      <ID name="Resource" mc="Standard.TemplateParameter" uid="c2708779-bdb2-4d45-8a97-afb043e86d49"/>
+                    </REFOBJ>
+                  </LINK>
+                </DEPENDENCIES>
+              </OBJECT>
+              <OBJECT>
+                <ID name="Identifier" mc="Standard.TemplateParameterSubstitution" uid="e792c38a-d7d9-4ca4-aad4-e3f0a0c68875"/>
+                <ATTRIBUTES>
+                  <ATT name="Value"></ATT>
+                  <ATT name="Name"><![CDATA[Identifier]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES>
+                  <LINK relation="Actual">
+                    <REFOBJ>
+                      <ID name="FontId" mc="Standard.Enumeration" uid="3f1371e7-ec42-44a6-89eb-421a79cdc6db"/>
+                    </REFOBJ>
+                  </LINK>
+                  <LINK relation="FormalParameter">
+                    <REFOBJ>
+                      <ID name="Identifier" mc="Standard.TemplateParameter" uid="8291c75f-0cc8-4b00-9aec-333399ee4759"/>
+                    </REFOBJ>
+                  </LINK>
+                </DEPENDENCIES>
+              </OBJECT>
+            </COMP>
+            <LINK relation="InstanciatedTemplate">
+              <ID name="ResourceManager" mc="Standard.Class" uid="8151758b-119b-4da3-a07d-1c726ab740b5"/>
+            </LINK>
+          </DEPENDENCIES>
+        </OBJECT>
+      </COMP>
+      <COMP relation="DependsOnDependency">
+        <OBJECT>
+          <ID name="" mc="Standard.Usage" uid="35bcad43-b3eb-43c1-8b0e-63eda069ebcd"/>
+          <ATTRIBUTES>
+            <ATT name="Name"></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES>
+            <LINK relation="DependsOn">
+              <REFOBJ>
+                <ID name="FontId" mc="Standard.Enumeration" uid="3f1371e7-ec42-44a6-89eb-421a79cdc6db"/>
+              </REFOBJ>
+            </LINK>
+          </DEPENDENCIES>
+        </OBJECT>
+        <OBJECT>
+          <ID name="" mc="Standard.Usage" uid="e5268acd-cf43-43cb-9cb8-d7915fa537f0"/>
+          <ATTRIBUTES>
+            <ATT name="Name"></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES>
+            <LINK relation="DependsOn">
+              <ID name="sf::Font" mc="Standard.Class" uid="fb5f5f1f-494b-4fb9-a0a3-61f1c01488a8"/>
+            </LINK>
+          </DEPENDENCIES>
+        </OBJECT>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>

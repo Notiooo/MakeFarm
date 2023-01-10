@@ -1,0 +1,94 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="TextureManager" version="4">
+  <OBJECT>
+    <ID name="TextureManager" mc="Standard.Class" uid="91d2333b-3424-4252-bac9-f6c61987b29d"/>
+    <PID name="class-diagrams" mc="Standard.Package" uid="40600391-20d8-4191-aa3b-01e39fad11f0"/>
+    <ATTRIBUTES>
+      <ATT name="IsActive">false</ATT>
+      <ATT name="IsMain">false</ATT>
+      <ATT name="IsElementary">false</ATT>
+      <ATT name="IsAbstract">false</ATT>
+      <ATT name="IsLeaf">false</ATT>
+      <ATT name="IsRoot">false</ATT>
+      <ATT name="Visibility">Public</ATT>
+      <ATT name="Name"><![CDATA[TextureManager]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES>
+      <COMP relation="TemplateInstanciation">
+        <OBJECT>
+          <ID name="-&gt;ResourceManager" mc="Standard.TemplateBinding" uid="1f88bebf-f359-476e-b571-b99fd2b4037a"/>
+          <ATTRIBUTES>
+            <ATT name="Name"><![CDATA[->ResourceManager]]></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES>
+            <COMP relation="ParameterSubstitution">
+              <OBJECT>
+                <ID name="Resource" mc="Standard.TemplateParameterSubstitution" uid="4b937971-3b05-4146-a02d-b874f5273de0"/>
+                <ATTRIBUTES>
+                  <ATT name="Value"><![CDATA[sf::Texture]]></ATT>
+                  <ATT name="Name"><![CDATA[Resource]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES>
+                  <LINK relation="FormalParameter">
+                    <REFOBJ>
+                      <ID name="Resource" mc="Standard.TemplateParameter" uid="c2708779-bdb2-4d45-8a97-afb043e86d49"/>
+                    </REFOBJ>
+                  </LINK>
+                </DEPENDENCIES>
+              </OBJECT>
+              <OBJECT>
+                <ID name="Identifier" mc="Standard.TemplateParameterSubstitution" uid="83f5b145-b581-4259-a74d-6644183a7966"/>
+                <ATTRIBUTES>
+                  <ATT name="Value"><![CDATA[TextureId]]></ATT>
+                  <ATT name="Name"><![CDATA[Identifier]]></ATT>
+                  <ATT name="status">1970354901745664</ATT>
+                </ATTRIBUTES>
+                <DEPENDENCIES>
+                  <LINK relation="FormalParameter">
+                    <REFOBJ>
+                      <ID name="Identifier" mc="Standard.TemplateParameter" uid="8291c75f-0cc8-4b00-9aec-333399ee4759"/>
+                    </REFOBJ>
+                  </LINK>
+                </DEPENDENCIES>
+              </OBJECT>
+            </COMP>
+            <LINK relation="InstanciatedTemplate">
+              <ID name="ResourceManager" mc="Standard.Class" uid="8151758b-119b-4da3-a07d-1c726ab740b5"/>
+            </LINK>
+          </DEPENDENCIES>
+        </OBJECT>
+      </COMP>
+      <COMP relation="DependsOnDependency">
+        <OBJECT>
+          <ID name="" mc="Standard.Usage" uid="cba8dc6f-e834-4ae3-9ef5-e75f3fc7ff70"/>
+          <ATTRIBUTES>
+            <ATT name="Name"></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES>
+            <LINK relation="DependsOn">
+              <REFOBJ>
+                <ID name="TextureId" mc="Standard.Enumeration" uid="8c1c7cac-803a-4a1c-b852-0b5de7b17ae8"/>
+              </REFOBJ>
+            </LINK>
+          </DEPENDENCIES>
+        </OBJECT>
+        <OBJECT>
+          <ID name="" mc="Standard.Usage" uid="82303aca-0ea7-4e6d-9b4c-81377ab72e1a"/>
+          <ATTRIBUTES>
+            <ATT name="Name"></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES>
+            <LINK relation="DependsOn">
+              <ID name="sf::Texture" mc="Standard.Class" uid="d71d3c2e-6b79-4c05-8296-2ceaee9cd40d"/>
+            </LINK>
+          </DEPENDENCIES>
+        </OBJECT>
+      </COMP>
+    </DEPENDENCIES>
+  </OBJECT>
+</EXT>
