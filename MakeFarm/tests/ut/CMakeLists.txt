@@ -7,4 +7,5 @@ set(UT_Sources
         src/World/Biomes/ForestBiomeTest.cpp
         src/World/Biomes/SnowyBiomeTest.cpp
         src/World/Biomes/VeryDryForestBiomeTest.cpp
+        src/World/Chunks/CoordinatesAroundOriginGetterTest.cpp
         )
