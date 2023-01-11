@@ -3,4 +3,8 @@ set(UT_Sources
         src/States/StateStackTest.cpp
         src/Physics/AABBTest.cpp
         src/Player/GUI/Bars/DiscreteBarValueTest.cpp
+        src/World/Biomes/DesertBiomeTest.cpp
+        src/World/Biomes/ForestBiomeTest.cpp
+        src/World/Biomes/SnowyBiomeTest.cpp
+        src/World/Biomes/VeryDryForestBiomeTest.cpp
         )

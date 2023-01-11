@@ -70,3 +70,17 @@ add_custom_command(TARGET MakeFarmTests POST_BUILD
         $<TARGET_FILE:sfml-system>
         $<TARGET_FILE_DIR:MakeFarmTests>
         )
+
+# Remove previous game resources
+
+add_custom_command(TARGET MakeFarmTests PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E remove_directory
+        $<TARGET_FILE_DIR:MakeFarmTests>/resources
+        )
+
+# Copy game resources
+
+add_custom_command(TARGET MakeFarmTests POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/resources $<TARGET_FILE_DIR:MakeFarmTests>/resources
+        )

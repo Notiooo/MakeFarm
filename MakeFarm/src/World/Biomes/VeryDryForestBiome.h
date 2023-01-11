@@ -60,7 +60,9 @@ private:
 
     std::random_device rd;
     std::mt19937 gen;
-    std::bernoulli_distribution mDryTreeDecider;
     std::uniform_int_distribution<int> mDryTreeLengthGenerator;
     std::vector<Block::Coordinate> mDryTreesToPlace;
+
+protected:
+    std::bernoulli_distribution mDryTreeDecider;
 };

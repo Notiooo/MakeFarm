@@ -59,7 +59,9 @@ private:
 
     std::random_device rd;
     std::mt19937 gen;
-    std::bernoulli_distribution mCactusDecider;
     std::uniform_int_distribution<int> mCactusLengthGenerator;
     std::vector<Block::Coordinate> mCactusToPlace;
+
+protected:// Ugly testing purpose :c
+    std::bernoulli_distribution mCactusDecider;
 };

@@ -98,7 +98,9 @@ private:
 
     std::random_device rd;
     std::mt19937 gen;
-    std::bernoulli_distribution mTreeDecider;
     std::uniform_int_distribution<int> mTreeLengthGenerator;
     std::vector<Block::Coordinate> mTreesToPlace;
+
+protected:// For ugly testing purposes :<
+    std::bernoulli_distribution mTreeDecider;
 };
