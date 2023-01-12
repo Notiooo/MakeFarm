@@ -75,6 +75,7 @@ private:
     void addBlockFaceFakeLightning(const Block::Face& blockFace,
                                    std::vector<float>& lightning) const;
 
+protected:
     /* ==== Members ===== */
     std::unique_ptr<WorldBlockMesh> mMesh;
 };

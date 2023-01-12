@@ -68,6 +68,7 @@ add_custom_command(TARGET MakeFarmTests POST_BUILD
         $<TARGET_FILE:sfml-graphics>
         $<TARGET_FILE:sfml-window>
         $<TARGET_FILE:sfml-system>
+        $<TARGET_FILE:tgui>
         $<TARGET_FILE_DIR:MakeFarmTests>
         )
 

@@ -52,6 +52,7 @@ private:
     void addBlockFaceVertices(const WireframeBlock& wireframeBlock, int blockFace,
                               std::vector<float>& vertices) const;
 
+protected:
     /* ==== Members ===== */
     std::unique_ptr<WireframeBlockMesh> mMesh;
 };
