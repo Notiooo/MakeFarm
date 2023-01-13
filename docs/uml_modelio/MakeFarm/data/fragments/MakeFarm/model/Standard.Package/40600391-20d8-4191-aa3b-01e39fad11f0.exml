@@ -215,6 +215,7 @@
         <COMPID name="Chunk" mc="Standard.Class" uid="9939d112-bbe5-4b1d-bb6d-5eebf5a4147a"/>
         <COMPID name="Block::Coordinate" mc="Standard.Class" uid="fc2f972c-cf12-4857-b681-cf6060d8773d"/>
         <COMPID name="Block" mc="Standard.Class" uid="dd0ac9fa-28a0-4ba0-acb2-9f85e55175bf"/>
+        <COMPID name="sf::Clock" mc="Standard.DataType" uid="3f44882c-6627-4fd1-80cc-de1724693cd4"/>
       </COMP>
       <COMP relation="Product">
         <COMPID name="general-game-architecture" mc="Standard.ClassDiagram" uid="16032a0c-26b4-4518-a278-f7f74a852f5c"/>

@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<!--GENERATED FILE, PLEASE DO NOT EDIT!!!--><EXT object="sf::Clock" version="4">
+  <OBJECT>
+    <ID name="sf::Clock" mc="Standard.DataType" uid="3f44882c-6627-4fd1-80cc-de1724693cd4"/>
+    <PID name="class-diagrams" mc="Standard.Package" uid="40600391-20d8-4191-aa3b-01e39fad11f0"/>
+    <ATTRIBUTES>
+      <ATT name="IsElementary">true</ATT>
+      <ATT name="IsAbstract">false</ATT>
+      <ATT name="IsLeaf">false</ATT>
+      <ATT name="IsRoot">false</ATT>
+      <ATT name="Visibility">Public</ATT>
+      <ATT name="Name"><![CDATA[sf::Clock]]></ATT>
+      <ATT name="status">1970354901745664</ATT>
+    </ATTRIBUTES>
+    <DEPENDENCIES></DEPENDENCIES>
+  </OBJECT>
+</EXT>

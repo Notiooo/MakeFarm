@@ -102,7 +102,7 @@
           </DEPENDENCIES>
         </OBJECT>
         <OBJECT>
-          <ID name="performFixedUpdateAtLeastMinimalNumberOfTimes" mc="Standard.Operation" uid="fd607460-6d11-4260-909a-6ffaa9c13e76"/>
+          <ID name="fixedUpdateAtEqualIntervals" mc="Standard.Operation" uid="fd607460-6d11-4260-909a-6ffaa9c13e76"/>
           <ATTRIBUTES>
             <ATT name="Concurrency">false</ATT>
             <ATT name="Final">false</ATT>
@@ -110,35 +110,10 @@
             <ATT name="Visibility">Private</ATT>
             <ATT name="IsClass">false</ATT>
             <ATT name="IsAbstract">false</ATT>
-            <ATT name="Name"><![CDATA[performFixedUpdateAtLeastMinimalNumberOfTimes]]></ATT>
+            <ATT name="Name"><![CDATA[fixedUpdateAtEqualIntervals]]></ATT>
             <ATT name="status">1970354901745664</ATT>
           </ATTRIBUTES>
-          <DEPENDENCIES>
-            <COMP relation="IO">
-              <OBJECT>
-                <ID name="frameTimeElapsed" mc="Standard.Parameter" uid="4e9dd571-4627-4d6c-b954-7dafc18adb5a"/>
-                <ATTRIBUTES>
-                  <ATT name="ParameterPassing">In</ATT>
-                  <ATT name="MultiplicityMin"><![CDATA[1]]></ATT>
-                  <ATT name="MultiplicityMax"><![CDATA[1]]></ATT>
-                  <ATT name="TypeConstraint"></ATT>
-                  <ATT name="DefaultValue"></ATT>
-                  <ATT name="IsOrdered">false</ATT>
-                  <ATT name="IsUnique">false</ATT>
-                  <ATT name="IsException">false</ATT>
-                  <ATT name="IsStream">false</ATT>
-                  <ATT name="Effect">ReadEffect</ATT>
-                  <ATT name="Name"><![CDATA[frameTimeElapsed]]></ATT>
-                  <ATT name="status">1970354901745664</ATT>
-                </ATTRIBUTES>
-                <DEPENDENCIES>
-                  <LINK relation="Type">
-                    <ID name="sf::Time" mc="Standard.DataType" uid="1d3937fb-e7f4-43d3-a1c9-7e2afbdaf5f5"/>
-                  </LINK>
-                </DEPENDENCIES>
-              </OBJECT>
-            </COMP>
-          </DEPENDENCIES>
+          <DEPENDENCIES></DEPENDENCIES>
         </OBJECT>
         <OBJECT>
           <ID name="update" mc="Standard.Operation" uid="376ef830-a694-4e08-a700-0bfc71b36400"/>
@@ -234,7 +209,7 @@
           </DEPENDENCIES>
         </OBJECT>
         <OBJECT>
-          <ID name="MINIMAL_TIME_PER_FIXED_UPDATE" mc="Standard.Attribute" uid="baf61232-1cb4-4f4f-99ee-f51213027ef5"/>
+          <ID name="TIME_PER_FIXED_UPDATE_CALLS" mc="Standard.Attribute" uid="baf61232-1cb4-4f4f-99ee-f51213027ef5"/>
           <ATTRIBUTES>
             <ATT name="TypeConstraint"></ATT>
             <ATT name="Value"></ATT>
@@ -248,7 +223,7 @@
             <ATT name="Visibility">Private</ATT>
             <ATT name="IsClass">false</ATT>
             <ATT name="IsAbstract">false</ATT>
-            <ATT name="Name"><![CDATA[MINIMAL_TIME_PER_FIXED_UPDATE]]></ATT>
+            <ATT name="Name"><![CDATA[TIME_PER_FIXED_UPDATE_CALLS]]></ATT>
             <ATT name="status">1970354901745664</ATT>
           </ATTRIBUTES>
           <DEPENDENCIES>
@@ -422,6 +397,54 @@
           <DEPENDENCIES>
             <LINK relation="Type">
               <ID name="GameSession" mc="Standard.Class" uid="4778defb-dbe1-4285-aa10-d7659b5c519e"/>
+            </LINK>
+          </DEPENDENCIES>
+        </OBJECT>
+        <OBJECT>
+          <ID name="mFixedUpdateClock" mc="Standard.Attribute" uid="94cbb873-321e-430a-a5f6-70e0f101a4b9"/>
+          <ATTRIBUTES>
+            <ATT name="TypeConstraint"></ATT>
+            <ATT name="Value"></ATT>
+            <ATT name="TargetIsClass">false</ATT>
+            <ATT name="Changeable">ReadWrite</ATT>
+            <ATT name="IsDerived">false</ATT>
+            <ATT name="IsOrdered">false</ATT>
+            <ATT name="IsUnique">false</ATT>
+            <ATT name="MultiplicityMin"><![CDATA[1]]></ATT>
+            <ATT name="MultiplicityMax"><![CDATA[1]]></ATT>
+            <ATT name="Visibility">Private</ATT>
+            <ATT name="IsClass">false</ATT>
+            <ATT name="IsAbstract">false</ATT>
+            <ATT name="Name"><![CDATA[mFixedUpdateClock]]></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES>
+            <LINK relation="Type">
+              <ID name="sf::Clock" mc="Standard.DataType" uid="3f44882c-6627-4fd1-80cc-de1724693cd4"/>
+            </LINK>
+          </DEPENDENCIES>
+        </OBJECT>
+        <OBJECT>
+          <ID name="mTimeSinceLastFixedUpdate" mc="Standard.Attribute" uid="935e3ed4-4525-494e-938f-cd3c81e08e1e"/>
+          <ATTRIBUTES>
+            <ATT name="TypeConstraint"></ATT>
+            <ATT name="Value"></ATT>
+            <ATT name="TargetIsClass">false</ATT>
+            <ATT name="Changeable">ReadWrite</ATT>
+            <ATT name="IsDerived">false</ATT>
+            <ATT name="IsOrdered">false</ATT>
+            <ATT name="IsUnique">false</ATT>
+            <ATT name="MultiplicityMin"><![CDATA[1]]></ATT>
+            <ATT name="MultiplicityMax"><![CDATA[1]]></ATT>
+            <ATT name="Visibility">Private</ATT>
+            <ATT name="IsClass">false</ATT>
+            <ATT name="IsAbstract">false</ATT>
+            <ATT name="Name"><![CDATA[mTimeSinceLastFixedUpdate]]></ATT>
+            <ATT name="status">1970354901745664</ATT>
+          </ATTRIBUTES>
+          <DEPENDENCIES>
+            <LINK relation="Type">
+              <ID name="sf::Time" mc="Standard.DataType" uid="1d3937fb-e7f4-43d3-a1c9-7e2afbdaf5f5"/>
             </LINK>
           </DEPENDENCIES>
         </OBJECT>
