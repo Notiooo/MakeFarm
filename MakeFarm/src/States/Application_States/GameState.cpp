@@ -10,7 +10,6 @@
 
 #include "States/StateStack.h"
 #include "Utils/Mouse.h"
-#include "Utils/Settings.h"
 #include "World/Block/BlockMap.h"
 #include "World/Chunks/TerrainGenerator.h"
 
@@ -41,6 +40,20 @@ GameState::GameState(StateStack& stack, sf::RenderWindow& window, GameResources&
     GLCall(glEnable(GL_DEPTH_TEST));
     GLCall(glEnable(GL_BLEND));
     GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+    waitForAndGenerateChunksBelowPlayer();
+}
+
+void GameState::waitForAndGenerateChunksBelowPlayer()
+{
+    mChunkManager.generateChunksAround(mPlayer.position());
+    constexpr auto NUMBER_OF_CHUNK_TO_WAIT_FOR = 10;// 1 chunk where player is,
+                                                    // 8 chunks around
+                                                    // optional spawn point that might be far away
+    while (mChunkManager.chunks().size() <= NUMBER_OF_CHUNK_TO_WAIT_FOR)
+    {
+        ;// not smart way to wait and block the thread, but it is enough D:
+    }
 }
 
 void GameState::loadSavedGameData()
@@ -84,7 +97,6 @@ bool GameState::fixedUpdate(const float& deltaTime)
      */
 
     mPlayer.fixedUpdate(deltaTime, mChunkManager.chunks());
-    // mPlayer.updateCollision(mChunkManager.chunks());
 
     /*
      * Set this state to transparent -- in other words

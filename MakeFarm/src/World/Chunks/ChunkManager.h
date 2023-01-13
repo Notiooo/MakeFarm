@@ -9,6 +9,8 @@ class ChunkManager
 public:
     /**
      * \brief Number of chunks drawn in one direction from the player
+     * @warning I recommend not changing this option to higher number, as higher values are
+     * unverified and the game may behave unstably.
      */
     static constexpr int WORLD_GENERATION_CHUNK_DISTANCE = 10;
 

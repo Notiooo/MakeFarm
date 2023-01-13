@@ -225,6 +225,19 @@ public:
      */
     std::vector<Block> nonAirBlocksItTouches(const AABB& aabb) const;
 
+    /**
+     * @brief Returns information about whether the container is empty, that is, whether it does not
+     * contain any chunks.
+     * @return True if the container is empty, false otherwise.
+     */
+    bool isEmpty() const;
+
+    /**
+     * @brief Returns the number of chunks that are in the container.
+     * @return Number of chunks that are in the container.
+     */
+    std::size_t size() const;
+
 private:
     /**
      * \brief Based on the position of the block in the game world, it returns the chunk that

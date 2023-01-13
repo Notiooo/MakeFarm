@@ -10,10 +10,19 @@
 #include "States/States.h"
 #include "Utils/Mouse.h"
 
-constexpr int FRAMES_PER_SECOND = 120;
-constexpr int MINIMAL_FIXED_UPDATES_PER_FRAME = 60;
 
-const sf::Time Game::MINIMAL_TIME_PER_FIXED_UPDATE =
+constexpr int FRAMES_PER_SECOND = 120;
+
+/**
+ * @brief I kindly ask that the following variable not be changed, as the
+ * physics calculations have been adjusted under the following framerate.
+ * Thank you.
+ *
+ * @warning If you do not comply, the player will move differently and jump lower or higher.
+ */
+constexpr int MINIMAL_FIXED_UPDATES_PER_FRAME = 120;
+
+const sf::Time Game::TIME_PER_FIXED_UPDATE_CALLS =
     sf::seconds(1.f / MINIMAL_FIXED_UPDATES_PER_FRAME);
 const int Game::SCREEN_WIDTH = 1280;
 const int Game::SCREEN_HEIGHT = 720;
@@ -68,6 +77,7 @@ void Game::run()
 
     sf::Clock clock;
     auto frameTimeElapsed = sf::Time::Zero;
+    mFixedUpdateClock.restart();
     while (isGameRunning)
     {
         frameTimeElapsed = clock.restart();
@@ -75,7 +85,7 @@ void Game::run()
         ImGui::SFML::Update(*mGameWindow, frameTimeElapsed);
 #endif
         update(frameTimeElapsed);
-        performFixedUpdateAtLeastMinimalNumberOfTimes(frameTimeElapsed);
+        fixedUpdateAtEqualIntervals();
         processEvents();
 
         render();
@@ -85,20 +95,17 @@ void Game::run()
     ImGui::SFML::Shutdown();
 }
 
-void Game::performFixedUpdateAtLeastMinimalNumberOfTimes(sf::Time& frameTimeElapsed)
+void Game::fixedUpdateAtEqualIntervals()
 {
-    if (frameTimeElapsed > MINIMAL_TIME_PER_FIXED_UPDATE)
+    mTimeSinceLastFixedUpdate += mFixedUpdateClock.restart();
+    if (mTimeSinceLastFixedUpdate > TIME_PER_FIXED_UPDATE_CALLS)
     {
         do
         {
-            frameTimeElapsed -= MINIMAL_TIME_PER_FIXED_UPDATE;
-            fixedUpdate(MINIMAL_TIME_PER_FIXED_UPDATE);
+            mTimeSinceLastFixedUpdate -= TIME_PER_FIXED_UPDATE_CALLS;
+            fixedUpdate(TIME_PER_FIXED_UPDATE_CALLS);
         }
-        while (frameTimeElapsed > MINIMAL_TIME_PER_FIXED_UPDATE);
-    }
-    else
-    {
-        fixedUpdate(frameTimeElapsed);
+        while (mTimeSinceLastFixedUpdate > TIME_PER_FIXED_UPDATE_CALLS);
     }
 }
 

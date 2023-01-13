@@ -83,6 +83,11 @@ private:
      */
     void loadSavedGameData();
 
+    /**
+     * @brief Generates chunks under grac and waits for them to be generated (blocks the thread).
+     */
+    void waitForAndGenerateChunksBelowPlayer();
+
 private:
     /** Rendering */
     sf::RenderWindow& mGameWindow;//!< Window to which this status is displayed

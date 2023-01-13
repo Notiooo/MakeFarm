@@ -49,12 +49,11 @@ private:
     void fixedUpdate(const sf::Time& deltaTime);
 
     /**
-     * Performs fixedUpdate at least a minimum number of times to avoid behavior where, due to high
-     * lag, a character is moved off the wall avoiding collision checking.
-     *
-     * @param frameTimeElapsed the time that has passed since the game was last updated.
+     * It performs fixed updates at equal intervals. In case of huge time gaps, it makes up for it
+     * by executing one by one successive calls with the same fixed time argument. to avoid behavior
+     * where, due to high lag, a character is moved off the wall avoiding collision checking.
      */
-    void performFixedUpdateAtLeastMinimalNumberOfTimes(sf::Time& frameTimeElapsed);
+    void fixedUpdateAtEqualIntervals();
 
     /**
      * \brief Updates the game logic dependent, or independent of time, every rendered frame.
@@ -110,9 +109,9 @@ private:
     static const sf::Time TIME_PER_FRAME;
 
     /**
-     * @brief Minimum time between one fixed update and another
+     * @brief Time between one fixed update and another
      */
-    static const sf::Time MINIMAL_TIME_PER_FIXED_UPDATE;
+    static const sf::Time TIME_PER_FIXED_UPDATE_CALLS;
 
     /**
      * @brief Default game window width
@@ -130,6 +129,16 @@ private:
     std::unique_ptr<sf::RenderWindow> mGameWindow;
 
     bool isGameRunning = true;
+
+    /**
+     * @brief TOOD: THIS
+     */
+    sf::Clock mFixedUpdateClock;
+
+    /**
+     * @brief TODO: THIS
+     */
+    sf::Time mTimeSinceLastFixedUpdate = sf::Time::Zero;
 
     /**
      * \brief An object that holds loaded fonts that can be used inside the game.

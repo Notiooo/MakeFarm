@@ -405,6 +405,16 @@ std::vector<Block> ChunkContainer::nonAirBlocksItTouches(const AABB& aabb) const
     return blocksThatCollide;
 }
 
+bool ChunkContainer::isEmpty() const
+{
+    return mData.empty();
+}
+
+std::size_t ChunkContainer::size() const
+{
+    return mData.size();
+}
+
 #if DRAW_DEBUG_COLLISIONS
 void ChunkContainer::limitDrawnCollisions() const
 {
