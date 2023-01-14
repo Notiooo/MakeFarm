@@ -19,10 +19,10 @@ public:
      * \brief This is the maximum site height that can be generated.
      *
      * For example:
-     * Chunk::BLOCKS_PER_Y_DIMENSION - 10 means that the highest height
+     * ChunkInterface::BLOCKS_PER_Y_DIMENSION - 10 means that the highest height
      * that the highest mountain will reach is maximum chunk height - 10
      */
-    static constexpr int MAX_HEIGHT_MAP = Chunk::BLOCKS_PER_Y_DIMENSION - 10;
+    static constexpr int MAX_HEIGHT_MAP = ChunkInterface::BLOCKS_PER_Y_DIMENSION - 10;
 
     /**
      * @brief Determines the level of terrain/grass at given x and z positions inside the chunk
@@ -42,7 +42,7 @@ public:
      * @param blockCoordinateZ The z position on which the column of blocks should appear.
      * @param surfaceLevel Ground level/grass level.
      */
-    virtual void generateColumnOfBlocks(Chunk::ChunkBlocks& chunkBlocks, int surfaceLevel,
+    virtual void generateColumnOfBlocks(ChunkInterface::ChunkBlocks& chunkBlocks, int surfaceLevel,
                                         int blockCoordinateX, int blockCoordinateZ) = 0;
 
     /**
@@ -50,7 +50,7 @@ public:
      * such things as putting up vegetation and general beautification of the world.
      * @param chunk Chunk to be beautified
      */
-    virtual void postGenerationPlacements(Chunk& chunk) = 0;
+    virtual void postGenerationPlacements(ChunkInterface& chunk) = 0;
 
     /**
      * @brief The seed with which the biome is created

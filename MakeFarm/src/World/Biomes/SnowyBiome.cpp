@@ -39,13 +39,13 @@ int SnowyBiome::surfaceLevelAtGivenPosition(int blockCoordinateX, int blockCoord
     return surfaceLevel;
 }
 
-void SnowyBiome::generateColumnOfBlocks(Chunk::ChunkBlocks& chunkBlocks, int surfaceLevel,
+void SnowyBiome::generateColumnOfBlocks(ChunkInterface::ChunkBlocks& chunkBlocks, int surfaceLevel,
                                         int blockCoordinateX, int blockCoordinateZ)
 {
     auto& x = blockCoordinateX;
     auto& z = blockCoordinateZ;
 
-    for (auto y = 0; y < Chunk::BLOCKS_PER_Y_DIMENSION; ++y)
+    for (auto y = 0; y < ChunkInterface::BLOCKS_PER_Y_DIMENSION; ++y)
     {
         if (y == surfaceLevel)
         {
@@ -84,13 +84,13 @@ void SnowyBiome::generateColumnOfBlocks(Chunk::ChunkBlocks& chunkBlocks, int sur
     }
 }
 
-void SnowyBiome::postGenerationPlacements(Chunk& chunk)
+void SnowyBiome::postGenerationPlacements(ChunkInterface& chunk)
 {
     placeTrees(chunk);
     mTreesToPlace.clear();
 }
 
-void SnowyBiome::placeTrees(Chunk& chunk)
+void SnowyBiome::placeTrees(ChunkInterface& chunk)
 {
     for (auto& coordinateToPlaceTree: mTreesToPlace)
     {
@@ -98,7 +98,7 @@ void SnowyBiome::placeTrees(Chunk& chunk)
     }
 }
 
-void SnowyBiome::placeTree(Chunk& chunk, const Block::Coordinate& block)
+void SnowyBiome::placeTree(ChunkInterface& chunk, const Block::Coordinate& block)
 {
     auto treeLength = mTreeLengthGenerator(gen);
     placeLogOfTheTree(chunk, block, treeLength);
@@ -106,7 +106,8 @@ void SnowyBiome::placeTree(Chunk& chunk, const Block::Coordinate& block)
     placeBottomPartOfTreeTopMadeOfLeaves(chunk, block, treeLength);
 }
 
-void SnowyBiome::placeBottomPartOfTreeTopMadeOfLeaves(Chunk& chunk, const Block::Coordinate& block,
+void SnowyBiome::placeBottomPartOfTreeTopMadeOfLeaves(ChunkInterface& chunk,
+                                                      const Block::Coordinate& block,
                                                       int treeLength) const
 {
     auto summer = [](auto n)
@@ -137,33 +138,34 @@ void SnowyBiome::placeBottomPartOfTreeTopMadeOfLeaves(Chunk& chunk, const Block:
         for (int i = 0; i < leavesInThisLevel; ++i)
         {
             chunk.tryToPlaceBlock(BlockId::SnowyLeaves, coordinatesAround.nextValue(),
-                                  {BlockId::Air}, Chunk::RebuildOperation::None);
+                                  {BlockId::Air}, RebuildOperation::None);
         }
     }
 }
 
-void SnowyBiome::placeTopPartOfTreeTopMadeOfLeaves(Chunk& chunk, const Block::Coordinate& block,
+void SnowyBiome::placeTopPartOfTreeTopMadeOfLeaves(ChunkInterface& chunk,
+                                                   const Block::Coordinate& block,
                                                    int treeLength) const
 {
     auto treeTop = sf::Vector3i(block.x, block.y + treeLength, block.z);
     chunk.tryToPlaceBlock(BlockId::SnowyLeaves, {treeTop.x, treeTop.y, treeTop.z});
     chunk.tryToPlaceBlock(BlockId::SnowyLeaves, {treeTop.x + 1, treeTop.y - 1, treeTop.z},
-                          {BlockId::Air}, Chunk::RebuildOperation::None);
+                          {BlockId::Air}, RebuildOperation::None);
     chunk.tryToPlaceBlock(BlockId::SnowyLeaves, {treeTop.x - 1, treeTop.y - 1, treeTop.z},
-                          {BlockId::Air}, Chunk::RebuildOperation::None);
+                          {BlockId::Air}, RebuildOperation::None);
     chunk.tryToPlaceBlock(BlockId::SnowyLeaves, {treeTop.x, treeTop.y - 1, treeTop.z + 1},
-                          {BlockId::Air}, Chunk::RebuildOperation::None);
+                          {BlockId::Air}, RebuildOperation::None);
     chunk.tryToPlaceBlock(BlockId::SnowyLeaves, {treeTop.x, treeTop.y - 1, treeTop.z - 1},
-                          {BlockId::Air}, Chunk::RebuildOperation::None);
+                          {BlockId::Air}, RebuildOperation::None);
 }
 
-void SnowyBiome::placeLogOfTheTree(Chunk& chunk, const Block::Coordinate& block,
+void SnowyBiome::placeLogOfTheTree(ChunkInterface& chunk, const Block::Coordinate& block,
                                    int treeLength) const
 {
     for (int i = 0; i < treeLength; ++i)
     {
         chunk.tryToPlaceBlock(BlockId::SpruceLog, {block.x, block.y + i, block.z},
-                              {BlockId::AllBlocks}, Chunk::RebuildOperation::None);
+                              {BlockId::AllBlocks}, RebuildOperation::None);
     }
 }
 

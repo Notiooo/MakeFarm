@@ -30,13 +30,13 @@ int DesertBiome::surfaceLevelAtGivenPosition(int blockCoordinateX, int blockCoor
     return surfaceLevel;
 }
 
-void DesertBiome::generateColumnOfBlocks(Chunk::ChunkBlocks& chunkBlocks, int surfaceLevel,
+void DesertBiome::generateColumnOfBlocks(ChunkInterface::ChunkBlocks& chunkBlocks, int surfaceLevel,
                                          int blockCoordinateX, int blockCoordinateZ)
 {
     auto& x = blockCoordinateX;
     auto& z = blockCoordinateZ;
 
-    for (auto y = 0; y < Chunk::BLOCKS_PER_Y_DIMENSION; ++y)
+    for (auto y = 0; y < ChunkInterface::BLOCKS_PER_Y_DIMENSION; ++y)
     {
         if (y == surfaceLevel)
         {
@@ -66,12 +66,12 @@ void DesertBiome::generateColumnOfBlocks(Chunk::ChunkBlocks& chunkBlocks, int su
     }
 }
 
-void DesertBiome::postGenerationPlacements(Chunk& chunk)
+void DesertBiome::postGenerationPlacements(ChunkInterface& chunk)
 {
     placeCactuses(chunk);
 }
 
-void DesertBiome::placeCactuses(Chunk& chunk)
+void DesertBiome::placeCactuses(ChunkInterface& chunk)
 {
     for (auto& coordinateToPlaceCactus: mCactusToPlace)
     {
@@ -80,7 +80,7 @@ void DesertBiome::placeCactuses(Chunk& chunk)
         {
             auto& block = coordinateToPlaceCactus;
             chunk.tryToPlaceBlock(BlockId::Cactus, {block.x, block.y + i, block.z},
-                                  {BlockId::AllBlocks}, Chunk::RebuildOperation::None);
+                                  {BlockId::AllBlocks}, RebuildOperation::None);
         }
     }
 }

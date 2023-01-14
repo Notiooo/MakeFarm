@@ -30,13 +30,14 @@ int VeryDryForestBiome::surfaceLevelAtGivenPosition(int blockCoordinateX, int bl
     return surfaceLevel;
 }
 
-void VeryDryForestBiome::generateColumnOfBlocks(Chunk::ChunkBlocks& chunkBlocks, int surfaceLevel,
-                                                int blockCoordinateX, int blockCoordinateZ)
+void VeryDryForestBiome::generateColumnOfBlocks(ChunkInterface::ChunkBlocks& chunkBlocks,
+                                                int surfaceLevel, int blockCoordinateX,
+                                                int blockCoordinateZ)
 {
     auto& x = blockCoordinateX;
     auto& z = blockCoordinateZ;
 
-    for (auto y = 0; y < Chunk::BLOCKS_PER_Y_DIMENSION; ++y)
+    for (auto y = 0; y < ChunkInterface::BLOCKS_PER_Y_DIMENSION; ++y)
     {
         if (y == surfaceLevel)
         {
@@ -76,7 +77,7 @@ void VeryDryForestBiome::generateColumnOfBlocks(Chunk::ChunkBlocks& chunkBlocks,
     }
 }
 
-void VeryDryForestBiome::postGenerationPlacements(Chunk& chunk)
+void VeryDryForestBiome::postGenerationPlacements(ChunkInterface& chunk)
 {
     placeDryTrees(chunk);
     mDryTreesToPlace.clear();
@@ -87,7 +88,7 @@ BiomeId VeryDryForestBiome::biomeId()
     return BiomeId::VeryDryForest;
 }
 
-void VeryDryForestBiome::placeDryTrees(Chunk& chunk)
+void VeryDryForestBiome::placeDryTrees(ChunkInterface& chunk)
 {
     for (auto& coordinateToPlaceTree: mDryTreesToPlace)
     {
@@ -96,7 +97,7 @@ void VeryDryForestBiome::placeDryTrees(Chunk& chunk)
         for (int i = 0; i < treeLength; ++i)
         {
             chunk.tryToPlaceBlock(BlockId::Log, {block.x, block.y + i, block.z},
-                                  {BlockId::AllBlocks}, Chunk::RebuildOperation::None);
+                                  {BlockId::AllBlocks}, RebuildOperation::None);
         }
     }
 }

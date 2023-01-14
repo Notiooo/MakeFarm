@@ -3,12 +3,8 @@
 
 #include <filesystem>
 #include <optional>
-#include <utility>
 
-#include "Renderer3D/Meshes/Builders/MeshBuilder.h"
 #include "Resources/TexturePack.h"
-#include "Utils/Direction.h"
-#include "World/Block/BlockType.h"
 #include "World/Chunks/ChunkContainer.h"
 #include "World/Chunks/ChunkManager.h"
 #include "World/Chunks/TerrainGenerator.h"
@@ -426,7 +422,7 @@ void Chunk::tryToPlaceBlock(const BlockId& blockId, const Block::Coordinate& loc
 void Chunk::tryToPlaceBlockInsideThisChunk(const BlockId& blockId,
                                            const Block::Coordinate& localCoordinates,
                                            std::vector<BlockId>& blocksThatMightBeOverplaced,
-                                           const Chunk::RebuildOperation& rebuildOperation)
+                                           const RebuildOperation& rebuildOperation)
 {
     std::unique_lock guard(mChunkAccessMutex);
     auto& block = (*mChunkOfBlocks)[localCoordinates.x][localCoordinates.y][localCoordinates.z];

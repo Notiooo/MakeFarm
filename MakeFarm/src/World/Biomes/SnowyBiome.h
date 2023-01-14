@@ -29,7 +29,7 @@ public:
      * @param blockCoordinateZ The z position on which the column of blocks should appear.
      * @param surfaceLevel Ground/Terrain level.
      */
-    void generateColumnOfBlocks(Chunk::ChunkBlocks& chunkBlocks, int surfaceLevel,
+    void generateColumnOfBlocks(ChunkInterface::ChunkBlocks& chunkBlocks, int surfaceLevel,
                                 int blockCoordinateX, int blockCoordinateZ) override;
 
     /**
@@ -37,7 +37,7 @@ public:
      * such things as putting up vegetation and general beautification of the world.
      * @param chunk Chunk to be beautified
      */
-    void postGenerationPlacements(Chunk& chunk) override;
+    void postGenerationPlacements(ChunkInterface& chunk) override;
 
     /**
      * @brief Returns a biome identifier that specifies what biome it is.
@@ -50,14 +50,14 @@ private:
      * @brief Places trees on the indicated chunk
      * @param chunk Chunk on which trees should be placed
      */
-    void placeTrees(Chunk& chunk);
+    void placeTrees(ChunkInterface& chunk);
 
     /**
      * @brief Places tree on the indicated chunk in indicated position
      * @param chunk Chunk on which tree should be placed
      * @param block Block on which a new tree should be built
      */
-    void placeTree(Chunk& chunk, const Block::Coordinate& block);
+    void placeTree(ChunkInterface& chunk, const Block::Coordinate& block);
 
     /**
      * @brief Places the main root of the tree, i.e. the column of logs.
@@ -65,7 +65,8 @@ private:
      * @param block Block on which the main tree root is to be placed
      * @param treeLength The length the tree should be
      */
-    void placeLogOfTheTree(Chunk& chunk, const Block::Coordinate& block, int treeLength) const;
+    void placeLogOfTheTree(ChunkInterface& chunk, const Block::Coordinate& block,
+                           int treeLength) const;
 
     /**
      * @brief Stands the upper crown of the tree created from leaves. It is a crown consisting of
@@ -74,7 +75,7 @@ private:
      * @param block Block around which leaves are placed
      * @param treeLength Length of tree
      */
-    void placeTopPartOfTreeTopMadeOfLeaves(Chunk& chunk, const Block::Coordinate& block,
+    void placeTopPartOfTreeTopMadeOfLeaves(ChunkInterface& chunk, const Block::Coordinate& block,
                                            int treeLength) const;
     /**
      * @brief Stands the bottom part of crown of the tree created from leaves. It is a crown which
@@ -83,7 +84,7 @@ private:
      * @param block Block around which leaves are placed
      * @param treeLength Length of tree
      */
-    void placeBottomPartOfTreeTopMadeOfLeaves(Chunk& chunk, const Block::Coordinate& block,
+    void placeBottomPartOfTreeTopMadeOfLeaves(ChunkInterface& chunk, const Block::Coordinate& block,
                                               int treeLength) const;
 
 private:

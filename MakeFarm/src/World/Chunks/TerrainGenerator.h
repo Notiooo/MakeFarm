@@ -13,15 +13,12 @@ class TerrainGenerator
 public:
     explicit TerrainGenerator(int seed = 1337);
 
-    static constexpr auto SEA_LEVEL = 60;
-    static constexpr auto MINIMAL_TERRAIN_LEVEL = 20;
-
     /**
      * @brief Generates terrain for a given chunk with a given set of blocks
      * @param chunk Reference to the chunk on which the terrain is to be generated
      * @param chunkBlocks Collection of blocks of given chunk
      */
-    void generateTerrain(Chunk& chunk, Chunk::ChunkBlocks& chunkBlocks);
+    void generateTerrain(ChunkInterface& chunk, ChunkInterface::ChunkBlocks& chunkBlocks);
 
     /**
      * @brief Returns a random seed that can be used to generate terrain
@@ -35,8 +32,8 @@ private:
      * local position (-1, -1). This allows to know what biomes are one block away around the chunk.
      */
     using BiomesInsideChunkWithOneBlockAroundIt =
-        MultiDimensionalArray<Biome*, Chunk::BLOCKS_PER_X_DIMENSION + 2,
-                              Chunk::BLOCKS_PER_Z_DIMENSION + 2>;
+        MultiDimensionalArray<Biome*, ChunkInterface::BLOCKS_PER_X_DIMENSION + 2,
+                              ChunkInterface::BLOCKS_PER_Z_DIMENSION + 2>;
 
     /**
      * @brief On the given global coordinates it determines what biome is located.
@@ -78,7 +75,7 @@ private:
      * @return Array of all biomes that are in the chunk and by 1 block away outside  the chunk
      * where each coordinate corresponds to a biome that is located on a given chunk.
      */
-    BiomesInsideChunkWithOneBlockAroundIt biomePerLocalCoordinate(const Chunk& chunk);
+    BiomesInsideChunkWithOneBlockAroundIt biomePerLocalCoordinate(const ChunkInterface& chunk);
 
     /**
      * @brief Checks if the chunk contains only one biome.
@@ -139,7 +136,8 @@ private:
      * @param chunkBlocks Chunk blocks that are overwritten thus creating terrain.
      * @param biome Biome to be used to create terrain.
      */
-    void generateTerrainForChunkWithGivenBiome(const Chunk& chunk, Chunk::ChunkBlocks& chunkBlocks,
+    void generateTerrainForChunkWithGivenBiome(const ChunkInterface& chunk,
+                                               ChunkInterface::ChunkBlocks& chunkBlocks,
                                                Biome& biome) const;
 
     /**
@@ -150,7 +148,8 @@ private:
      * @return Noise at the corners of the rectangle
      */
     RectangleCorners calculateNoiseAtChunkCorners(
-        const Chunk& chunk, const BiomesInsideChunkWithOneBlockAroundIt& allBiomesInChunk) const;
+        const ChunkInterface& chunk,
+        const BiomesInsideChunkWithOneBlockAroundIt& allBiomesInChunk) const;
 
     /**
      * @brief Generates terrain on the indicated chunk using the indicated biome.
@@ -161,7 +160,7 @@ private:
      * @param cornerNoises Noise at the corners of the rectangle
      */
     void generateTerrainForChunkWithDifferentBiomes(
-        Chunk::ChunkBlocks& chunkBlocks,
+        ChunkInterface::ChunkBlocks& chunkBlocks,
         const BiomesInsideChunkWithOneBlockAroundIt& allBiomesInChunkPerCoordinate,
         const RectangleCorners& cornerNoises);
 

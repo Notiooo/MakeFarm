@@ -26,7 +26,7 @@ public:
      * @param blockCoordinateZ The z position on which the column of blocks should appear.
      * @param surfaceLevel Ground/Terrain level.
      */
-    void generateColumnOfBlocks(Chunk::ChunkBlocks& chunkBlocks, int surfaceLevel,
+    void generateColumnOfBlocks(ChunkInterface::ChunkBlocks& chunkBlocks, int surfaceLevel,
                                 int blockCoordinateX, int blockCoordinateZ) override;
 
     /**
@@ -34,7 +34,7 @@ public:
      * such things as putting up vegetation and general beautification of the world.
      * @param chunk Chunk to be beautified
      */
-    void postGenerationPlacements(Chunk& chunk) override;
+    void postGenerationPlacements(ChunkInterface& chunk) override;
 
     /**
      * @brief Returns a biome identifier that specifies what biome it is.
@@ -47,7 +47,7 @@ private:
      * @brief It places cactuses on the given chunk.
      * @param chunk Chunk on which cactuses should appear.
      */
-    void placeCactuses(Chunk& chunk);
+    void placeCactuses(ChunkInterface& chunk);
 
 private:
     /**

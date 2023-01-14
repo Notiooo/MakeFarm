@@ -11,6 +11,7 @@
 
 #if DRAW_DEBUG_COLLISIONS
     #include <Physics/AABB.h>
+    #include <deque>
 #endif
 
 /**
@@ -128,7 +129,7 @@ public:
      * @param direction Direction next to which the chunk you are looking for is located
      * @return Pointer to chunk found
      */
-    [[nodiscard]] std::shared_ptr<Chunk> chunkNearby(const Chunk& baseChunk,
+    [[nodiscard]] std::shared_ptr<Chunk> chunkNearby(const ChunkInterface& baseChunk,
                                                      const Direction& direction);
 
     /**
@@ -140,7 +141,7 @@ public:
     /**
      * @brief Checks if the chunk is inside the container.
      */
-    bool isChunkPresentInTheContainer(const Chunk& chunk) const;
+    bool isChunkPresentInTheContainer(const ChunkInterface& chunk) const;
 
     /**
      * @brief Returns the map in which the chunks are located.
@@ -160,7 +161,7 @@ public:
      * @return Shared_ptr to the chunk in the container, or nullptr if the chunk is not in the
      * container.
      */
-    std::shared_ptr<Chunk> findChunk(const Chunk& chunk);
+    std::shared_ptr<Chunk> findChunk(const ChunkInterface& chunk);
 
     /**
      * @brief Returns a chunk on a given block.
@@ -208,7 +209,7 @@ public:
      */
     void tryToPlaceBlock(const BlockId& id, Block::Coordinate worldCoordinate,
                          std::vector<BlockId> blocksThatMightBeOverplaced,
-                         Chunk::RebuildOperation postPlaceRebuild);
+                         RebuildOperation postPlaceRebuild);
 
     /**
      * @brief Checks if a given collision box collides with a block in any chunk contained in the
@@ -284,7 +285,7 @@ private:
         ChunkContainer::Coordinate chunkCoordinates;
         BlockId blockid;
         Block::Coordinate worldBlockCoordinates;
-        Chunk::RebuildOperation rebuild;
+        RebuildOperation rebuild;
         std::vector<BlockId> blocksThatMightBeOverplaced;
     };
 

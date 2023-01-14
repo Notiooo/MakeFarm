@@ -95,9 +95,9 @@ void ChunkContainer::tryToPlaceScheduledBlocksForPresentChunks()
 
 sf::Vector3i ChunkContainer::Coordinate::nonChunkMetric() const
 {
-    return sf::Vector3i(x * Chunk::BLOCKS_PER_X_DIMENSION * Block::BLOCK_SIZE,
-                        y * Chunk::BLOCKS_PER_Y_DIMENSION * Block::BLOCK_SIZE,
-                        z * Chunk::BLOCKS_PER_Z_DIMENSION * Block::BLOCK_SIZE);
+    return sf::Vector3i(x * ChunkInterface::BLOCKS_PER_X_DIMENSION * Block::BLOCK_SIZE,
+                        y * ChunkInterface::BLOCKS_PER_Y_DIMENSION * Block::BLOCK_SIZE,
+                        z * ChunkInterface::BLOCKS_PER_Z_DIMENSION * Block::BLOCK_SIZE);
 }
 
 ChunkContainer::Coordinate ChunkContainer::Coordinate::blockToChunkMetric(
@@ -112,9 +112,9 @@ ChunkContainer::Coordinate ChunkContainer::Coordinate::blockToChunkMetric(
 
     // clang-format off
     auto returnVar = ChunkContainer::Coordinate(
-        fastFloor(worldBlockCoordinate.x / static_cast<float>(Chunk::BLOCKS_PER_X_DIMENSION)),
-        fastFloor(worldBlockCoordinate.y / static_cast<float>(Chunk::BLOCKS_PER_Y_DIMENSION)),
-        fastFloor(worldBlockCoordinate.z / static_cast<float>(Chunk::BLOCKS_PER_Z_DIMENSION))
+        fastFloor(worldBlockCoordinate.x / static_cast<float>(ChunkInterface::BLOCKS_PER_X_DIMENSION)),
+        fastFloor(worldBlockCoordinate.y / static_cast<float>(ChunkInterface::BLOCKS_PER_Y_DIMENSION)),
+        fastFloor(worldBlockCoordinate.z / static_cast<float>(ChunkInterface::BLOCKS_PER_Z_DIMENSION))
     );
     // clang-format on
 
@@ -194,7 +194,7 @@ void ChunkContainer::removeWorldBlock(const Block::Coordinate& worldBlockCoordin
     }
 }
 
-std::shared_ptr<Chunk> ChunkContainer::chunkNearby(const Chunk& baseChunk,
+std::shared_ptr<Chunk> ChunkContainer::chunkNearby(const ChunkInterface& baseChunk,
                                                    const Direction& direction)
 {
     switch (direction)
@@ -206,12 +206,12 @@ std::shared_ptr<Chunk> ChunkContainer::chunkNearby(const Chunk& baseChunk,
         case Direction::ToTheRight:
         {
             return blockPositionToChunk(
-                baseChunk.localToGlobalCoordinates({Chunk::BLOCKS_PER_X_DIMENSION, 0, 0}));
+                baseChunk.localToGlobalCoordinates({ChunkInterface::BLOCKS_PER_X_DIMENSION, 0, 0}));
         }
         case Direction::InFront:
         {
             return blockPositionToChunk(
-                baseChunk.localToGlobalCoordinates({0, 0, Chunk::BLOCKS_PER_Z_DIMENSION}));
+                baseChunk.localToGlobalCoordinates({0, 0, ChunkInterface::BLOCKS_PER_Z_DIMENSION}));
         }
         case Direction::Behind:
         {
@@ -231,14 +231,14 @@ const ChunkContainer::Chunks& ChunkContainer::data() const
     return mData;
 }
 
-bool ChunkContainer::isChunkPresentInTheContainer(const Chunk& chunk) const
+bool ChunkContainer::isChunkPresentInTheContainer(const ChunkInterface& chunk) const
 {
     std::unique_lock guard(mChunksAccessMutex);
     return data().find(ChunkContainer::Coordinate::blockToChunkMetric(chunk.positionInBlocks())) !=
            data().cend();
 }
 
-std::shared_ptr<Chunk> ChunkContainer::findChunk(const Chunk& chunk)
+std::shared_ptr<Chunk> ChunkContainer::findChunk(const ChunkInterface& chunk)
 {
     std::unique_lock guard(mChunksAccessMutex);
     auto foundChunk =
@@ -280,7 +280,7 @@ bool ChunkContainer::isPresent(const ChunkContainer::Coordinate& chunkPosition) 
 
 void ChunkContainer::tryToPlaceBlock(const BlockId& id, Block::Coordinate worldCoordinate,
                                      std::vector<BlockId> blocksThatMightBeOverplaced,
-                                     Chunk::RebuildOperation postPlaceRebuild)
+                                     RebuildOperation postPlaceRebuild)
 {
     if (const auto chunk = blockPositionToChunk(worldCoordinate))
     {

@@ -27,7 +27,8 @@ TerrainGenerator::TerrainGenerator(int seed)
     mTemperature.SetSeed(seed / 2);
 }
 
-void TerrainGenerator::generateTerrain(Chunk& chunk, Chunk::ChunkBlocks& chunkBlocks)
+void TerrainGenerator::generateTerrain(ChunkInterface& chunk,
+                                       ChunkInterface::ChunkBlocks& chunkBlocks)
 {
     auto allBiomesInChunkPerCoordinate = biomePerLocalCoordinate(chunk);
     auto biomesToPostProcess = allBiomesInChunkAndOneBlockAroundIt(allBiomesInChunkPerCoordinate);
@@ -50,16 +51,16 @@ void TerrainGenerator::generateTerrain(Chunk& chunk, Chunk::ChunkBlocks& chunkBl
 }
 
 void TerrainGenerator::generateTerrainForChunkWithDifferentBiomes(
-    Chunk::ChunkBlocks& chunkBlocks,
+    ChunkInterface::ChunkBlocks& chunkBlocks,
     const BiomesInsideChunkWithOneBlockAroundIt& allBiomesInChunkPerCoordinate,
     const TerrainGenerator::RectangleCorners& cornerNoises)
 {
     Rectangle smallerChunk;
     smallerChunk.x = 0;
-    smallerChunk.width = Chunk::BLOCKS_PER_X_DIMENSION;
+    smallerChunk.width = ChunkInterface::BLOCKS_PER_X_DIMENSION;
 
     smallerChunk.z = 0;
-    smallerChunk.height = Chunk::BLOCKS_PER_Z_DIMENSION;
+    smallerChunk.height = ChunkInterface::BLOCKS_PER_Z_DIMENSION;
 
     for (auto x = smallerChunk.x; x < smallerChunk.x + smallerChunk.width; ++x)
     {
@@ -72,7 +73,8 @@ void TerrainGenerator::generateTerrainForChunkWithDifferentBiomes(
     }
 }
 TerrainGenerator::RectangleCorners TerrainGenerator::calculateNoiseAtChunkCorners(
-    const Chunk& chunk, const BiomesInsideChunkWithOneBlockAroundIt& allBiomesInChunk) const
+    const ChunkInterface& chunk,
+    const BiomesInsideChunkWithOneBlockAroundIt& allBiomesInChunk) const
 {
     auto calculateNoise = [this, &chunk, &allBiomesInChunk](Block::Coordinate localCoord)
     {
@@ -120,20 +122,22 @@ TerrainGenerator::RectangleCorners TerrainGenerator::calculateNoiseAtChunkCorner
 
     RectangleCorners cornerNoises;
     cornerNoises.topLeft = averageTopLeftCorner({0, 0, 0});
-    cornerNoises.topRight = averageTopRightCorner({Chunk::BLOCKS_PER_X_DIMENSION - 1, 0, 0});
-    cornerNoises.bottomLeft = averageBottomLeftCorner({0, 0, Chunk::BLOCKS_PER_Z_DIMENSION - 1});
-    cornerNoises.bottomRight = averageBottomRightCorner(
-        {Chunk::BLOCKS_PER_X_DIMENSION - 1, 0, Chunk::BLOCKS_PER_Z_DIMENSION - 1});
+    cornerNoises.topRight =
+        averageTopRightCorner({ChunkInterface::BLOCKS_PER_X_DIMENSION - 1, 0, 0});
+    cornerNoises.bottomLeft =
+        averageBottomLeftCorner({0, 0, ChunkInterface::BLOCKS_PER_Z_DIMENSION - 1});
+    cornerNoises.bottomRight =
+        averageBottomRightCorner({ChunkInterface::BLOCKS_PER_X_DIMENSION - 1, 0,
+                                  ChunkInterface::BLOCKS_PER_Z_DIMENSION - 1});
     return cornerNoises;
 }
 
-void TerrainGenerator::generateTerrainForChunkWithGivenBiome(const Chunk& chunk,
-                                                             Chunk::ChunkBlocks& chunkBlocks,
-                                                             Biome& biome) const
+void TerrainGenerator::generateTerrainForChunkWithGivenBiome(
+    const ChunkInterface& chunk, ChunkInterface::ChunkBlocks& chunkBlocks, Biome& biome) const
 {
-    for (auto x = 0; x < Chunk::BLOCKS_PER_X_DIMENSION; ++x)
+    for (auto x = 0; x < ChunkInterface::BLOCKS_PER_X_DIMENSION; ++x)
     {
-        for (auto z = 0; z < Chunk::BLOCKS_PER_Z_DIMENSION; ++z)
+        for (auto z = 0; z < ChunkInterface::BLOCKS_PER_Z_DIMENSION; ++z)
         {
             auto globalCoord = chunk.localToGlobalCoordinates({x, 0, z});
             auto surfaceLevel = biome.surfaceLevelAtGivenPosition(globalCoord.x, globalCoord.z);
@@ -160,13 +164,13 @@ bool TerrainGenerator::doesChunkContainOnlyOneBiome(
 }
 
 TerrainGenerator::BiomesInsideChunkWithOneBlockAroundIt TerrainGenerator::biomePerLocalCoordinate(
-    const Chunk& chunk)
+    const ChunkInterface& chunk)
 {
     BiomesInsideChunkWithOneBlockAroundIt biomeInCoordinate;
 
-    for (auto x = 0; x < Chunk::BLOCKS_PER_X_DIMENSION + 2; ++x)
+    for (auto x = 0; x < ChunkInterface::BLOCKS_PER_X_DIMENSION + 2; ++x)
     {
-        for (auto z = 0; z < Chunk::BLOCKS_PER_Z_DIMENSION + 2; ++z)
+        for (auto z = 0; z < ChunkInterface::BLOCKS_PER_Z_DIMENSION + 2; ++z)
         {
             auto globalCoord = chunk.localToGlobalCoordinates({x - 1, 0, z - 1});
             biomeInCoordinate[x][z] = &(deduceBiome(globalCoord.x, globalCoord.z));
@@ -253,9 +257,9 @@ std::set<Biome*> TerrainGenerator::allBiomesInChunkAndOneBlockAroundIt(
     BiomesInsideChunkWithOneBlockAroundIt biomesInChunkPerCoordinate)
 {
     std::set<Biome*> allBiomes;
-    for (auto x = 0; x < Chunk::BLOCKS_PER_X_DIMENSION + 2; ++x)
+    for (auto x = 0; x < ChunkInterface::BLOCKS_PER_X_DIMENSION + 2; ++x)
     {
-        for (auto z = 0; z < Chunk::BLOCKS_PER_Z_DIMENSION + 2; ++z)
+        for (auto z = 0; z < ChunkInterface::BLOCKS_PER_Z_DIMENSION + 2; ++z)
         {
             allBiomes.emplace(biomesInChunkPerCoordinate[x][z]);
         }

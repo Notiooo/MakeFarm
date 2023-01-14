@@ -59,6 +59,7 @@ set(PROJECT_SOURCES
         World/Biomes/ForestBiome.cpp
         World/Biomes/SnowyBiome.cpp
         World/Biomes/VeryDryForestBiome.cpp
+        World/Chunks/ChunkInterface.cpp
         World/Chunks/Chunk.cpp
         World/Chunks/ChunkContainer.cpp
         World/Chunks/ChunkManager.cpp

@@ -354,8 +354,7 @@ void Player::tryPlaceBlock()
                 //       later to remove item from inventory
                 mChunkManager.chunks().tryToPlaceBlock(
                     static_cast<BlockId>(removedItem.value()), coordinatesOfBlockToBePlaced,
-                    {HighlightedBlock::BLOCKS_THAT_MIGHT_BE_OVERPLACED},
-                    Chunk::RebuildOperation::Fast);
+                    {HighlightedBlock::BLOCKS_THAT_MIGHT_BE_OVERPLACED}, RebuildOperation::Fast);
             }
         }
     }
