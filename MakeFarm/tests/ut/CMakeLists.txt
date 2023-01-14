@@ -11,4 +11,6 @@ set(UT_Sources
         src/World/Biomes/VeryDryForestBiomeTest.cpp
         src/World/Chunks/CoordinatesAroundOriginGetterTest.cpp
         src/World/Chunks/TerrainGeneratorTest.cpp
+        src/World/Chunks/ChunkContainerCoordinateTest.cpp
+        src/World/Block/BlockCoordinateTest.cpp
         )
