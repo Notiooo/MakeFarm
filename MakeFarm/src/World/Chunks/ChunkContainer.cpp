@@ -144,7 +144,7 @@ bool ChunkContainer::doesWorldBlockExist(const Block::Coordinate& worldBlockCoor
     return foundChunk != data().cend();
 }
 
-std::shared_ptr<const Chunk> ChunkContainer::blockPositionToChunk(
+std::shared_ptr<const ChunkInterface> ChunkContainer::blockPositionToChunk(
     const Block::Coordinate& worldBlockCoordinates) const
 {
     std::unique_lock guard(mChunksAccessMutex);
@@ -157,10 +157,10 @@ std::shared_ptr<const Chunk> ChunkContainer::blockPositionToChunk(
     return nullptr;
 }
 
-std::shared_ptr<Chunk> ChunkContainer::blockPositionToChunk(
+std::shared_ptr<ChunkInterface> ChunkContainer::blockPositionToChunk(
     const Block::Coordinate& worldBlockCoordinates)
 {
-    return std::const_pointer_cast<Chunk>(
+    return std::const_pointer_cast<ChunkInterface>(
         static_cast<const ChunkContainer&>(*this).blockPositionToChunk(worldBlockCoordinates));
 }
 
@@ -194,8 +194,8 @@ void ChunkContainer::removeWorldBlock(const Block::Coordinate& worldBlockCoordin
     }
 }
 
-std::shared_ptr<Chunk> ChunkContainer::chunkNearby(const ChunkInterface& baseChunk,
-                                                   const Direction& direction)
+std::shared_ptr<ChunkInterface> ChunkContainer::chunkNearby(const ChunkInterface& baseChunk,
+                                                            const Direction& direction)
 {
     switch (direction)
     {
@@ -238,7 +238,7 @@ bool ChunkContainer::isChunkPresentInTheContainer(const ChunkInterface& chunk) c
            data().cend();
 }
 
-std::shared_ptr<Chunk> ChunkContainer::findChunk(const ChunkInterface& chunk)
+std::shared_ptr<ChunkInterface> ChunkContainer::findChunk(const ChunkInterface& chunk)
 {
     std::unique_lock guard(mChunksAccessMutex);
     auto foundChunk =
@@ -259,7 +259,8 @@ void ChunkContainer::rebuildChunksAround(ChunkContainer::Coordinate chunkCoordin
         }
     }
 }
-std::shared_ptr<Chunk> ChunkContainer::at(const ChunkContainer::Coordinate& chunkCoordinate)
+std::shared_ptr<ChunkInterface> ChunkContainer::at(
+    const ChunkContainer::Coordinate& chunkCoordinate)
 {
     std::unique_lock guard(mChunksAccessMutex);
     return data().at(chunkCoordinate);

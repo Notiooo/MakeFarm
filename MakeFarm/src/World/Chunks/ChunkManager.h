@@ -1,8 +1,8 @@
 #pragma once
 #include "World/Camera.h"
 #include "World/Chunks/AsyncProcessedObjects.h"
-#include "World/Chunks/Chunk.h"
 #include "World/Chunks/ChunkContainer.h"
+#include "World/Chunks/ChunkInterface.h"
 
 class ChunkManager
 {
@@ -29,7 +29,7 @@ public:
      */
     static constexpr int NUMBER_OF_THREADS_GENERATING_NEW_CHUNKS = 1;
 
-    using Chunks = std::list<std::shared_ptr<Chunk>>;
+    using Chunks = std::list<std::shared_ptr<ChunkInterface>>;
 
     ChunkManager(const TexturePack& texturePack, const std::string& savedWorldPath,
                  const int& worldSeed);
@@ -65,12 +65,12 @@ public:
     /**
      * \brief Indicates chunk as willing to rebuild mesh in near future
      */
-    void rebuildSlow(std::shared_ptr<Chunk> chunk);
+    void rebuildSlow(std::shared_ptr<ChunkInterface> chunk);
 
     /**
      * \brief Indicates chunk as willing to rebuild mesh in this, or next frame
      */
-    void rebuildFast(std::shared_ptr<Chunk> chunk);
+    void rebuildFast(std::shared_ptr<ChunkInterface> chunk);
 
     /**
      * @brief Returns the chunks that the manager manages.
@@ -203,8 +203,8 @@ private:
      * @param chunk Chunk that should be moved or pushed.
      */
     void pushChunkToTheBackOfObjectsToBeProcessedOrMoveToTheBackIfExists(
-        AsyncProcessedObjects<std::shared_ptr<Chunk>>& asyncProcessedObjects,
-        const std::shared_ptr<Chunk>& chunk) const;
+        AsyncProcessedObjects<std::shared_ptr<ChunkInterface>>& asyncProcessedObjects,
+        const std::shared_ptr<ChunkInterface>& chunk) const;
 
     /**
      * @brief Creates new threads that generate new chunks.
@@ -230,8 +230,9 @@ private:
      * @param chunks List of chunks
      * @param chunk The chunk iterator that should be moved
      */
-    void moveChunkToTheBackOfList(std::list<std::shared_ptr<Chunk>>& chunks,
-                                  std::list<std::shared_ptr<Chunk>>::iterator& chunk) const;
+    void moveChunkToTheBackOfList(
+        std::list<std::shared_ptr<ChunkInterface>>& chunks,
+        std::list<std::shared_ptr<ChunkInterface>>::iterator& chunk) const;
 
     /**
      * @brief Rebuilds the chunk at least once. If the Chunk is occupied then waits for it.
@@ -239,7 +240,7 @@ private:
      * @param rebuildSpeed Priority of how important this rebuild is. Higher priority, faster to
      * rebuild
      */
-    void rebuildChunkAtLeastOnce(const std::shared_ptr<Chunk>& chunk,
+    void rebuildChunkAtLeastOnce(const std::shared_ptr<ChunkInterface>& chunk,
                                  const RebuildPriority& rebuildSpeed);
 
     /**
@@ -250,7 +251,7 @@ private:
      * @param chunkCoordinates Chunk coordinates to be rebuilt
      * @return True if the chunk managed to rebuild, false otherwise.
      */
-    bool tryToRebuildChunkIfNotProcessed(const std::shared_ptr<Chunk>& chunk,
+    bool tryToRebuildChunkIfNotProcessed(const std::shared_ptr<ChunkInterface>& chunk,
                                          const RebuildPriority& rebuildSpeed,
                                          const ChunkContainer::Coordinate& chunkCoordinates);
 
@@ -264,8 +265,8 @@ private:
     mutable std::recursive_mutex mChunksAccessMutex;
 
     /** Asynchronous processed objects */
-    AsyncProcessedObjects<std::shared_ptr<Chunk>> mChunkToRebuildFast;
-    AsyncProcessedObjects<std::shared_ptr<Chunk>> mChunkToRebuildSlow;
+    AsyncProcessedObjects<std::shared_ptr<ChunkInterface>> mChunkToRebuildFast;
+    AsyncProcessedObjects<std::shared_ptr<ChunkInterface>> mChunkToRebuildSlow;
     AsyncProcessedObjects<ChunkContainer::Coordinate> mCurrentlyProcessedChunks;
 
 #if DRAW_DEBUG_COLLISIONS

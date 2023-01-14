@@ -12,5 +12,6 @@ set(UT_Sources
         src/World/Chunks/CoordinatesAroundOriginGetterTest.cpp
         src/World/Chunks/TerrainGeneratorTest.cpp
         src/World/Chunks/ChunkContainerCoordinateTest.cpp
+        src/World/Chunks/ChunkContainerTest.cpp
         src/World/Block/BlockCoordinateTest.cpp
         )

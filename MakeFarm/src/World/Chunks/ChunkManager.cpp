@@ -50,14 +50,14 @@ void ChunkManager::rebuildInsignificantChunks()
     }
 }
 
-void ChunkManager::rebuildSlow(std::shared_ptr<Chunk> chunk)
+void ChunkManager::rebuildSlow(std::shared_ptr<ChunkInterface> chunk)
 {
     pushChunkToTheBackOfObjectsToBeProcessedOrMoveToTheBackIfExists(mChunkToRebuildSlow, chunk);
 }
 
 void ChunkManager::pushChunkToTheBackOfObjectsToBeProcessedOrMoveToTheBackIfExists(
-    AsyncProcessedObjects<std::shared_ptr<Chunk>>& asyncProcessedObjects,
-    const std::shared_ptr<Chunk>& chunk) const
+    AsyncProcessedObjects<std::shared_ptr<ChunkInterface>>& asyncProcessedObjects,
+    const std::shared_ptr<ChunkInterface>& chunk) const
 {
     std::scoped_lock guard(asyncProcessedObjects.objectsToBeProcessedMutex);
     auto& objectsToBeProcessed = asyncProcessedObjects.objectsToBeProcessed;
@@ -74,13 +74,13 @@ void ChunkManager::pushChunkToTheBackOfObjectsToBeProcessedOrMoveToTheBackIfExis
 }
 
 void ChunkManager::moveChunkToTheBackOfList(
-    std::list<std::shared_ptr<Chunk>>& chunks,
-    std::list<std::shared_ptr<Chunk>>::iterator& chunk) const
+    std::list<std::shared_ptr<ChunkInterface>>& chunks,
+    std::list<std::shared_ptr<ChunkInterface>>::iterator& chunk) const
 {
     chunks.splice(chunks.end(), chunks, chunk);
 }
 
-void ChunkManager::rebuildFast(std::shared_ptr<Chunk> chunk)
+void ChunkManager::rebuildFast(std::shared_ptr<ChunkInterface> chunk)
 {
     std::scoped_lock guard(mChunkToRebuildFast.objectsToBeProcessedMutex);
     mChunkToRebuildFast.objectsToBeProcessed.push_back(chunk);
@@ -319,7 +319,7 @@ ChunkManager::Chunks ChunkManager::rebuildSlowChunks(Chunks&& chunks)
     return rebuildNotProcessedChunks(std::move(chunks), RebuildPriority::Low);
 }
 
-void ChunkManager::rebuildChunkAtLeastOnce(const std::shared_ptr<Chunk>& chunk,
+void ChunkManager::rebuildChunkAtLeastOnce(const std::shared_ptr<ChunkInterface>& chunk,
                                            const RebuildPriority& rebuildSpeed)
 {
     const auto& chunkCoordinates =
@@ -333,7 +333,7 @@ void ChunkManager::rebuildChunkAtLeastOnce(const std::shared_ptr<Chunk>& chunk,
 }
 
 bool ChunkManager::tryToRebuildChunkIfNotProcessed(
-    const std::shared_ptr<Chunk>& chunk, const ChunkManager::RebuildPriority& rebuildSpeed,
+    const std::shared_ptr<ChunkInterface>& chunk, const ChunkManager::RebuildPriority& rebuildSpeed,
     const ChunkContainer::Coordinate& chunkCoordinates)
 {
     std::unique_lock guard(mCurrentlyProcessedChunks.objectsToBeProcessedMutex);

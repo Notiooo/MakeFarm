@@ -2,9 +2,10 @@
 #include <future>
 #include <shared_mutex>
 
-#include "Chunk.h"
 #include "Physics/AABB.h"
+#include "Renderer3D/Renderer3D.h"
 #include "World/Camera.h"
+#include "World/Chunks/ChunkInterface.h"
 
 
 #define DRAW_DEBUG_COLLISIONS false
@@ -47,7 +48,7 @@ public:
             const Block::Coordinate& worldBlockCoordinate);
     };
 
-    using Chunks = std::unordered_map<ChunkContainer::Coordinate, std::shared_ptr<Chunk>,
+    using Chunks = std::unordered_map<ChunkContainer::Coordinate, std::shared_ptr<ChunkInterface>,
                                       std::hash<CoordinateBase>>;
 
     ChunkContainer() = default;
@@ -85,7 +86,8 @@ public:
 
     /**
      * \brief Updates the chunkcontainer logic dependent, or independent of time, every rendered
-     * frame. \param deltaTime the time that has passed since the game was last updated.
+     * frame.
+     * \param deltaTime the time that has passed since the game was last updated.
      */
     void update(const float& deltaTime);
 
@@ -121,7 +123,7 @@ public:
      * contains it. \param worldBlockCoordinates Block coordinates in the game world \return Chunk,
      * which contains this block. Nullptr if the block is not present.
      */
-    [[nodiscard]] std::shared_ptr<Chunk> blockPositionToChunk(
+    [[nodiscard]] std::shared_ptr<ChunkInterface> blockPositionToChunk(
         const Block::Coordinate& worldBlockCoordinates);
 
     /**
@@ -129,8 +131,8 @@ public:
      * @param direction Direction next to which the chunk you are looking for is located
      * @return Pointer to chunk found
      */
-    [[nodiscard]] std::shared_ptr<Chunk> chunkNearby(const ChunkInterface& baseChunk,
-                                                     const Direction& direction);
+    [[nodiscard]] std::shared_ptr<ChunkInterface> chunkNearby(const ChunkInterface& baseChunk,
+                                                              const Direction& direction);
 
     /**
      * @brief Rebuilds chunks around a given chunk.
@@ -161,14 +163,14 @@ public:
      * @return Shared_ptr to the chunk in the container, or nullptr if the chunk is not in the
      * container.
      */
-    std::shared_ptr<Chunk> findChunk(const ChunkInterface& chunk);
+    std::shared_ptr<ChunkInterface> findChunk(const ChunkInterface& chunk);
 
     /**
      * @brief Returns a chunk on a given block.
      * @param chunkCoordinate Coordinate the chunk to get.
      * @return Pointer to chunk with given coordinates
      */
-    std::shared_ptr<Chunk> at(const ChunkContainer::Coordinate& chunkCoordinate);
+    std::shared_ptr<ChunkInterface> at(const ChunkContainer::Coordinate& chunkCoordinate);
 
     /**
      * @brief Erases the chunk with the indicated coordinates
@@ -245,7 +247,7 @@ private:
      * contains it. \param worldBlockCoordinates Block coordinates in the game world \return Chunk,
      * which contains this block. Nullptr if the block is not present.
      */
-    [[nodiscard]] std::shared_ptr<const Chunk> blockPositionToChunk(
+    [[nodiscard]] std::shared_ptr<const ChunkInterface> blockPositionToChunk(
         const Block::Coordinate& worldBlockCoordinates) const;
 
     /**
