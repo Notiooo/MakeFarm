@@ -50,5 +50,8 @@ Implementation of 3D game similar to Minecraft with infinite terrain model and b
 ### How to install and play
 Please see the [external documentation](readme/external.pdf).
 
-### The report
-You may find the final report [here](readme/final_report.pdf).
+<div align="center">
+<h2>The report</h2>
+<a href="readme/final_report.pdf"><img src="readme/report.jpg" width="80%"alt="Report image"/></a>
+<p>You may find the final report <a href="readme/final_report.pdf">here</a></p>
+</div>
