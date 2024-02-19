@@ -1,0 +1,60 @@
+name: C++ Build and Package
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      TAG_NAME: ${{ github.ref_name }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build (Release)
+      run: |
+        cmake -S ${{github.workspace}}/MakeFarm -B ${{github.workspace}}/build-release -DCMAKE_BUILD_TYPE=Release
+        cmake --build ${{github.workspace}}/build-release --config Release --target MakeFarmApp
+
+    - name: Package (Release)
+      run: |
+        Compress-Archive -Path "${{github.workspace}}/build-release/src/Release/*" -DestinationPath "${{github.workspace}}/build-release/src/makefarm_release_windows_build_${{ env.TAG_NAME }}.zip"
+
+    - name: Build (Debug)
+      run: |
+        cmake -S ${{github.workspace}}/MakeFarm -B ${{github.workspace}}/build-debug -DCMAKE_BUILD_TYPE=Debug
+        cmake --build ${{github.workspace}}/build-debug --config Debug --target MakeFarmApp
+
+    - name: Package (Debug)
+      run: |
+        $sourcePath = "${{github.workspace}}/build-debug/src/Debug"
+        $excludeExtensions = @('.pdb', '.ilk', '.cmake')
+        $excludeFiles = @('MakeFarmSrc.lib')
+        $excludeFolders = @('custom_includes', 'CMakeFiles')
+        Get-ChildItem -Path $sourcePath -Recurse | Where-Object { $excludeExtensions -contains $_.Extension } | Remove-Item -Force
+        foreach ($file in $excludeFiles) 
+        {
+            Get-ChildItem -Path $sourcePath -Recurse | Where-Object { $_.Name -eq $file } | Remove-Item -Force
+        }
+        foreach ($folder in $excludeFolders) 
+        {
+            $pathToRemove = Join-Path -Path $sourcePath -ChildPath $folder
+            if (Test-Path $pathToRemove) 
+            {
+                Remove-Item -Path $pathToRemove -Recurse -Force
+            }
+        }
+        
+        Compress-Archive -Path "${{github.workspace}}/build-debug/src/Debug/*" -DestinationPath "${{github.workspace}}/build-debug/src/makefarm_debug_windows_build_${{ env.TAG_NAME }}.zip"
+
+    - name: List files before upload release assets
+      run: Get-ChildItem
+
+    - name: Upload Release Assets
+      uses: AButler/upload-release-assets@v3.0
+      with:
+        files: "./build-release/src/makefarm_release_windows_build_*.zip;./build-debug/src/makefarm_debug_windows_build_*.zip"
+        repo-token: ${{ secrets.GITHUB_TOKEN }}

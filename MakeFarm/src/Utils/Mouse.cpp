@@ -58,6 +58,8 @@ void Mouse::handleFirstPersonBehaviour(const sf::Event& event, sf::RenderWindow&
             {
                 Mouse::lockMouseAtCenter(gameWindow);
             }
+#else
+            Mouse::lockMouseAtCenter(gameWindow);
 #endif
         }
     }
